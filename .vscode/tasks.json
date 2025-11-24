@@ -1,0 +1,55 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Minimal-Audio-Engine: CMake Configure",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "-S",
+                "${workspaceFolder}",
+                "-B",
+                "${workspaceFolder}/build",
+                "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            ],
+            "group": "build",
+        },
+        {
+            "label": "Minimal Audio Engine: CMake Build",
+            "type": "shell",
+            "command": "cmake",
+            "args": [
+                "--build",
+                "${workspaceFolder}/build"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": "Minimal-Audio-Engine: CMake Configure",
+        },
+        {
+            "label": "Minimal Audio Engine: Run",
+            "type": "shell",
+            "command": "${workspaceFolder}/build/src/EmbeddedAudioEngine",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "dependsOn": "Minimal Audio Engine: CMake Build",
+        },
+        {
+            "label": "Minimal Audio Engine: Run Units Test",
+            "type": "shell",
+            "command": "${workspaceFolder}/build/tests/unit/EmbeddedAudioEngineUnitTests",
+            "group": {
+                "kind": "test",
+                "isDefault": false
+            },
+            "dependsOn": "Minimal Audio Engine: CMake Build"
+        }
+    ]
+}

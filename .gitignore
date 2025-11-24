@@ -2,4 +2,3 @@ build
 build_*
 venv
 .cache
-.vscode
