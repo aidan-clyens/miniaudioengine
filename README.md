@@ -1,105 +1,114 @@
-# Minimal Audio Engine
+## 1. Introduction
+The **Minimal Audio Engine** is a C++-based Digital Audio Engine and Workstation designed for lightweight computing platforms such as the Raspberry Pi. The system emphasizes **cross-platform portability** (Linux and Windows) and **cross-architecture compatibility** (x86_64 and ARM64).  
 
-The Minimal Audio Engine is a C++ project designed for cross-platform minimal audio processing on lightweight computing platforms like the Raspberry Pi.
+This specification defines the design, build environment, architecture, and operational requirements of the system. It is intended to document engineering decisions, ensure reproducibility, and provide a foundation for future extensions.
 
-# Build Environment
+---
 
-- Cross-platform build support (x86_64 and ARM64)
-- Cross-OS build support (Linux and Windows)
-- Docker-based development environment
-- CMake build system
+## 2. Objectives
+- Deliver a **minimal yet extensible audio engine** suitable for embedded and desktop environments.  
+- Ensure **cross-platform support** across Linux and Windows.  
+- Support **multi-architecture builds** (x86_64, ARM64).  
+- Provide a **Dockerized development environment** for reproducibility.  
+- Implement **continuous integration (CI/CD)** for automated builds, testing, and release packaging.  
 
-## Prerequisites
+---
 
-Make sure you have the following installed on your Ubuntu system:
+## 3. System Overview
+The Minimal Audio Engine consists of:  
+- **Core Audio Engine**: Implements digital audio processing primitives.  
+- **Platform Abstraction Layer**: Provides OS-specific integration for Linux and Windows.  
+- **Build System**: CMake-based configuration supporting reproducible builds.  
+- **Development Environment**: Docker images for cross-architecture compilation and testing.  
+- **CI/CD Pipeline**: GitHub Actions workflows for automated builds, tests, and nightly releases.  
 
-- Docker
-- Docker Buildx (usually included with recent Docker versions)
-- Git
+---
 
-## Clone the Repository
+## 4. Build Environment
+### 4.1 Supported Platforms
+- **Operating Systems**: Linux (Ubuntu), Windows  
+- **Architectures**: x86_64, ARM64  
 
-git clone https://github.com/<your-username>/minimal-audio-engine.git
-cd minimal-audio-engine
+### 4.2 Tooling
+- **CMake**: Primary build system  
+- **Docker + Buildx**: Cross-architecture builds  
+- **GitHub Actions**: CI/CD automation  
 
-## Build with Docker
+### 4.3 Development Workflow
+1. Clone repository  
+2. Pull Docker development image from GHCR  
+3. Run container with mounted workspace  
+4. Build project with CMake  
+5. Execute unit tests with CTest  
 
-The project provides a multi-arch Docker image published to GitHub Container Registry (GHCR).This ensures a consistent build environment across AMD64 and ARM64.
+---
 
-### 1. Pull the Development Image
-
-```bash
-docker pull ghcr.io/aidan-clyens/minimal-audio-engine-dev:latest
+## 5. Architecture
+### 5.1 High-Level Design
+```
++-------------------------+
+|   Application Layer     |
+|  (Audio Workstation UI) |
++-------------------------+
+            |
+            v
++-------------------------+
+|   Core Audio Engine     |
+|  (DSP, Processing)      |
++-------------------------+
+            |
+            v
++-------------------------+
+| Platform Abstraction    |
+| (Linux / Windows APIs)  |
++-------------------------+
+            |
+            v
++-------------------------+
+| Hardware Layer          |
+| (x86_64 / ARM64)        |
++-------------------------+
 ```
 
-### 2. Run the Container
-
-Mount the repository into the container and start a shell:
-
-```bash
-docker run --rm -it \
-  -v $(pwd):/workspace \
-  -w /workspace \
-  ghcr.io/aidan-clyens/minimal-audio-engine-dev:latest \
-  bash
-```
-
-### 3. Build the Project with CMake
-
-Inside the container:
-
-```bash
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release
-cmake --build build --parallel
-ctest --test-dir build
-```
-
-The compiled binaries will be available in the build/ directory.
-
-## Architecture-Specific Builds
-
-You can explicitly build for AMD64 or ARM64 using Docker’s --platform flag.
-
-### Build for AMD64
-
-```bash
-docker run --rm -it \
-  --platform linux/amd64 \
-  -v $(pwd):/workspace \
-  -w /workspace \
-  ghcr.io/aidan-clyens/minimal-audio-engine-dev:latest \
-  bash -c "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel && ctest --test-dir build"
-```
-
-### Build for ARM64
-
-```bash
-docker run --rm -it \
-  --platform linux/arm64 \
-  -v $(pwd):/workspace \
-  -w /workspace \
-  ghcr.io/aidan-clyens/minimal-audio-engine-dev:latest \
-  bash -c "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel && ctest --test-dir build"
-```
-
-# Continuous Integration (CI)
-
-This repository uses GitHub Actions to:
-1. Build and push a multi-arch Docker image (linux/amd64, linux/arm64)
-2. Compile and test the project inside the container
-3. Package build artifacts (.tar.gz) for both architectures
-4. Publish nightly releases with prebuilt binaries
-
-You can find the latest prebuilt binaries under the Releases page.
-
-# Project Structure
-
+### 5.2 Project Structure
 ```
 minimal-audio-engine/
-├── CMakeLists.txt      # CMake build configuration
-├── Dockerfile          # Build environment definition
 ├── src/                # Source code
 ├── include/            # Public headers
 ├── tests/              # Unit tests
+├── CMakeLists.txt      # Build configuration
+├── Dockerfile          # Development environment
 └── .github/workflows/  # CI/CD pipeline
 ```
+
+---
+
+## 6. Continuous Integration (CI/CD)
+The repository uses **GitHub Actions** to automate:  
+1. Multi-arch Docker image builds (linux/amd64, linux/arm64).  
+2. Compilation and unit testing inside containers.  
+3. Packaging of build artifacts (`.tar.gz`).  
+4. Nightly release publishing with prebuilt binaries.  
+
+---
+
+## 7. Design Decisions
+- **Dockerized builds** ensure reproducibility across developer environments.  
+- **CMake** chosen for portability and integration with CI/CD pipelines.  
+- **Multi-arch support** enables deployment on embedded devices (Raspberry Pi) and desktop systems.  
+- **Automated releases** reduce friction for end users and demonstrate DevOps maturity.  
+
+---
+
+## 8. Future Work
+- Expand audio engine capabilities (MIDI, plugin support).  
+- Provide lightweight GUI for workstation functionality.  
+- Extend CI/CD to include Windows-native builds.  
+- Optimize DSP routines for ARM NEON instructions.  
+
+---
+
+## 9. Conclusion
+The Minimal Audio Engine demonstrates a **professional-grade, cross-platform audio system** with strong emphasis on reproducibility, portability, and maintainability. This specification captures the design intent and provides a foundation for ongoing development and career showcase.
+
+---
