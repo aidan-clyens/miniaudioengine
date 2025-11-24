@@ -1,10 +1,11 @@
-# Embedded Audio Engine
+# Minimal Audio Engine
 
-The Embedded Audio Engine is a C++ project designed for cross-platform embedded audio processing on lightweight computing platforms like the Raspberry Pi.
+The Minimal Audio Engine is a C++ project designed for cross-platform minimal audio processing on lightweight computing platforms like the Raspberry Pi.
 
 # Build Environment
 
 - Cross-platform build support (x86_64 and ARM64)
+- Cross-OS build support (Linux and Windows)
 - Docker-based development environment
 - CMake build system
 
@@ -18,8 +19,8 @@ Make sure you have the following installed on your Ubuntu system:
 
 ## Clone the Repository
 
-git clone https://github.com/<your-username>/embedded-audio-engine.git
-cd embedded-audio-engine
+git clone https://github.com/<your-username>/minimal-audio-engine.git
+cd minimal-audio-engine
 
 ## Build with Docker
 
@@ -28,7 +29,7 @@ The project provides a multi-arch Docker image published to GitHub Container Reg
 ### 1. Pull the Development Image
 
 ```bash
-docker pull ghcr.io/aidan-clyens/embedded-audio-engine-dev:latest
+docker pull ghcr.io/aidan-clyens/minimal-audio-engine-dev:latest
 ```
 
 ### 2. Run the Container
@@ -39,7 +40,7 @@ Mount the repository into the container and start a shell:
 docker run --rm -it \
   -v $(pwd):/workspace \
   -w /workspace \
-  ghcr.io/aidan-clyens/embedded-audio-engine-dev:latest \
+  ghcr.io/aidan-clyens/minimal-audio-engine-dev:latest \
   bash
 ```
 
@@ -66,7 +67,7 @@ docker run --rm -it \
   --platform linux/amd64 \
   -v $(pwd):/workspace \
   -w /workspace \
-  ghcr.io/aidan-clyens/embedded-audio-engine-dev:latest \
+  ghcr.io/aidan-clyens/minimal-audio-engine-dev:latest \
   bash -c "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel && ctest --test-dir build"
 ```
 
@@ -77,7 +78,7 @@ docker run --rm -it \
   --platform linux/arm64 \
   -v $(pwd):/workspace \
   -w /workspace \
-  ghcr.io/aidan-clyens/embedded-audio-engine-dev:latest \
+  ghcr.io/aidan-clyens/minimal-audio-engine-dev:latest \
   bash -c "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release && cmake --build build --parallel && ctest --test-dir build"
 ```
 
@@ -94,7 +95,7 @@ You can find the latest prebuilt binaries under the Releases page.
 # Project Structure
 
 ```
-embedded-audio-engine/
+minimal-audio-engine/
 ├── CMakeLists.txt      # CMake build configuration
 ├── Dockerfile          # Build environment definition
 ├── src/                # Source code
