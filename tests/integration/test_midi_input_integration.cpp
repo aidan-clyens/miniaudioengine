@@ -4,7 +4,7 @@
 #include "midiengine.h"
 #include "devicemanager.h"
 #include "trackmanager.h"
-#include "filesystem.h"
+#include "filemanager.h"
 #include "midifile.h"
 #include "logger.h"
 
@@ -31,9 +31,9 @@ TEST(MidiInputIntegrationTest, MidiInput)
   // Open a test MIDI file and load it into the track
   std::string test_midi_file = "samples/midi_c_major_monophonic.mid";
 
-  MidiFile midi_file = FileSystem::instance().read_midi_file(test_midi_file);
-  ASSERT_EQ(midi_file.get_filepath(), FileSystem::instance().convert_to_absolute(test_midi_file));
-  ASSERT_EQ(midi_file.get_filename(), FileSystem::instance().convert_to_absolute(test_midi_file).filename().string());
+  MidiFile midi_file = FileManager::instance().read_midi_file(test_midi_file);
+  ASSERT_EQ(midi_file.get_filepath(), FileManager::instance().convert_to_absolute(test_midi_file));
+  ASSERT_EQ(midi_file.get_filename(), FileManager::instance().convert_to_absolute(test_midi_file).filename().string());
 
   LOG_INFO("MIDI file loaded: ", midi_file.get_filepath());
 
