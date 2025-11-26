@@ -2,6 +2,8 @@
 #include "midiengine.h"
 #include "trackmanager.h"
 #include "track.h"
+#include "messagequeue.h"
+#include "logger.h"
 
 #include <iostream>
 #include <csignal>
@@ -14,6 +16,15 @@ using namespace Midi;
 using namespace Tracks;
 
 static bool app_running = false;
+
+/** @enum eAppCommand 
+ *  @brief Application commands for main event loop
+ */
+typedef enum class eAppCommand
+{
+  GetMidiPorts,
+  Quit,
+} eAppCommand;
 
 /** @class Application
  *  @brief The main Audio Engine Platform application
@@ -33,6 +44,11 @@ public:
     AudioEngine::instance().stop_thread();
   }
 
+  void post_command(eAppCommand command)
+  {
+    m_message_queue.push(command);
+  }
+
   void run()
   {
     size_t track_index = TrackManager::instance().add_track();
@@ -43,6 +59,29 @@ public:
 
     while (app_running)
     {
+      auto command = m_message_queue.try_pop();
+      if (command.has_value())
+      {
+        switch (command.value())
+        {
+          case eAppCommand::GetMidiPorts:
+            {
+              auto ports = MidiEngine::instance().get_ports();
+              LOG_INFO("MIDI Input Ports:");
+              for (const auto& port : ports)
+              {
+                LOG_INFO("Port ", port.port_number, ": ", port.port_name);
+              }
+            }
+            break;
+          case eAppCommand::Quit:
+            app_running = false;
+            break;
+          default:
+            break;
+        }
+      }
+
       track->handle_midi_message();
 
       // Wait for the signal handler to set app_running to false
@@ -50,9 +89,12 @@ public:
     }
 
     MidiEngine::instance().detach(track);
-
     TrackManager::instance().clear_tracks();
   }
+
+private:
+  // Add message queue for application from UI thread
+  MessageQueue<eAppCommand> m_message_queue;
 };
 
 /** @brief Signal handler for graceful shutdown on SIGINT (Ctrl+C).
@@ -66,48 +108,13 @@ void signal_handler(int signum)
   app_running = false;
 }
 
-/** @brief Opens a MIDI input device.
- *  This function lists available MIDI ports, prompts the user to select one,
- *  and attempts to open the selected MIDI input port.
- *  @return True if the MIDI device was opened successfully, false otherwise.
- */
-bool open_midi_device()
-{
-  Midi::MidiEngine& midi_engine = Midi::MidiEngine::instance();
-
-  // Return a list of supported MIDI devices
-  std::vector<Midi::MidiPort> ports = midi_engine.get_ports();
-
-  std::cout << "---------------------" << std::endl;
-  for (const auto& port : ports)
-  {
-    std::cout << port.port_number << " - " << port.port_name << std::endl;
-  }
-
-  unsigned int selected_port;
-  std::cout << "Enter a port number to use: ";
-  std::cin >> selected_port;
-
-  // Open selected MIDI device
-  try
-  {
-    midi_engine.open_input_port(selected_port);
-    std::cout << "Opened MIDI input port: " << selected_port << std::endl;
-  } catch (const std::exception& e) {
-    std::cerr << "Error opening MIDI input port: " << e.what() << std::endl;
-    return false;
-  }
-
-  return true;
-}
-
 /** @brief Main function for the Digital Audio Workstation application.
  *  @return Exit status of the application (0 for success, non-zero for failure).
  */
 int main()
 {
-  std::cout << "Embedded Audio Engine" << std::endl;
-  std::cout << "---------------------" << std::endl;
+  LOG_INFO("Embedded Audio Engine");
+  LOG_INFO("---------------------");
 
   std::signal(SIGINT, signal_handler);
   app_running = true;

@@ -9,6 +9,7 @@ size_t TrackManager::add_track()
 {
   auto new_track = std::make_shared<Track>();
   m_tracks.push_back(new_track);
+  LOG_INFO("Adding a new track. Total tracks: ", m_tracks.size());
   return m_tracks.size() - 1; // Return the index of the newly added track
 }
 
@@ -20,10 +21,12 @@ void TrackManager::remove_track(size_t index)
 {
   if (index >= m_tracks.size())
   {
+    LOG_ERROR("Attempted to remove track with invalid index: ", index);
     throw std::out_of_range("Track index out of range");
   }
 
   m_tracks.erase(m_tracks.begin() + index);
+  LOG_INFO("Removed track at index: ", index, ". Total tracks: ", m_tracks.size());
 }
 
 /** @brief Get a Track from the TrackManager by index.
@@ -35,6 +38,7 @@ std::shared_ptr<Track> TrackManager::get_track(size_t index)
 {
   if (index >= m_tracks.size())
   {
+    LOG_ERROR("Attempted to get track with invalid index: ", index);
     throw std::out_of_range("Track index out of range");
   }
 
@@ -46,5 +50,7 @@ std::shared_ptr<Track> TrackManager::get_track(size_t index)
  */
 void TrackManager::clear_tracks()
 {
+  LOG_INFO("Clearing all tracks. Total tracks before clear: ", m_tracks.size());
   m_tracks.clear();
+  LOG_INFO("All tracks cleared. Total tracks after clear: ", m_tracks.size());
 }
