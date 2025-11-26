@@ -17,39 +17,49 @@ using namespace Midi;
  */
 void midi_callback(double deltatime, std::vector<unsigned char> *message, void *user_data)
 {
-  if (message == nullptr)
+  try
   {
-    LOG_ERROR("Received null MIDI message");
-    throw std::runtime_error("Received null MIDI message");
-  }
+    if (message == nullptr || user_data == nullptr)
+    {
+      LOG_ERROR("Received null MIDI message or user data");
+      return;
+    }
+  
+    MidiEngine *midi_engine = reinterpret_cast<MidiEngine *>(user_data);
+    if (midi_engine == nullptr)
+    {
+      LOG_ERROR("MidiEngine instance is null in MIDI callback");
+      return;
+    }
+  
+    // Parse incoming MIDI messages
+    MidiMessage midi_message;
+  
+    midi_message.deltatime = deltatime;
+    midi_message.status = message->at(0);
+    midi_message.type = static_cast<eMidiMessageType>(midi_message.status & 0xF0);
+    midi_message.channel = midi_message.status & 0x0F;
+    midi_message.data1 = message->size() > 1 ? message->at(1) : 0;
+    midi_message.data2 = message->size() > 2 ? message->at(2) : 0;
+  
+    auto it = std::find_if(midi_message_type_names.begin(), midi_message_type_names.end(),
+                           [&midi_message](const auto& pair) { return pair.first == midi_message.type; });
 
-  if (user_data == nullptr)
+    if (it != midi_message_type_names.end())
+    {
+      midi_message.type_name = it->second;
+    }
+    else
+    {
+      midi_message.type_name = "Unknown MIDI Message";
+    }
+  
+    midi_engine->receive_midi_message(midi_message);
+  }
+  catch (const std::exception &e)
   {
-    LOG_ERROR("User data is null in MIDI callback");
-    throw std::runtime_error("User data is null in MIDI callback");
+    LOG_ERROR("Exception in MIDI callback: ", e.what());
   }
-
-  MidiEngine *midi_engine = static_cast<MidiEngine *>(user_data);
-  if (midi_engine == nullptr)
-  {
-    LOG_ERROR("MidiEngine instance is null in MIDI callback");
-    throw std::runtime_error("MidiEngine instance is null in MIDI callback");
-  }
-
-  // Parse incoming MIDI messages
-  MidiMessage midi_message;
-
-  midi_message.deltatime = deltatime;
-  midi_message.status = message->at(0);
-  midi_message.type = static_cast<eMidiMessageType>(midi_message.status & 0xF0);
-  midi_message.channel = midi_message.status & 0x0F;
-  midi_message.data1 = message->size() > 1 ? message->at(1) : 0;
-  midi_message.data2 = message->size() > 2 ? message->at(2) : 0;
-
-  auto it = midi_message_type_names.find(midi_message.type);
-  midi_message.type_name = it != midi_message_type_names.end() ? it->second : "Unknown MIDI Message";
-
-  midi_engine->receive_midi_message(midi_message);
 }
 
 /** @brief Constructor for the MidiEngine class.

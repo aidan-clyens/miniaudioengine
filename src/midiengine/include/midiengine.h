@@ -30,7 +30,7 @@ public:
   void open_input_port(unsigned int port_number = 0);
   void close_input_port();
 
-  void receive_midi_message(const MidiMessage& message)
+  void receive_midi_message(const MidiMessage& message) noexcept
   {
     push_message(message);
   }

@@ -5,6 +5,8 @@
 #include <atomic>
 #include <string>
 #include <mutex>
+#include <chrono>
+#include <optional>
 
 #include "messagequeue.h"
 #include "logger.h"
@@ -20,13 +22,21 @@ public:
 
   void start_thread()
   {
-    if (m_running)
+    if (m_running.load(std::memory_order_acquire))
       return;
+
+    m_running.store(false, std::memory_order_release);
     m_thread = std::thread(&IEngine::_run, this);
 
     // Block until the thread signals it's ready
+    auto start_time = std::chrono::steady_clock::now();
     while (!m_running.load(std::memory_order_acquire))
     {
+      if (std::chrono::steady_clock::now() - start_time > std::chrono::seconds(5))
+      {
+        LOG_ERROR("Timeout waiting for thread to start: ", m_thread_name);
+        throw std::runtime_error("Timeout waiting for thread to start: " + m_thread_name);
+      }
       std::this_thread::yield();
     }
   }
@@ -45,8 +55,8 @@ public:
 
   void push_message(const T& msg) { m_message_queue.push(msg); }
   std::optional<T> try_pop_message() { return m_message_queue.try_pop(); }
-  bool pop_message(T& out) { return m_message_queue.pop(out); }
-  bool queue_empty() const { return m_message_queue.empty(); }
+  std::optional<T> pop_message() { return m_message_queue.pop(); }
+  bool is_message_queue_empty() const { return m_message_queue.empty(); }
 
 protected:
   IEngine(const std::string &thread_name): m_thread_name(thread_name) {}

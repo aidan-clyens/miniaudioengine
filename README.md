@@ -1,7 +1,9 @@
 ## 1. Introduction
-The **Minimal Audio Engine** is a C++-based Digital Audio Engine and Workstation designed for lightweight computing platforms such as the Raspberry Pi. The system emphasizes **cross-platform portability** (Linux and Windows) and **cross-architecture compatibility** (x86_64 and ARM64).  
+The Minimal Audio Engine is a cross-platform, cross-architecture, modern C++ project designed to be the backend of a digital audio processing workstation / application. It is an SDK that can included by and used to build other audio applications. These may include an audio plugin VST, a digital audio workstation, or an embedded audio platform, for example.
 
 This specification defines the design, build environment, architecture, and operational requirements of the system. It is intended to document engineering decisions, ensure reproducibility, and provide a foundation for future extensions.
+
+My intention with this project is to create a modern C++20 application using the most up-to-date best practices and standards. I want to leverage concurrency and focus on mastering thread-safe programming and parallel design paradigms.
 
 ---
 
@@ -16,30 +18,22 @@ This specification defines the design, build environment, architecture, and oper
 
 ## 3. System Overview
 The Minimal Audio Engine consists of:  
-- **Core Audio Engine**: Implements digital audio processing primitives.  
+- **Core Audio Engine Library**: Implements digital audio processing framework that may be included by other applications.
 - **Platform Abstraction Layer**: Provides OS-specific integration for Linux and Windows.  
-- **Build System**: CMake-based configuration supporting reproducible builds.  
-- **Development Environment**: Docker images for cross-architecture compilation and testing.  
-- **CI/CD Pipeline**: GitHub Actions workflows for automated builds, tests, and nightly releases.  
+- **Build System**: CMake-based system for C++20.
+- **Development Environment**: Linux using gcc, Windows using vcpkg. Docker images for cross-architecture compilation and testing.  
+- **CI/CD Pipeline**: GitHub Actions workflows.
 
 ---
 
 ## 4. Build Environment
-### 4.1 Supported Platforms
-- **Operating Systems**: Linux (Ubuntu), Windows  
-- **Architectures**: x86_64, ARM64  
+### 4.1 Setup for Linux
+#### 4.1.1 x86
+#### 4.1.2 ARM64
 
-### 4.2 Tooling
-- **CMake**: Primary build system  
-- **Docker + Buildx**: Cross-architecture builds  
-- **GitHub Actions**: CI/CD automation  
+### 4.2 Setup for Windows
 
-### 4.3 Development Workflow
-1. Clone repository  
-2. Pull Docker development image from GHCR  
-3. Run container with mounted workspace  
-4. Build project with CMake  
-5. Execute unit tests with CTest  
+### 4.3 CI/CD
 
 ---
 

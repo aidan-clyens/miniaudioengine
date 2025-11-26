@@ -2,12 +2,16 @@
 #define __MIDI_TYPES_H_
 
 #include <string>
-#include <map>
+#include <string_view>
+#include <array>
 #include <iostream>
 
 namespace Midi
 {
 
+/** @enum eMidiMessageType
+ *  @brief MIDI message types.
+ */
 enum class eMidiMessageType : unsigned char
 {
   NoteOff                   = 0x80,
@@ -31,8 +35,8 @@ enum class eMidiMessageType : unsigned char
   SystemReset               = 0xFF
 };
 
-const std::map<eMidiMessageType, std::string> midi_message_type_names =
-{
+inline constexpr std::array<std::pair<eMidiMessageType, std::string_view>, 19> midi_message_type_names =
+{{
   {eMidiMessageType::NoteOff, "Note Off"},
   {eMidiMessageType::NoteOn, "Note On"},
   {eMidiMessageType::PolyphonicKeyPressure, "Polyphonic Key Pressure"},
@@ -52,7 +56,7 @@ const std::map<eMidiMessageType, std::string> midi_message_type_names =
   {eMidiMessageType::Stop, "Stop"},
   {eMidiMessageType::ActiveSensing, "Active Sensing"},
   {eMidiMessageType::SystemReset, "System Reset"}
-};
+}};
 
 /** @struct MidiPort
   *  @brief Represents a MIDI port with its number and name.
@@ -74,7 +78,7 @@ struct MidiMessage
   unsigned char channel; // MIDI channel (0-15)
   unsigned char data1;   // First data byte (e.g., note number, control change number)
   unsigned char data2;   // Second data byte (e.g., velocity, control change value)
-  std::string type_name; // Human-readable name of the MIDI message type
+  std::string_view type_name; // Human-readable name of the MIDI message type
 };
 
 inline std::ostream& operator<<(std::ostream& os, const MidiMessage& msg)
