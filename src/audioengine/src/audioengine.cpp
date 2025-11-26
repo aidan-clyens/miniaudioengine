@@ -24,17 +24,16 @@ AudioEngine::AudioEngine() : IEngine("AudioEngine"),
   m_tracks_playing(0),
   m_total_frames_processed(0)
 {
-  // if (!is_alsa_seq_available())
-  // {
-  //   LOG_INFO("ALSA sequencer not available, skipping audio input initialization.");
-  //   p_rtaudio = nullptr;
-  //   return;
-  // }
+  if (is_alsa_seq_available())
+  {
+    LOG_INFO("ALSA sequencer not available on Windows");
+  }
 
   // Set up RtAudio
   p_rtaudio = std::make_unique<RtAudio>();
   if (!p_rtaudio)
   {
+    LOG_ERROR("Failed to create RtAudio instance");
     throw std::runtime_error("Failed to create RtAudio instance");
   }
 }
@@ -58,6 +57,7 @@ std::vector<RtAudio::DeviceInfo> AudioEngine::get_devices()
 {
   if (!p_rtaudio)
   {
+    LOG_ERROR("AudioEngine: RtAudio is not initialized.");
     throw std::runtime_error("AudioEngine: RtAudio is not initialized");
   }
 

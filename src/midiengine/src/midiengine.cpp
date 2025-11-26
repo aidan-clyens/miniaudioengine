@@ -56,10 +56,9 @@ void midi_callback(double deltatime, std::vector<unsigned char> *message, void *
  */
 MidiEngine::MidiEngine(): IEngine("MidiEngine")
 {
-  if (!is_alsa_seq_available())
+  if (is_alsa_seq_available())
   {
-    LOG_ERROR("ALSA sequencer not available, cannot initialize MIDI input.");
-    throw std::runtime_error("ALSA sequencer not available");
+    LOG_INFO("ALSA sequencer not available on Windows");
   }
 
   p_midi_in = std::make_unique<RtMidiIn>();
