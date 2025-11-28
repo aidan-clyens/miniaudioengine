@@ -9,7 +9,7 @@ target_sources(audioengine
       include/audioengine.h
 )
 
-target_sources(audioengine PRIVATE src/audioengine.cpp)
+target_sources(audioengine PRIVATE src/audiointerface.cpp src/audioengine.cpp)
 
 target_include_directories(audioengine
   PUBLIC

@@ -17,15 +17,12 @@ using namespace Audio;
  */
 AudioEngine::AudioEngine() : IEngine("AudioEngine"),
   m_state(eAudioEngineState::Idle),
-  m_buffer_frames(512),
-  m_sample_rate(44100),
-  m_channels(2),
   m_device_id(0),
   m_tracks_playing(0),
   m_total_frames_processed(0)
 {
   // Set up RtAudio
-  p_rtaudio = std::make_unique<RtAudio>();
+  p_audio_interface = std::make_unique<AudioInterface>();
 }
 
 /** @brief Return a copy of the AudioEngine statistics
@@ -43,18 +40,18 @@ AudioEngineStatistics AudioEngine::get_statistics() const
 /** @brief Get a list of available audio devices
  *  @return A vector of available audio devices
  */
-std::vector<RtAudio::DeviceInfo> AudioEngine::get_devices()
+std::vector<AudioDeviceInfo> AudioEngine::get_devices()
 {
-  if (!p_rtaudio)
+  if (!p_audio_interface)
   {
     LOG_ERROR("AudioEngine: RtAudio is not initialized.");
     throw std::runtime_error("AudioEngine: RtAudio is not initialized");
   }
 
-  std::vector<RtAudio::DeviceInfo> devices;
-  for (unsigned int i = 0; i < p_rtaudio->getDeviceCount(); i++)
+  std::vector<AudioDeviceInfo> devices;
+  for (unsigned int i = 0; i < p_audio_interface->get_device_count(); i++)
   {
-    RtAudio::DeviceInfo info = p_rtaudio->getDeviceInfo(i);
+    AudioDeviceInfo info = p_audio_interface->get_device_info(i);
     devices.push_back(info);
   }
 
@@ -116,21 +113,7 @@ void AudioEngine::run()
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 
-  // Ensure stream is closed on shutdown
-  if (p_rtaudio)
-  {
-    try
-    {
-      if (p_rtaudio->isStreamRunning())
-        p_rtaudio->stopStream();
-      if (p_rtaudio->isStreamOpen())
-        p_rtaudio->closeStream();
-    }
-    catch (std::exception &e)
-    {
-      LOG_ERROR("AudioEngine: Failed to stop and close stream: ", e.what());
-    }
-  }
+  // TODO - Ensure stream is closed on shutdown
 }
 
 /** @brief Handle incoming messages for the AudioEngine thread.
@@ -189,9 +172,10 @@ void AudioEngine::handle_messages()
           }
 
           auto &payload = std::get<SetStreamParamsPayload>(message->payload);
-          m_channels.store(payload.channels, std::memory_order_relaxed);
-          m_sample_rate.store(payload.sample_rate, std::memory_order_relaxed);
-          m_buffer_frames.store(payload.buffer_frames, std::memory_order_relaxed);
+
+          p_audio_interface->set_channels(payload.channels);
+          p_audio_interface->set_sample_rate(payload.sample_rate);
+          p_audio_interface->set_buffer_frames(payload.buffer_frames);
         }
         break;
       default:
@@ -234,58 +218,42 @@ void AudioEngine::update_state()
  */
 void AudioEngine::update_state_start()
 {
-  if (p_rtaudio == nullptr)
+  if (p_audio_interface == nullptr)
   {
     LOG_ERROR("AudioEngine: RtAudio is not initialized.");
     throw std::runtime_error("AudioEngine: RtAudio is not initialized");
   }
 
-  try
+  if (!p_audio_interface->close())
   {
-    if (p_rtaudio->isStreamRunning())
-      p_rtaudio->stopStream();
-  
-    if (p_rtaudio->isStreamOpen())
-      p_rtaudio->closeStream();
-  }
-  catch (const std::exception &e)
-  {
-    LOG_ERROR("AudioEngine: Failed to stop and close stream: ", e.what());
+    LOG_ERROR("AudioEngine: Failed to close existing audio interface.");
     m_state.store(eAudioEngineState::Idle, std::memory_order_release);
     return;
   }
 
-  try
+  if (!p_audio_interface->open(m_device_id.load(std::memory_order_relaxed)))
   {
-    unsigned int device_id = m_device_id.load(std::memory_order_relaxed);
-    unsigned int channels = m_channels.load(std::memory_order_relaxed);
-    unsigned int sample_rate = m_sample_rate.load(std::memory_order_relaxed);
-    unsigned int buffer_frames = m_buffer_frames.load(std::memory_order_relaxed);
-
-    LOG_INFO("AudioEngine: Open stream on device: ", device_id, ", with channels: ", channels, ", sample rate: ", sample_rate, ", buffer frames: ", buffer_frames);
-    RtAudio::StreamParameters params{device_id, channels, 0};
-
-    p_rtaudio->openStream(&params, nullptr, RTAUDIO_FLOAT32, sample_rate, &buffer_frames, &audio_callback, this);
-    m_buffer_frames.store(buffer_frames, std::memory_order_relaxed);
-
-    LOG_INFO("AudioEngine: Start stream...");
-    p_rtaudio->startStream();
-
-    LOG_INFO("AudioEngine: Playing audio... Change state to Running.");
-    m_state.store(eAudioEngineState::Running, std::memory_order_release);
-  }
-  catch (const std::exception &e)
-  {
-    LOG_ERROR("AudioEngine: Failed to open and start stream: ", e.what());
+    LOG_ERROR("AudioEngine: Failed to open audio interface.");
     m_state.store(eAudioEngineState::Idle, std::memory_order_release);
+    return;
   }
+
+  if (!p_audio_interface->start())
+  {
+    LOG_ERROR("AudioEngine: Failed to start audio interface.");
+    m_state.store(eAudioEngineState::Idle, std::memory_order_release);
+    return;
+  }
+
+  LOG_INFO("AudioEngine: Started playing audio... Change state to Running.");
+  m_state.store(eAudioEngineState::Running, std::memory_order_release);
 }
 
 /** @brief Update State - Running
  */
 void AudioEngine::update_state_running()
 {
-  if (!p_rtaudio->isStreamRunning())
+  if (!p_audio_interface->is_stream_running())
   {
     LOG_INFO("AudioEngine: Finished playing audio... Change state to Stopped.");
     m_state.store(eAudioEngineState::Stopped, std::memory_order_release);
@@ -296,111 +264,14 @@ void AudioEngine::update_state_running()
  */
 void AudioEngine::update_state_stopped()
 {
-  if (!p_rtaudio || !p_rtaudio->isStreamOpen())
+  if (!p_audio_interface->close())
+  {
+    LOG_ERROR("AudioEngine: Failed to close audio interface.");
     return;
-
-  try
-  {
-    if (p_rtaudio->isStreamRunning())
-      p_rtaudio->stopStream();
-    p_rtaudio->closeStream();
-  }
-  catch (const std::exception &e)
-  {
-    LOG_ERROR("AudioEngine: Failed to stop and close stream: ", e.what());
   }
 
   m_tracks_playing.store(0, std::memory_order_relaxed);
 
   LOG_INFO("AudioEngine: Stopped playing audio... Change state to Idle.");
   m_state.store(eAudioEngineState::Idle, std::memory_order_release);
-}
-
-/** @brief Process audio for the current tracks in the Track Manager
- *  @param output_buffer Pointer to the output audio buffer
- *  @param n_frames Number of frames to process
- */
-void AudioEngine::process_audio(float *output_buffer, unsigned int n_frames)
-{
-  unsigned int channels = m_channels.load(std::memory_order_relaxed);
-  const double sampleRate = static_cast<double>(m_sample_rate.load(std::memory_order_relaxed));
-
-  if (m_test_tone_enabled.load(std::memory_order_relaxed))
-  {
-    // TEST: Generate a simple sine wave tone for testing
-    // Parameters for test tone
-    double phase = m_test_tone_phase.load(std::memory_order_relaxed);
-    const double frequency = 440.0; // A4
-    const double phaseIncrement = (2.0 * M_PI * frequency) / sampleRate;
-    const float amplitude = 0.2f; // Safe volume
-
-    for (unsigned int frame = 0; frame < n_frames; ++frame)
-    {
-      float sample = amplitude * std::sin(phase);
-      phase += phaseIncrement;
-      if (phase >= 2.0 * M_PI)
-        phase -= 2.0 * M_PI;
-
-      // Write the same sample to all channels (interleaved)
-      for (unsigned int ch = 0; ch < channels; ++ch)
-      {
-        output_buffer[frame * channels + ch] = sample;
-      }
-    }
-
-    m_test_tone_phase.store(phase, std::memory_order_relaxed);
-  }
-  else
-  {
-    // Clear output buffer
-    std::fill(output_buffer, output_buffer + n_frames * channels, 0.0f);
-  }
-
-  // Update statistics
-  m_tracks_playing.store(1, std::memory_order_relaxed);
-  m_total_frames_processed.fetch_add(n_frames, std::memory_order_relaxed);
-}
-
-/** @brief Audio callback function
- *  @param output_buffer Pointer to the output audio buffer
- *  @param input_buffer Pointer to the input audio buffer (not used here)
- *  @param n_frames Number of frames to process
- *  @param stream_time Current stream time
- *  @param status Stream status
- *  @param user_data User data pointer (should be AudioEngine instance)
- *  @return 0 on success, non-zero on error
- */
-int AudioEngine::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                                 double stream_time, RtAudioStreamStatus status, void *user_data) noexcept
-{
-  try
-  {
-    if (output_buffer == nullptr || input_buffer == nullptr)
-    {
-      LOG_ERROR("AudioEngine: Null output or input buffer in audio callback");
-      return 1; // Error code
-    }
-  
-    if (user_data == nullptr)
-    {
-      LOG_ERROR("AudioEngine: Null user data in audio callback");
-      return 1; // Error code
-    }
-  
-    AudioEngine *engine = reinterpret_cast<AudioEngine*>(user_data);
-    if (engine == nullptr)
-    {
-      LOG_ERROR("AudioEngine: Invalid AudioEngine instance in audio callback");
-      return 1; // Error code
-    }
-  
-    engine->process_audio(static_cast<float*>(output_buffer), n_frames);
-  }
-  catch (const std::exception &e)
-  {
-    LOG_ERROR("AudioEngine: Exception in audio callback: ", e.what());
-    return 1; // Error code
-  }
-
-  return 0;
 }
