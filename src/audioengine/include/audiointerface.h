@@ -5,6 +5,8 @@
 #include <atomic>
 #include <rtaudio/RtAudio.h>
 
+#include "logger.h"
+
 namespace Audio
 {
 
@@ -13,7 +15,29 @@ namespace Audio
  */
 struct AudioDeviceInfo : public RtAudio::DeviceInfo
 {
-  // Additional fields can be added here if needed
+  // Default constructor
+  AudioDeviceInfo() = default;
+  
+  // Conversion constructor from base class
+  AudioDeviceInfo(const RtAudio::DeviceInfo& base) : RtAudio::DeviceInfo(base) {}
+  
+  std::string to_string() const
+  {
+    std::string info = "Device ID: " + std::to_string(ID) + "\n";
+    info += "Name: " + name + "\n";
+    info += "Input Channels: " + std::to_string(inputChannels) + "\n";
+    info += "Output Channels: " + std::to_string(outputChannels) + "\n";
+    info += "Duplex Channels: " + std::to_string(duplexChannels) + "\n";
+    info += "Default Input: " + std::string(isDefaultInput ? "Yes" : "No") + "\n";
+    info += "Default Output: " + std::string(isDefaultOutput ? "Yes" : "No") + "\n";
+    info += "Sample Rates: ";
+    for (const auto& rate : sampleRates)
+    {
+      info += std::to_string(rate) + " ";
+    }
+    info += "\nPreferred Sample Rate: " + std::to_string(preferredSampleRate) + "\n";
+    return info;
+  }
 };
 
 /** @class AudioInterface
@@ -64,9 +88,14 @@ public:
     return m_rtaudio.getDeviceCount();
   }
 
+  inline std::vector<unsigned int> get_device_ids()
+  {
+    return m_rtaudio.getDeviceIds();
+  }
+
   inline AudioDeviceInfo get_device_info(unsigned int device_id)
   {
-    return static_cast<AudioDeviceInfo>(m_rtaudio.getDeviceInfo(device_id));
+    return AudioDeviceInfo(m_rtaudio.getDeviceInfo(device_id));
   }
 
   inline bool is_stream_running() const

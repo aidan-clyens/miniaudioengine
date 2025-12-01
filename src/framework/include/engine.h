@@ -25,8 +25,8 @@ public:
     if (m_running.load(std::memory_order_acquire))
       return;
 
-    m_running.store(false, std::memory_order_release);
-    m_thread = std::thread(&IEngine::_run, this);
+    m_running.store(true, std::memory_order_release);
+    m_thread = std::jthread(&IEngine::_run, this);
 
     // Block until the thread signals it's ready
     auto start_time = std::chrono::steady_clock::now();
@@ -43,14 +43,10 @@ public:
 
   void stop_thread()
   {
-    if (!m_running)
+    if (!m_running.load(std::memory_order_acquire))
       return;
-    m_running = false;
+    m_running.store(false, std::memory_order_release);
     m_message_queue.stop();
-    if (m_thread.joinable())
-    {
-      m_thread.join();
-    }
   }
 
   void push_message(const T& msg) { m_message_queue.push(msg); }
@@ -89,7 +85,7 @@ protected:
 private:
   std::string m_thread_name;
   MessageQueue<T> m_message_queue;
-  std::thread m_thread;
+  std::jthread m_thread;
   std::atomic<bool> m_running{false};
   std::mutex m_mutex;
 };

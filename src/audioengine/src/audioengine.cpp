@@ -49,7 +49,7 @@ std::vector<AudioDeviceInfo> AudioEngine::get_devices()
   }
 
   std::vector<AudioDeviceInfo> devices;
-  for (unsigned int i = 0; i < p_audio_interface->get_device_count(); i++)
+  for (unsigned int i : p_audio_interface->get_device_ids())
   {
     AudioDeviceInfo info = p_audio_interface->get_device_info(i);
     devices.push_back(info);

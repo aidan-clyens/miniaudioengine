@@ -168,7 +168,6 @@ void MidiEngine::close_input_port()
 
   if (!p_midi_in->isPortOpen())
   {
-    LOG_INFO("No MIDI input port is currently open.");
     return;
   }
 

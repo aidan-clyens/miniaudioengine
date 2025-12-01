@@ -1,101 +1,14 @@
-#include "audioengine.h"
-#include "midiengine.h"
-#include "trackmanager.h"
-#include "track.h"
-#include "messagequeue.h"
+#include "coreengine.h"
 #include "logger.h"
+
+#include "devicemanager.h"
 
 #include <iostream>
 #include <csignal>
-#include <thread>
-#include <chrono>
-#include <vector>
 
-using namespace Audio;
-using namespace Midi;
-using namespace Tracks;
+using namespace Core;
 
-static bool app_running = false;
-
-/** @enum eAppCommand 
- *  @brief Application commands for main event loop
- */
-typedef enum class eAppCommand
-{
-  GetMidiPorts,
-  Quit,
-} eAppCommand;
-
-/** @class Application
- *  @brief The main Audio Engine Platform application
- */
-class Application
-{
-public:
-  Application()
-  {
-    AudioEngine::instance().start_thread();
-    MidiEngine::instance().start_thread();
-  }
-
-  ~Application()
-  {
-    MidiEngine::instance().stop_thread();
-    AudioEngine::instance().stop_thread();
-  }
-
-  void post_command(eAppCommand command)
-  {
-    m_message_queue.push(command);
-  }
-
-  void run()
-  {
-    size_t track_index = TrackManager::instance().add_track();
-    auto track = TrackManager::instance().get_track(track_index);
-
-    // Attach track as observer to both engines
-    MidiEngine::instance().attach(track);
-
-    while (app_running)
-    {
-      auto command = m_message_queue.try_pop();
-      if (command.has_value())
-      {
-        switch (command.value())
-        {
-          case eAppCommand::GetMidiPorts:
-            {
-              auto ports = MidiEngine::instance().get_ports();
-              LOG_INFO("MIDI Input Ports:");
-              for (const auto& port : ports)
-              {
-                LOG_INFO("Port ", port.port_number, ": ", port.port_name);
-              }
-            }
-            break;
-          case eAppCommand::Quit:
-            app_running = false;
-            break;
-          default:
-            break;
-        }
-      }
-
-      track->handle_midi_message();
-
-      // Wait for the signal handler to set app_running to false
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
-    MidiEngine::instance().detach(track);
-    TrackManager::instance().clear_tracks();
-  }
-
-private:
-  // Add message queue for application from UI thread
-  MessageQueue<eAppCommand> m_message_queue;
-};
+static bool app_running = true;
 
 /** @brief Signal handler for graceful shutdown on SIGINT (Ctrl+C).
  *  This function sets the app_running flag to false, allowing the main loop to exit cleanly.
@@ -104,7 +17,6 @@ private:
  */
 void signal_handler(int signum) 
 {
-  std::cout << "\nExiting.\n";
   app_running = false;
 }
 
@@ -117,10 +29,60 @@ int main()
   LOG_INFO("---------------------");
 
   std::signal(SIGINT, signal_handler);
-  app_running = true;
 
-  Application app;
-  app.run();
+  CoreEngine::instance().start_thread();
+
+  std::cout << "Type 'help' for a list of commands.\n";
+
+  std::string cmd;
+  while (app_running)
+  {
+    std::cout << "> ";
+    std::getline(std::cin, cmd);
+    
+    if (cmd == "quit" || cmd == "q")
+    {
+      app_running = false;
+    }
+    else if (cmd  == "midi-devices")
+    {
+      auto devices = Devices::DeviceManager::instance().get_midi_devices();
+      for (const auto& device : devices)
+      {
+        std::cout << "MIDI Device ID: " << device.id << ", Name: " << device.name << "\n";
+      }
+    }
+    else if (cmd == "audio-devices")
+    {
+      auto devices = Devices::DeviceManager::instance().get_audio_devices();
+      for (const auto& device : devices)
+      {
+        std::cout << "Audio Device ID: " << device.id << ", Name: " << device.name << "\n";
+      }
+    }
+    else if (cmd == "help")
+    {
+      std::cout << "Available commands:\n";
+      std::cout << "  help          - Show this help message\n";
+      std::cout << "  midi-devices  - List available MIDI devices\n";
+      std::cout << "  audio-devices - List available Audio devices\n";
+      std::cout << "  quit, q       - Quit the application\n";
+    }
+    else if (cmd.empty())
+    {
+      // Ignore empty commands
+    }
+    else
+    {
+      std::cout << "Unknown command: " << cmd << "\n";
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  LOG_INFO("Shutting down application...");
+  CoreEngine::instance().push_message({CoreEngineMessage::eType::Shutdown, "SIGINT received"});
+  CoreEngine::instance().stop_thread();
 
   return 0;
 }
