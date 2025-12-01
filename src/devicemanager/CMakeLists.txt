@@ -1,6 +1,6 @@
 add_library(devicemanager STATIC)
 
-target_sources(filemanager
+target_sources(devicemanager
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS

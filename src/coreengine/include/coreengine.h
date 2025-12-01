@@ -27,17 +27,13 @@ struct CoreEngineMessage
 class CoreEngine : public IEngine<CoreEngineMessage>
 {
 public:
-  static CoreEngine &instance()
-  {
-    static CoreEngine instance;
-    return instance;
-  }
+  CoreEngine() : IEngine<CoreEngineMessage>("CoreEngineThread") {}
+  ~CoreEngine() override = default;
 
   void start_thread();
   void stop_thread();
 
 private:
-  CoreEngine(): IEngine<CoreEngineMessage>("CoreEngineThread") {}
 
   void run() override;
   void handle_messages() override;

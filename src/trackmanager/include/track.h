@@ -59,6 +59,13 @@ public:
 
   void get_next_audio_frame(float *output_buffer, unsigned int n_frames);
 
+  std::string to_string() const
+  {
+    return "Track(AudioInputID=" + std::to_string(get_audio_input_id()) +
+           ", MidiInputID=" + std::to_string(get_midi_input_id()) +
+           ", AudioOutputID=" + std::to_string(get_audio_output()) + ")";
+  }
+
 private:
   std::queue<Midi::MidiMessage> m_message_queue;
   std::mutex m_queue_mutex;
