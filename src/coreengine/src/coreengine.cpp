@@ -19,6 +19,42 @@ void CoreEngine::stop_thread()
   Midi::MidiEngine::instance().stop_thread();
 }
 
+std::vector<Devices::MidiDevice> CoreEngine::get_midi_devices()
+{
+  return Devices::DeviceManager::instance().get_midi_devices();
+}
+
+std::vector<Devices::AudioDevice> CoreEngine::get_audio_devices()
+{
+  return Devices::DeviceManager::instance().get_audio_devices();
+}
+
+std::vector<std::shared_ptr<Tracks::Track>> CoreEngine::get_tracks()
+{
+  size_t count = Tracks::TrackManager::instance().get_track_count();
+  std::vector<std::shared_ptr<Tracks::Track>> tracks;
+  tracks.reserve(count);
+  for (size_t i = 0; i < count; ++i)
+  {
+    auto track_ptr = Tracks::TrackManager::instance().get_track(i);
+    if (track_ptr)
+    {
+      tracks.push_back(track_ptr);
+    }
+  }
+  return tracks;
+}
+
+void CoreEngine::add_track()
+{
+  Tracks::TrackManager::instance().add_track();
+}
+
+void CoreEngine::remove_track(size_t track_id)
+{
+  Tracks::TrackManager::instance().remove_track(track_id);
+}
+
 void CoreEngine::run()
 {
   while (is_running())

@@ -20,9 +20,6 @@ target_include_directories(cli
 
 target_link_libraries(cli PUBLIC
   coreengine
-  devicemanager
-  trackmanager
-  devicemanager
 )
 
 set_target_properties(cli PROPERTIES LINKER_LANGUAGE CXX)

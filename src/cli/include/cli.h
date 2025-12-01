@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 
+#include "coreengine.h"
+
 namespace GUI
 {
 
@@ -31,18 +33,22 @@ class CLI
 {
 public:
   CLI();
-  ~CLI() = default;
+  ~CLI();
 
   void run();
-  void stop() { m_app_running = false; }
+  void stop();
 
 private:
   eCLICommand parse_command(const std::string &cmd);
-  
+  void help();
+
   static void handle_shutdown_signal(int signum);
 
+  std::map<eCLICommand, std::function<void()>> m_cmd_function_map;
+
+  Core::CoreEngine m_engine;
+
   static bool m_app_running;
-  static std::map<eCLICommand, std::function<void()>> m_cmd_function_map;
 };
 
 }; // namespace GUI
