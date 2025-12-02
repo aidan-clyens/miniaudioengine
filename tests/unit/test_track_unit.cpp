@@ -33,7 +33,7 @@ TEST(TrackTest, AddAudioInput)
 
   // Verify the track has an audio input
   EXPECT_TRUE(track->has_audio_input());
-  EXPECT_EQ(track->get_audio_input_id(), 0);
+  EXPECT_EQ(track->get_audio_input(), 0);
 }
 
 /** @brief Track - Add MIDI Input

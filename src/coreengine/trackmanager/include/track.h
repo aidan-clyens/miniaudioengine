@@ -21,6 +21,12 @@ namespace Files
   class MidiFile;
 }
 
+namespace Devices
+{
+  struct AudioDevice;
+  struct MidiDevice;
+}
+
 namespace Tracks
 {
 
@@ -34,19 +40,19 @@ class Track : public Observer<Midi::MidiMessage>,
 public:
   Track() = default;
 
-  void add_audio_input(const unsigned int device_id = 0);
+  Devices::AudioDevice add_audio_input(const unsigned int device_id = 0);
   void add_audio_file_input(const std::shared_ptr<Files::WavFile> &wav_file);
   void add_midi_input(const unsigned int device_id = 0);
   void add_midi_file_input(const Files::MidiFile &midi_file);
-  void add_audio_output(const unsigned int device_id = 0);
+  Devices::AudioDevice add_audio_output(const unsigned int device_id = 0);
 
   bool has_audio_input() const { return m_audio_input_device_id.has_value(); }
   bool has_midi_input() const { return m_midi_input_device_id.has_value(); }
   bool has_audio_output() const { return m_audio_output_device_id.has_value(); }
 
-  unsigned int get_audio_input_id() const { return m_audio_input_device_id.value_or(std::numeric_limits<unsigned int>::max()); }
+  Devices::AudioDevice get_audio_input() const;
   unsigned int get_midi_input_id() const { return m_midi_input_device_id.value_or(std::numeric_limits<unsigned int>::max()); }
-  unsigned int get_audio_output() const { return m_audio_output_device_id.value_or(std::numeric_limits<unsigned int>::max()); }
+  Devices::AudioDevice get_audio_output() const;
 
   void play();
   void stop();
@@ -59,12 +65,7 @@ public:
 
   void get_next_audio_frame(float *output_buffer, unsigned int n_frames);
 
-  std::string to_string() const
-  {
-    return "Track(AudioInputID=" + std::to_string(get_audio_input_id()) +
-           ", MidiInputID=" + std::to_string(get_midi_input_id()) +
-           ", AudioOutputID=" + std::to_string(get_audio_output()) + ")";
-  }
+  std::string to_string() const;
 
 private:
   std::queue<Midi::MidiMessage> m_message_queue;

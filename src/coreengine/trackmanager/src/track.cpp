@@ -14,7 +14,7 @@ using namespace Tracks;
 /** @brief Adds an audio input to the track.
  *  @param device_id The ID of the audio input device. Defaults to 0 (the default input device).
  */
-void Track::add_audio_input(const unsigned int device_id)
+Devices::AudioDevice Track::add_audio_input(const unsigned int device_id)
 {
   Devices::AudioDevice device = Devices::DeviceManager::instance().get_audio_device(device_id);
 
@@ -29,6 +29,7 @@ void Track::add_audio_input(const unsigned int device_id)
   Audio::AudioEngine::instance().set_output_device(device_id);
 
   LOG_INFO("Track: Added audio input device: ", device.name);
+  return device;
 }
 
 /** @brief Adds a MIDI input device to the track.
@@ -69,7 +70,7 @@ void Track::add_midi_file_input(const Files::MidiFile &midi_file)
 /** @brief Adds an audio output to the track.
  *  @param device_id The ID of the audio output device. Defaults to 0 (the default output device).
  */
-void Track::add_audio_output(const unsigned int device_id)
+Devices::AudioDevice Track::add_audio_output(const unsigned int device_id)
 {
   Devices::AudioDevice device = Devices::DeviceManager::instance().get_audio_device(device_id);
 
@@ -81,6 +82,19 @@ void Track::add_audio_output(const unsigned int device_id)
 
   m_audio_output_device_id = device_id;
   LOG_INFO("Track: Added audio output device: ", device.name);
+  return device;
+}
+
+Devices::AudioDevice Track::get_audio_input() const
+{
+  Devices::AudioDevice device = Devices::DeviceManager::instance().get_audio_device(m_audio_input_device_id.value_or(std::numeric_limits<unsigned int>::max()));
+  return device;
+}
+
+Devices::AudioDevice Track::get_audio_output() const
+{
+  Devices::AudioDevice device = Devices::DeviceManager::instance().get_audio_device(m_audio_output_device_id.value_or(std::numeric_limits<unsigned int>::max()));
+  return device;
 }
 
 void Track::play()
@@ -160,4 +174,15 @@ void Track::handle_midi_message()
 void Track::get_next_audio_frame(float *output_buffer, unsigned int n_frames)
 {
   
+}
+
+std::string Track::to_string() const
+{
+  std::string audio_input = has_audio_input() ? get_audio_input().to_string() : "[]";
+  std::string audio_output = has_audio_output() ? get_audio_output().to_string() : "[]";
+  unsigned int midi_input_id = has_midi_input() ? get_midi_input_id() : 0;
+  
+  return "Track(AudioInput=" + audio_input +
+         ", MidiInputID=" + std::to_string(get_midi_input_id()) +
+         ", AudioOutput=" + audio_output + ")";
 }

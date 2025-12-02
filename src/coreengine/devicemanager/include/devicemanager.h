@@ -28,6 +28,15 @@ struct AudioDevice : public Device
   unsigned int duplex_channels;
   std::vector<unsigned int> sample_rates;
   unsigned int preferred_sample_rate;
+
+  std::string to_string() const
+  {
+    return "AudioDevice(ID=" + std::to_string(id) +
+           ", Name=" + name +
+           ", InputChannels=" + std::to_string(input_channels) +
+           ", OutputChannels=" + std::to_string(output_channels) +
+           ", PreferredSampleRate=" + std::to_string(preferred_sample_rate) + ")";
+  }
 };
 
 struct MidiDevice : public Device
