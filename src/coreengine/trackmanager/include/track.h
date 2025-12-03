@@ -8,8 +8,9 @@
 
 #include "observer.h"
 #include "midiengine.h"
+#include "devicemanager.h"
 
-// Forward declaration
+// Forward declarations
 namespace Audio
 {
   struct AudioMessage;
@@ -19,12 +20,6 @@ namespace Files
 {
   class WavFile;
   class MidiFile;
-}
-
-namespace Devices
-{
-  struct AudioDevice;
-  struct MidiDevice;
 }
 
 namespace Tracks
@@ -39,20 +34,29 @@ class Track : public Observer<Midi::MidiMessage>,
 {
 public:
   Track() = default;
+  ~Track() = default;
 
   Devices::AudioDevice add_audio_input(const unsigned int device_id = 0);
   void add_audio_file_input(const std::shared_ptr<Files::WavFile> &wav_file);
   void add_midi_input(const unsigned int device_id = 0);
   void add_midi_file_input(const Files::MidiFile &midi_file);
   Devices::AudioDevice add_audio_output(const unsigned int device_id = 0);
+  void add_midi_output(const unsigned int device_id = 0);
 
-  bool has_audio_input() const { return m_audio_input_device_id.has_value(); }
-  bool has_midi_input() const { return m_midi_input_device_id.has_value(); }
-  bool has_audio_output() const { return m_audio_output_device_id.has_value(); }
+  void remove_audio_input();
+  void remove_midi_input();
+  void remove_audio_output();
+  void remove_midi_output();
+
+  bool has_audio_input() const;
+  bool has_midi_input() const;
+  bool has_audio_output() const;
+  bool has_midi_output() const;
 
   Devices::AudioDevice get_audio_input() const;
-  unsigned int get_midi_input_id() const { return m_midi_input_device_id.value_or(std::numeric_limits<unsigned int>::max()); }
+  Devices::MidiDevice get_midi_input() const;
   Devices::AudioDevice get_audio_output() const;
+  Devices::MidiDevice get_midi_output() const;
 
   void play();
   void stop();
@@ -71,9 +75,10 @@ private:
   std::queue<Midi::MidiMessage> m_message_queue;
   std::mutex m_queue_mutex;
 
-  std::optional<unsigned int> m_audio_input_device_id;
-  std::optional<unsigned int> m_midi_input_device_id;
-  std::optional<unsigned int> m_audio_output_device_id;
+  std::optional<Devices::AudioDevice> m_audio_input_device;
+  std::optional<Devices::MidiDevice> m_midi_input_device;
+  std::optional<Devices::AudioDevice> m_audio_output_device;
+  std::optional<Devices::MidiDevice> m_midi_output_device;
 };
 
 }  // namespace Tracks

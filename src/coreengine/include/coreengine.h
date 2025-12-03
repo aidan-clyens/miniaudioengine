@@ -46,6 +46,7 @@ public:
 
   // Track management commands
   std::vector<std::shared_ptr<Tracks::Track>> get_tracks();
+  std::shared_ptr<Tracks::Track> get_track(size_t track_id);
   size_t get_track_count() const { return Tracks::TrackManager::instance().get_track_count(); }
   void add_track();
   void remove_track(size_t track_id);
