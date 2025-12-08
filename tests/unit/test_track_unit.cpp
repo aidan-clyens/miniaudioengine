@@ -10,6 +10,8 @@
 #include "wavfile.h"
 #include "logger.h"
 
+#define TEST_WAV_FILE_PATH "C:\\Projects\\minimal-audio-engine\\samples\\test.wav"
+
 using namespace Tracks;
 
 /** @brief Track - Setup
@@ -33,9 +35,9 @@ TEST(TrackTest, Setup)
   EXPECT_FALSE(track->has_midi_output()) << "Track should not have MIDI output initially";
 }
 
-/** @brief Track - Add Audio Input
+/** @brief Track - Add Audio Input Device
  */
-TEST(TrackTest, AddAudioInput)
+TEST(TrackTest, AddAudioInputDevice)
 {
   auto track = TrackManager::instance().get_track(0);
 
@@ -45,17 +47,54 @@ TEST(TrackTest, AddAudioInput)
   LOG_INFO("Adding audio input device: " + device->to_string());
 
   // Add audio input to the track
-  track->add_audio_input(device.value());
+  track->add_audio_device_input(device.value());
   LOG_INFO("Updated track 0: ", track->to_string());
 
   // Verify the track has an audio input
   EXPECT_TRUE(track->has_audio_input());
-  EXPECT_EQ(track->get_audio_input(), device.value());
+  EXPECT_EQ(std::get<Devices::AudioDevice>(track->get_audio_input()), device.value());
 }
 
-/** @brief Track - Remove Audio Input
+/** @brief Track - Remove Audio Input Device
  */
-TEST(TrackTest, RemoveAudioInput)
+TEST(TrackTest, RemoveAudioInputDevice)
+{
+  auto track = TrackManager::instance().get_track(0);
+
+  // Verify the track has an audio input
+  EXPECT_TRUE(track->has_audio_input()) << "Track should have audio input before removal";
+
+  // Remove audio input
+  track->remove_audio_input();
+  LOG_INFO("Removed audio input from track 0: ", track->to_string());
+
+  // Verify the track no longer has an audio input
+  EXPECT_FALSE(track->has_audio_input()) << "Track should not have audio input after removal";
+}
+
+/** @brief Track - Add Audio Input File
+ */
+TEST(TrackTest, AddAudioInputFile)
+{
+  auto track = TrackManager::instance().get_track(0);
+
+  // Find a valid audio input device
+  auto file = Files::FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);
+  EXPECT_TRUE(file.has_value()) << "Failed to read WAV file for testing";
+  LOG_INFO("Adding audio input file: ", file.value()->to_string());
+
+  // Add audio input to the track
+  track->add_audio_file_input(file.value());
+  LOG_INFO("Updated track 0: ", track->to_string());
+
+  // Verify the track has an audio input
+  EXPECT_TRUE(track->has_audio_input());
+  EXPECT_EQ(std::get<Files::WavFilePtr>(track->get_audio_input()), file.value());
+}
+
+/** @brief Track - Remove Audio Input File
+ */
+TEST(TrackTest, RemoveAudioInputFile)
 {
   auto track = TrackManager::instance().get_track(0);
 
@@ -80,7 +119,7 @@ TEST(TrackTest, AddAudioInput_InvalidDevice)
   auto output_device = Devices::DeviceManager::instance().get_default_audio_output_device();
   try
   {
-    track->add_audio_input(output_device.value());
+    track->add_audio_device_input(output_device.value());
     FAIL() << "Expected std::runtime_error exception for invalid device ID";
   }
   catch (const std::runtime_error& e)
@@ -96,29 +135,29 @@ TEST(TrackTest, AddAudioInput_InvalidDevice)
   EXPECT_FALSE(track->has_audio_input());
 }
 
-/** @brief Track - Add MIDI Input
+/** @brief Track - Add MIDI Input Device
  */
-TEST(TrackTest, AddMidiInput)
+TEST(TrackTest, AddMidiInputDevice)
 {
   auto track = TrackManager::instance().get_track(0);
 
   // Find a valid MIDI input device
-  std::optional<Devices::MidiDevice> expected_device = Devices::DeviceManager::instance().get_default_midi_input_device();
-  EXPECT_TRUE(expected_device.has_value()) << "No MIDI input device found for testing";
-  LOG_INFO("Adding MIDI input device: " + expected_device->to_string());
+  std::optional<Devices::MidiDevice> device = Devices::DeviceManager::instance().get_default_midi_input_device();
+  EXPECT_TRUE(device.has_value()) << "No MIDI input device found for testing";
+  LOG_INFO("Adding MIDI input device: " + device->to_string());
 
   // Add MIDI input to the track
-  track->add_midi_input(expected_device->id);
+  track->add_midi_device_input(device.value());
   LOG_INFO("Updated track 0: ", track->to_string());
 
   // Verify the track has a MIDI input
   EXPECT_TRUE(track->has_midi_input());
-  EXPECT_EQ(track->get_midi_input(), expected_device);
+  EXPECT_EQ(std::get<Devices::MidiDevice>(track->get_midi_input()), device.value());
 }
 
-/** @brief Track - Remove MIDI Input 
+/** @brief Track - Remove MIDI Input Device
  */
-TEST(TrackTest, RemoveMidiInput)
+TEST(TrackTest, RemoveMidiInputDevice)
 {
   auto track = TrackManager::instance().get_track(0);
 
@@ -133,44 +172,23 @@ TEST(TrackTest, RemoveMidiInput)
   EXPECT_FALSE(track->has_midi_input()) << "Track should not have MIDI input after removal";
 }
 
-/** @brief Track - Add MIDI Input with Invalid Device
- */
-TEST(TrackTest, AddMidiInput_InvalidDevice)
-{
-  auto track = TrackManager::instance().get_track(0);
-
-  // Attempt to add an invalid MIDI input device
-  unsigned int invalid_device_id = 9999; // Assuming this ID does not exist
-  try
-  {
-    track->add_midi_input(invalid_device_id);
-    FAIL() << "Expected std::out_of_range exception for invalid device ID";
-  }
-  catch (const std::out_of_range& e)
-  {
-    SUCCEED();
-  }
-  catch (...)
-  {
-    FAIL() << "Expected std::out_of_range exception for invalid device ID";
-  }
-
-  // Verify the track does not have a MIDI input
-  EXPECT_FALSE(track->has_midi_input());
-}
-
 /** @brief Track - Add MIDI Output
  */
 TEST(TrackTest, AddMidiOutput) {
   auto track = TrackManager::instance().get_track(0);
 
   // Find a valid MIDI output device
-  std::optional<Devices::MidiDevice> expected_device = Devices::DeviceManager::instance().get_default_midi_output_device();
-  EXPECT_TRUE(expected_device.has_value()) << "No MIDI output device found for testing";
-  LOG_INFO("Adding MIDI output device: " + expected_device->to_string());
+  std::optional<Devices::MidiDevice> device = Devices::DeviceManager::instance().get_default_midi_output_device();
+  EXPECT_TRUE(device.has_value()) << "No MIDI output device found for testing";
+  LOG_INFO("Adding MIDI output device: " + device->to_string());
 
   // Add MIDI output to the track
-  track->add_midi_output(expected_device->id);
+  track->add_midi_device_output(device.value());
+  LOG_INFO("Updated track 0: ", track->to_string());
+
+  // Verify the track has a MIDI output
+  EXPECT_TRUE(track->has_midi_output());
+  EXPECT_EQ(std::get<Devices::MidiDevice>(track->get_midi_output()), device.value());
 }
 
 /** @brief Track - Remove MIDI Output 
@@ -190,32 +208,6 @@ TEST(TrackTest, RemoveMidiOutput)
   EXPECT_FALSE(track->has_midi_output()) << "Track should not have MIDI output after removal";
 }
 
-/** @brief Track - Add MIDI Output with Invalid Device
- */
-TEST(TrackTest, AddMidiOutput_InvalidDevice)
-{
-  auto track = TrackManager::instance().get_track(0);
-
-  // Attempt to add an invalid MIDI output device
-  unsigned int invalid_device_id = 9999; // Assuming this ID does not exist
-  try
-  {
-    track->add_midi_output(invalid_device_id);
-    FAIL() << "Expected std::out_of_range exception for invalid device ID";
-  }
-  catch (const std::out_of_range& e)
-  {
-    SUCCEED();
-  }
-  catch (...)
-  {
-    FAIL() << "Expected std::out_of_range exception for invalid device ID";
-  }
-
-  // Verify the track does not have a MIDI output
-  EXPECT_FALSE(track->has_midi_output());
-}
-
 /** @brief Track - Add Audio Output
  */
 TEST(TrackTest, AddAudioOutput)
@@ -223,17 +215,17 @@ TEST(TrackTest, AddAudioOutput)
   auto track = TrackManager::instance().get_track(0);
 
   // Find a valid audio output device
-  std::optional<Devices::AudioDevice> expected_device = Devices::DeviceManager::instance().get_default_audio_output_device();
-  EXPECT_TRUE(expected_device.has_value()) << "No audio output device found for testing";
-  LOG_INFO("Adding audio output device: " + expected_device->to_string());
+  std::optional<Devices::AudioDevice> device = Devices::DeviceManager::instance().get_default_audio_output_device();
+  EXPECT_TRUE(device.has_value()) << "No audio output device found for testing";
+  LOG_INFO("Adding audio output device: " + device->to_string());
 
   // Add audio output to the track
-  Devices::AudioDevice device = track->add_audio_output(expected_device->id);
+  track->add_audio_device_output(device.value());
   LOG_INFO("Updated track 0: ", track->to_string());
 
   // Verify the track has an audio output
   EXPECT_TRUE(track->has_audio_output());
-  EXPECT_EQ(track->get_audio_output(), expected_device);
+  EXPECT_EQ(std::get<Devices::AudioDevice>(track->get_audio_output()), device.value());
 }
 
 /** @brief Track - Remove Audio Output
@@ -251,43 +243,4 @@ TEST(TrackTest, RemoveAudioOutput)
 
   // Verify the track no longer has an audio output
   EXPECT_FALSE(track->has_audio_output()) << "Track should not have audio output after removal";
-}
-
-/** @brief Track - Add Audio Output with Invalid Device
- */
-TEST(TrackTest, AddAudioOutput_InvalidDevice)
-{
-  auto track = TrackManager::instance().get_track(0);
-
-  // Attempt to add an invalid audio output device
-  unsigned int invalid_device_id = 9999; // Assuming this ID does not exist
-  try
-  {
-    track->add_audio_output(invalid_device_id);
-    FAIL() << "Expected std::out_of_range exception for invalid device ID";
-  }
-  catch (const std::out_of_range& e)
-  {
-    SUCCEED();
-  }
-  catch (...)
-  {
-    FAIL() << "Expected std::out_of_range exception for invalid device ID";
-  }
-
-  // Verify the track does not have an audio output
-  EXPECT_FALSE(track->has_audio_output());
-}
-
-/** @brief Track - Add WAV File Input
- */
-TEST(TrackTest, AddWavFileInput)
-{
-  auto track = TrackManager::instance().get_track(0);
-
-  // Open a test WAV file and load it into the track
-  std::string test_wav_file = "samples/test.wav";
-
-  std::shared_ptr<Files::WavFile> wav_file = Files::FileManager::instance().read_wav_file(test_wav_file);
-  track->add_audio_file_input(wav_file);
 }

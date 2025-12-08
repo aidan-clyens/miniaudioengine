@@ -11,9 +11,9 @@
 using namespace Tracks;
 
 /** @brief Adds an audio input to the track.
- *  @param device_id The ID of the audio input device. Defaults to 0 (the default input device).
+ *  @param device The audio input device.
  */
-void Track::add_audio_input(const Devices::AudioDevice& device)
+void Track::add_audio_device_input(const Devices::AudioDevice& device)
 {
   if (has_audio_input())
   {
@@ -26,61 +26,59 @@ void Track::add_audio_input(const Devices::AudioDevice& device)
     throw std::runtime_error("Selected audio device " + device.name + " has no input channels.");
   }
 
-  m_audio_input_device = device;
+  m_audio_input = device;
 
   LOG_INFO("Track: Added audio input device: ", device.to_string());
 }
 
-/** @brief Adds a MIDI input device to the track.
- *  @param device_id The ID of the MIDI input device. Defaults to 0 (the default input device)
+/** @brief Adds an audio file input to the track.
+ *  @param wav_file The audio file.
  */
-void Track::add_midi_input(const unsigned int device_id)
+void Track::add_audio_file_input(const Files::WavFilePtr wav_file)
+{
+  if (has_audio_input())
+  {
+    throw std::runtime_error("This track already has an audio input.");
+  }
+
+  m_audio_input = wav_file;
+
+  // Audio::AudioEngine::instance().set_stream_parameters(wav_file->get_channels(), wav_file->get_sample_rate(), 512);
+  LOG_INFO("Track: Added audio input file: ", wav_file->to_string());
+}
+
+/** @brief Adds a MIDI input device to the track.
+ *  @param device The MIDI input device.
+ */
+void Track::add_midi_device_input(const Devices::MidiDevice &device)
 {
   if (has_midi_input())
   {
     throw std::runtime_error("This track already has a MIDI input.");
   }
 
-  Devices::MidiDevice device = Devices::DeviceManager::instance().get_midi_device(device_id);
+  m_midi_input = device;
 
-  m_midi_input_device = device;
-  Midi::MidiEngine::instance().open_input_port(device_id);
-
-  LOG_INFO("Track: Added MIDI input device: ", device.name);
-}
-
-/** @brief Adds a WAV file input to the track.
- *  @param wav_file The WAV file.
- */
-void Track::add_audio_file_input(const std::shared_ptr<Files::WavFile> &wav_file)
-{
-  LOG_INFO("Track: Added WAV file input: ", wav_file->get_filename());
-  LOG_INFO("Sample Rate: ", wav_file->get_sample_rate(),
-           ", Channels: ", wav_file->get_channels(),
-           ", Format: ", wav_file->get_format());
-
-  Audio::AudioEngine::instance().set_stream_parameters(wav_file->get_channels(), wav_file->get_sample_rate(), 512);
+  LOG_INFO("Track: Added MIDI input device: ", device.to_string());
 }
 
 /** @brief Adds a MIDI file input to the track.
  *  @param midi_file The MIDI file.
  */
-void Track::add_midi_file_input(const Files::MidiFile &midi_file)
+void Track::add_midi_file_input(const Files::MidiFilePtr midi_file)
 {
-  LOG_INFO("Track: Added MIDI file input: ", midi_file.get_filename());
+  LOG_INFO("Track: (TODO) Added MIDI file input: ", midi_file->get_filename());
 }
 
 /** @brief Adds an audio output to the track.
- *  @param device_id The ID of the audio output device. Defaults to 0 (the default output device).
+ *  @param device The audio output device.
  */
-Devices::AudioDevice Track::add_audio_output(const unsigned int device_id)
+void Track::add_audio_device_output(const Devices::AudioDevice &device)
 {
   if (has_audio_output())
   {
     throw std::runtime_error("This track already has an audio output.");
   }
-
-  Devices::AudioDevice device = Devices::DeviceManager::instance().get_audio_device(device_id);
 
   // Verify the audio device has output channels
   if (device.output_channels < 1)
@@ -88,46 +86,54 @@ Devices::AudioDevice Track::add_audio_output(const unsigned int device_id)
     throw std::runtime_error("Selected audio device " + device.name + " has no output channels.");
   }
 
-  m_audio_output_device = device;
+  m_audio_output = device;
   Audio::AudioEngine::instance().set_output_device(device);
 
   LOG_INFO("Track: Added audio output device: ", device.name);
-  return device;
 }
 
-void Track::add_midi_output(const unsigned int device_id)
+/** @brief Adds a MIDI output to the track.
+ *  @param device The MIDI output device.
+ */
+void Track::add_midi_device_output(const Devices::MidiDevice &device)
 {
   if (has_midi_output())
   {
     throw std::runtime_error("This track already has a MIDI output.");
   }
 
-  Devices::MidiDevice device = Devices::DeviceManager::instance().get_midi_device(device_id);
-
-  m_midi_output_device = device;
+  m_midi_output = device;
 
   LOG_INFO("Track: Added MIDI output device: ", device.name);
 }
 
+/** @brief Removes the audio input from the track.
+ */
 void Track::remove_audio_input()
 {
-  m_audio_input_device.reset();
+  m_audio_input = std::nullopt;
 }
 
+/** @brief Removes the MIDI input from the track.
+ */
 void Track::remove_midi_input()
 {
-  m_midi_input_device.reset();
+  m_midi_input = std::nullopt;
   Midi::MidiEngine::instance().close_input_port();
 }
 
+/** @brief Removes the audio output from the track.
+ */
 void Track::remove_audio_output()
 {
-  m_audio_output_device.reset();
+  m_audio_output = std::nullopt;
 }
 
+/** @brief Removes the MIDI output from the track.
+ */
 void Track::remove_midi_output()
 {
-  m_midi_output_device.reset();
+  m_midi_output = std::nullopt;
 }
 
 /** @brief Checks if the track has an audio input configured.
@@ -135,7 +141,7 @@ void Track::remove_midi_output()
  */
 bool Track::has_audio_input() const
 {
-  return m_audio_input_device.has_value(); 
+  return !std::holds_alternative<std::nullopt_t>(m_audio_input);
 }
 
 /** @brief Checks if the track has a MIDI input configured.
@@ -143,7 +149,7 @@ bool Track::has_audio_input() const
  */
 bool Track::has_midi_input() const
 {
-  return m_midi_input_device.has_value(); 
+  return !std::holds_alternative<std::nullopt_t>(m_midi_input);
 }
 
 /** @brief Checks if the track has an audio output configured.
@@ -151,7 +157,7 @@ bool Track::has_midi_input() const
  */
 bool Track::has_audio_output() const
 {
-  return m_audio_output_device.has_value(); 
+  return !std::holds_alternative<std::nullopt_t>(m_audio_output);
 }
 
 /** @brief Checks if the track has a MIDI output configured.
@@ -159,51 +165,39 @@ bool Track::has_audio_output() const
  */
 bool Track::has_midi_output() const
 {
-  return m_midi_output_device.has_value();
+  return !std::holds_alternative<std::nullopt_t>(m_midi_output);
 }
 
-/** @brief Gets the audio input device if configured. 
- *  @return The audio input device.
+/** @brief Gets the audio input of the track.
+ *  @return The audio input variant (device, file, or nullopt). 
  */
-Devices::AudioDevice Track::get_audio_input() const
+AudioIOVariant Track::get_audio_input() const
 {
-  if (m_audio_input_device.has_value())
-    return m_audio_input_device.value();
-  else
-    throw std::runtime_error("No audio input device configured.");
+  return m_audio_input;
 }
 
-/** @brief Gets the MIDI input device if configured. 
- *  @return The MIDI input device.
+/** @brief Gets the MIDI input of the track.
+ *  @return The MIDI input variant (device, file, or nullopt).
  */
-Devices::MidiDevice Track::get_midi_input() const
+MidiIOVariant Track::get_midi_input() const
 {
-  if (m_midi_input_device.has_value())
-    return m_midi_input_device.value();
-  else
-    throw std::runtime_error("No MIDI input device configured.");
+  return m_midi_input;
 }
 
-/** @brief Gets the audio output device if configured. 
- *  @return The audio output device.
+/** @brief Gets the audio output of the track.
+ *  @return The audio output variant (device, file, or nullopt).
  */
-Devices::AudioDevice Track::get_audio_output() const
+AudioIOVariant Track::get_audio_output() const
 {
-  if (m_audio_output_device.has_value())
-    return m_audio_output_device.value();
-  else
-    throw std::runtime_error("No audio output device configured.");
+  return m_audio_output;
 }
 
-/** @brief Gets the MIDI output device if configured. 
- *  @return The MIDI output device.
+/** @brief Gets the MIDI output of the track.
+ *  @return The MIDI output variant (device, file, or nullopt).
  */
-Devices::MidiDevice Track::get_midi_output() const
+MidiIOVariant Track::get_midi_output() const
 {
-  if (m_midi_output_device.has_value())
-    return m_midi_output_device.value();
-  else
-    throw std::runtime_error("No MIDI output device configured.");
+  return m_midi_output;
 }
 
 void Track::play()
@@ -287,13 +281,29 @@ void Track::get_next_audio_frame(float *output_buffer, unsigned int n_frames)
 
 std::string Track::to_string() const
 {
-  std::string audio_input = has_audio_input() ? get_audio_input().to_string() : "[]";
-  std::string audio_output = has_audio_output() ? get_audio_output().to_string() : "[]";
-  std::string midi_input = has_midi_input() ? get_midi_input().to_string() : "[]";
-  std::string midi_output = has_midi_output() ? get_midi_output().to_string() : "[]";
+  AudioIOVariant audio_input = get_audio_input();
+  MidiIOVariant midi_input = get_midi_input();
+  AudioIOVariant audio_output = get_audio_output();
+  MidiIOVariant midi_output = get_midi_output();
+
+  std::string audio_input_str = std::holds_alternative<std::nullopt_t>(audio_input) ? "None" :
+                                std::holds_alternative<Devices::AudioDevice>(audio_input) ? std::get<Devices::AudioDevice>(audio_input).to_string() :
+                                std::get<Files::WavFilePtr>(audio_input)->to_string();
+
+  std::string midi_input_str = std::holds_alternative<std::nullopt_t>(midi_input) ? "None" :
+                               std::holds_alternative<Devices::MidiDevice>(midi_input) ? std::get<Devices::MidiDevice>(midi_input).to_string() :
+                               std::get<Files::MidiFilePtr>(midi_input)->to_string();
+
+  std::string audio_output_str = std::holds_alternative<std::nullopt_t>(audio_output) ? "None" :
+                                 std::holds_alternative<Devices::AudioDevice>(audio_output) ? std::get<Devices::AudioDevice>(audio_output).to_string() :
+                                 std::get<Files::WavFilePtr>(audio_output)->to_string();
+
+  std::string midi_output_str = std::holds_alternative<std::nullopt_t>(midi_output) ? "None" :
+                                std::holds_alternative<Devices::MidiDevice>(midi_output) ? std::get<Devices::MidiDevice>(midi_output).to_string() :
+                                std::get<Files::MidiFilePtr>(midi_output)->to_string();
   
-  return "Track(AudioInput=" + audio_input +
-         ", MidiInput=" + midi_input +
-         ", AudioOutput=" + audio_output +
-         ", MidiOutput=" + midi_output + ")";
+  return "Track(AudioInput=" + audio_input_str +
+         ", MidiInput=" + midi_input_str +
+         ", AudioOutput=" + audio_output_str +
+         ", MidiOutput=" + midi_output_str + ")";
 }

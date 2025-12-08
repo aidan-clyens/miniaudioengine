@@ -5,9 +5,11 @@
 #include <mutex>
 #include <memory>
 #include <optional>
+#include <variant>
 
 #include "observer.h"
 #include "midiengine.h"
+#include "filemanager.h"
 #include "devicemanager.h"
 #include "audiodevice.h"
 
@@ -26,6 +28,11 @@ namespace Files
 namespace Tracks
 {
 
+// Type definitions
+typedef std::shared_ptr<class Track> TrackPtr;
+typedef std::variant<Devices::AudioDevice, Files::WavFilePtr, std::nullopt_t> AudioIOVariant;
+typedef std::variant<Devices::MidiDevice, Files::MidiFilePtr, std::nullopt_t> MidiIOVariant;
+
 /** @class Track
  *  @brief The Track class represents a track in the Digital Audio Workstation.
  */
@@ -34,15 +41,24 @@ class Track : public Observer<Midi::MidiMessage>,
           public std::enable_shared_from_this<Track>
 {
 public:
-  Track() = default;
+  Track():
+    m_audio_input(std::nullopt),
+    m_midi_input(std::nullopt),
+    m_audio_output(std::nullopt),
+    m_midi_output(std::nullopt)
+  {}
+
   ~Track() = default;
 
-  void add_audio_input(const Devices::AudioDevice& device = Devices::AudioDevice{});
-  void add_audio_file_input(const std::shared_ptr<Files::WavFile> &wav_file);
-  void add_midi_input(const unsigned int device_id = 0);
-  void add_midi_file_input(const Files::MidiFile &midi_file);
-  Devices::AudioDevice add_audio_output(const unsigned int device_id = 0);
-  void add_midi_output(const unsigned int device_id = 0);
+  // Audio/MIDI Inputs
+  void add_audio_device_input(const Devices::AudioDevice &device);
+  void add_audio_file_input(const Files::WavFilePtr wav_file);
+  void add_midi_device_input(const Devices::MidiDevice &device);
+  void add_midi_file_input(const Files::MidiFilePtr midi_file);
+
+  // Audio/MIDI Outputs
+  void add_audio_device_output(const Devices::AudioDevice& device);
+  void add_midi_device_output(const Devices::MidiDevice& device);
 
   void remove_audio_input();
   void remove_midi_input();
@@ -54,10 +70,10 @@ public:
   bool has_audio_output() const;
   bool has_midi_output() const;
 
-  Devices::AudioDevice get_audio_input() const;
-  Devices::MidiDevice get_midi_input() const;
-  Devices::AudioDevice get_audio_output() const;
-  Devices::MidiDevice get_midi_output() const;
+  AudioIOVariant get_audio_input() const;
+  MidiIOVariant get_midi_input() const;
+  AudioIOVariant get_audio_output() const;
+  MidiIOVariant get_midi_output() const;
 
   void play();
   void stop();
@@ -76,10 +92,10 @@ private:
   std::queue<Midi::MidiMessage> m_message_queue;
   std::mutex m_queue_mutex;
 
-  std::optional<Devices::AudioDevice> m_audio_input_device;
-  std::optional<Devices::MidiDevice> m_midi_input_device;
-  std::optional<Devices::AudioDevice> m_audio_output_device;
-  std::optional<Devices::MidiDevice> m_midi_output_device;
+  AudioIOVariant m_audio_input;
+  MidiIOVariant m_midi_input;
+  AudioIOVariant m_audio_output;
+  MidiIOVariant m_midi_output;
 };
 
 }  // namespace Tracks

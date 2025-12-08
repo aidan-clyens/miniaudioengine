@@ -1,6 +1,7 @@
 #include "filemanager.h"
 #include "wavfile.h"
 #include "midifile.h"
+#include "logger.h"
 
 using namespace Files;
 
@@ -98,16 +99,17 @@ void FileManager::save_to_wav_file(std::vector<float> audio_buffer, const std::f
  *  @return An AudioFile object containing the loaded audio data.
  *  @throws std::runtime_error if the file cannot be opened or read.
  */
-std::shared_ptr<WavFile> FileManager::read_wav_file(const std::filesystem::path &path)
+std::optional<WavFilePtr> FileManager::read_wav_file(const std::filesystem::path &path)
 {
   std::filesystem::path absolute_path = convert_to_absolute(path);
 
   if (!path_exists(absolute_path) || !is_wav_file(absolute_path))
   {
-    throw std::runtime_error("WAV file does not exist or is not a file: " + absolute_path.string());
+    LOG_ERROR("WAV file does not exist or is not a file: ", absolute_path.string());
+    return std::nullopt;
   }
 
-  return std::shared_ptr<WavFile>(new WavFile(absolute_path));
+  return WavFilePtr(new WavFile(absolute_path));
 }
 
 /** @brief Loads audio data from a WAV file.
@@ -115,14 +117,15 @@ std::shared_ptr<WavFile> FileManager::read_wav_file(const std::filesystem::path 
  *  @return An AudioFile object containing the loaded audio data.
  *  @throws std::runtime_error if the file cannot be opened or read.
  */
-MidiFile FileManager::read_midi_file(const std::filesystem::path &path)
+std::optional<MidiFilePtr> FileManager::read_midi_file(const std::filesystem::path &path)
 {
   std::filesystem::path absolute_path = convert_to_absolute(path);
 
   if (!path_exists(absolute_path) || !is_midi_file(absolute_path))
   {
-    throw std::runtime_error("MIDI file does not exist or is not a file: " + absolute_path.string());
+    LOG_ERROR("MIDI file does not exist or is not a file: ", absolute_path.string());
+    return std::nullopt;
   }
 
-  return MidiFile(absolute_path);
+  return MidiFilePtr(new MidiFile(absolute_path));
 }

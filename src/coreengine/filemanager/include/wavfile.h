@@ -36,6 +36,29 @@ public:
     return (unsigned int)m_sfinfo.format;
   }
 
+  std::string get_format_string() const
+  {
+    switch (m_sfinfo.format & SF_FORMAT_TYPEMASK)
+    {
+      case SF_FORMAT_WAV:
+        return "WAV";
+      case SF_FORMAT_AIFF:
+        return "AIFF";
+      case SF_FORMAT_FLAC:
+        return "FLAC";
+      default:
+        return "Unknown";
+    }
+  }
+
+  std::string to_string() const override
+  {
+    return "WavFile(Path=" + m_filepath.string() +
+           ", Format=" + get_format_string() +
+           ", SampleRate=" + std::to_string(get_sample_rate()) +
+           ", Channels=" + std::to_string(get_channels()) + ")";
+  }
+
 private:
   WavFile(const std::filesystem::path &path);
 

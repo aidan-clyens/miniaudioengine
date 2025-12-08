@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <optional>
 
 namespace Files
 {
@@ -14,6 +15,10 @@ namespace Files
 // Forward declaration
 class WavFile;
 class MidiFile;
+
+// Type definitions
+typedef std::shared_ptr<WavFile> WavFilePtr;
+typedef std::shared_ptr<MidiFile> MidiFilePtr;
 
 /** @class File
  *  @brief Base class for various file types 
@@ -33,6 +38,11 @@ public:
   std::string get_filename() const
   {
     return m_filepath.filename().string();
+  }
+
+  virtual std::string to_string() const
+  {
+    return "File(Path=" + m_filepath.string() + ")";
   }
 
 protected:
@@ -124,9 +134,8 @@ public:
   }
 
 	void save_to_wav_file(std::vector<float> audio_buffer, const std::filesystem::path &path);
-  std::shared_ptr<WavFile> read_wav_file(const std::filesystem::path &path);
-
-  MidiFile read_midi_file(const std::filesystem::path &path);
+  std::optional<WavFilePtr> read_wav_file(const std::filesystem::path &path);
+  std::optional<MidiFilePtr> read_midi_file(const std::filesystem::path &path);
 
 private:
   FileManager() = default;
