@@ -167,10 +167,6 @@ private:
 
   std::atomic<unsigned int> m_device_id;
   Devices::AudioDevice m_output_device;
-
-  // TEST
-  std::atomic<bool> m_test_tone_enabled{false};
-  std::atomic<double> m_test_tone_phase{0.0};
 };
 
 }  // namespace Audio

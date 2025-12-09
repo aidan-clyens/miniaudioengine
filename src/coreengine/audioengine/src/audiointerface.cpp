@@ -3,6 +3,11 @@
 #include "devicemanager.h"
 #include "logger.h"
 
+// Define M_PI if not already defined (Windows MSVC compatibility)
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 using namespace Audio;
 
 /** @brief Audio callback function
@@ -11,20 +16,21 @@ using namespace Audio;
  *  @param n_frames Number of frames to process
  *  @param stream_time Current stream time
  *  @param status Stream status
- *  @param user_data User data pointer (should be AudioEngine instance)
+ *  @param user_data User data pointer (should be AudioInterface instance)
  *  @return 0 on success, non-zero on error
  */
 int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                    double stream_time, RtAudioStreamStatus status, void *user_data) noexcept
 {
+  if (input_buffer == nullptr)
+  {
+    // TODO - Input buffer not implemented
+  }
+
   if (output_buffer == nullptr)
   {
     LOG_ERROR("AudioInterface: Null output buffer in audio callback");
-  }
-
-  if (input_buffer == nullptr)
-  {
-    LOG_ERROR("AudioInterface: Null input buffer in audio callback");
+    return 1; // Error code
   }
 
   if (user_data == nullptr)
@@ -43,34 +49,52 @@ int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frame
  */
 AudioInterface::AudioInterface() : m_buffer_frames(512),
                                    m_sample_rate(44100),
-                                   m_channels(2)
-{
-}
+                                   m_channels(2),
+                                   m_test_tone_enabled(true)
+{}
 
 /** @brief Open audio stream on specified device
- *  @param device_id The ID of the audio device to open
+ *  @param device Audio output device to open
  *  @return true on success, false on failure
  */
 bool AudioInterface::open(const Devices::AudioDevice &device)
 {
-  LOG_INFO("Open AudioInterface on device: ", device.to_string());
+  LOG_INFO("Open AudioInterface on device: ", device.to_string(), " as output.");
   
-  unsigned int channels = device.input_channels > 0 ? device.input_channels : device.output_channels;
+  unsigned int channels = device.output_channels;
   unsigned int sample_rate = m_sample_rate.load(std::memory_order_relaxed);
   unsigned int buffer_frames = m_buffer_frames.load(std::memory_order_relaxed);
 
   LOG_INFO("AudioInterface: Open stream on device: ", device.id, ", with channels: ", channels, ", sample rate: ", sample_rate, ", buffer frames: ", buffer_frames);
   RtAudio::StreamParameters params{device.id, channels, 0};
 
-  if (m_rtaudio.openStream(&params,
-                           nullptr,
-                           RTAUDIO_FLOAT32,
-                           sample_rate,
-                           &buffer_frames,
-                           &audio_callback,
-                           this) != RTAUDIO_NO_ERROR)
+  for (const auto &id : get_device_ids())
   {
-    LOG_ERROR("AudioInterface: Failed to open RtAudio stream on device: ", device.to_string());
+    LOG_INFO("AudioInterface: Device ID: ", id);
+  }
+
+  RtAudioErrorType rc;
+  rc = m_rtaudio.openStream(&params,
+                            nullptr,
+                            RTAUDIO_FLOAT32,
+                            sample_rate,
+                            &buffer_frames,
+                            &audio_callback,
+                            this);
+
+  if (rc == RTAUDIO_SYSTEM_ERROR)
+  {
+    LOG_ERROR("AudioInterface: Stream cannot be opened with the specified parameters or an error occurs during processing on device: ", device.to_string());
+    return false;
+  }
+  else if (rc == RTAUDIO_INVALID_USE)
+  {
+    LOG_ERROR("AudioInterface: Stream is already open or any invalid stream parameters are specified on device: ", device.to_string());
+    return false;
+  }
+  else if (rc != RTAUDIO_NO_ERROR)
+  {
+    LOG_ERROR("AudioInterface: Unknown error opening RtAudio stream on device: ", device.to_string());
     return false;
   }
 
@@ -130,6 +154,28 @@ bool AudioInterface::close()
  */
 void AudioInterface::process_audio(float *output_buffer, unsigned int n_frames)
 {
+  if (m_test_tone_enabled.load(std::memory_order_relaxed))
+  {
+    // Generate a test tone (sine wave at 440 Hz)
+    double phase = m_test_tone_phase.load(std::memory_order_relaxed);
+    double phase_increment = 2.0 * M_PI * 440.0 / static_cast<double>(get_sample_rate());
+
+    for (unsigned int i = 0; i < n_frames; ++i)
+    {
+      float sample = static_cast<float>(0.1 * sin(phase)); // 0.1 to reduce volume
+      for (unsigned int ch = 0; ch < get_channels(); ++ch)
+      {
+        output_buffer[i * get_channels() + ch] = sample;
+      }
+      phase += phase_increment;
+      if (phase >= 2.0 * M_PI)
+        phase -= 2.0 * M_PI;
+    }
+
+    m_test_tone_phase.store(phase, std::memory_order_relaxed);
+    return;
+  }
+
   // Placeholder implementation - fill output buffer with silence
   std::fill(output_buffer, output_buffer + n_frames * get_channels(), 0.0f);
 }

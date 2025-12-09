@@ -6,11 +6,6 @@
 #include <thread>
 #include <iostream>
 
-// Define M_PI if not already defined (Windows MSVC compatibility)
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 using namespace Audio;
 
 /** @brief AudioEngine constructor
@@ -158,6 +153,7 @@ void AudioEngine::handle_messages()
 
           auto &payload = std::get<SetDevicePayload>(message->payload);
           m_output_device = payload.device;
+          LOG_INFO("AudioEngine: Set output device to " + payload.device.name);
         }
         break;
       case eAudioEngineCommand::SetParams:

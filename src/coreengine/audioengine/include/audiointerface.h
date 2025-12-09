@@ -117,6 +117,10 @@ private:
   std::atomic<unsigned int> m_channels;
   std::atomic<unsigned int> m_sample_rate;
   std::atomic<unsigned int> m_buffer_frames;
+
+  // TEST
+  std::atomic<bool> m_test_tone_enabled{false};
+  std::atomic<double> m_test_tone_phase{0.0};
 };
 
 } // namespace Audio

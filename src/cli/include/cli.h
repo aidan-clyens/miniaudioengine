@@ -27,6 +27,9 @@ constexpr const char *CLI_CMD_TRACK_REMOVE = "remove";
 constexpr const char *CLI_CMD_TRACK_ADD_AUDIO_INPUT = "set-audio-input";
 constexpr const char *CLI_CMD_TRACK_ADD_AUDIO_OUTPUT = "set-audio-output";
 
+constexpr const char *CLI_CMD_TRACK_PLAY = "play";
+constexpr const char *CLI_CMD_TRACK_STOP = "stop";
+
 /** @enum eCLICommand
  *  @brief Supported CLI commands
  */
@@ -40,6 +43,8 @@ enum class eCLICommand
   AddTrack,
   AddTrackAudioInput,
   AddTrackAudioOutput,
+  PlayTrack,
+  StopTrack,
   Unknown
 };
 

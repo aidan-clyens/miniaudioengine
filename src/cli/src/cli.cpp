@@ -94,6 +94,40 @@ CLI::CLI():
         return;
       }
     }},
+    {eCLICommand::PlayTrack, [this]() {
+      try
+      {
+        unsigned int track_id = m_track_id.value_or(0);
+
+        auto track = m_engine.get_track(track_id);
+        std::cout << "Playing Track " << track_id << "...\n";
+
+        track->play();
+        std::cout << "Track is now playing.\n";
+      }
+      catch (const std::exception &e)
+      {
+        std::cout << "Error: " << e.what() << "\n";
+        return;
+      }
+    }},
+    {eCLICommand::StopTrack, [this]() {
+      try
+      {
+        unsigned int track_id = m_track_id.value_or(0);
+
+        auto track = m_engine.get_track(track_id);
+        std::cout << "Stopping Track " << track_id << "...\n";
+
+        track->stop();
+        std::cout << "Track is now stopped.\n";
+      }
+      catch (const std::exception &e)
+      {
+        std::cout << "Error: " << e.what() << "\n";
+        return;
+      }
+    }},
   };
 }
 
@@ -178,6 +212,14 @@ eCLICommand CLI::parse_track_subcommand(const std::vector<std::string> &args)
           m_device_id = std::stoul(args[2]);
         }
         return eCLICommand::AddTrackAudioOutput;
+      }
+      else if (args[1] == CLI_CMD_TRACK_PLAY)
+      {
+        return eCLICommand::PlayTrack;
+      }
+      else if (args[1] == CLI_CMD_TRACK_STOP)
+      {
+        return eCLICommand::StopTrack;
       }
     }
   }

@@ -13,7 +13,7 @@ std::vector<AudioDevice> DeviceManager::get_audio_devices() const
   for (const auto& info : audio_devices)
   {
     AudioDevice device;
-    device.id = index++;
+    device.id = info.ID;
     device.name = info.name;
     device.input_channels = info.inputChannels;
     device.output_channels = info.outputChannels;
