@@ -8,6 +8,11 @@
 #include <stdexcept>
 #include <memory>
 
+// Define M_PI if not already defined (Windows MSVC compatibility)
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 using namespace Tracks;
 
 /** @brief Adds an audio input to the track.
@@ -272,11 +277,74 @@ void Track::handle_midi_message()
 
 /** @brief Fill the audio output buffer with the next available data
  *  @param output_buffer Pointer to the output buffer where audio data will be written.
- *  @param n_frames Number of frames to fill in the output buffer.
+ *  @param frames Number of frames to fill in the output buffer.
+ *  @param channels Number of output audio channels.
+ *  @param sample_rate Sample rate of the audio data.
  */
-void Track::get_next_audio_frame(float *output_buffer, unsigned int n_frames)
+void Track::get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate)
 {
-  
+  LOG_INFO("Track: (TODO) get_next_audio_frame with ", frames, " frames.", 
+           " Channels: ", channels, 
+           " Sample Rate: ", sample_rate);
+
+  if (output_buffer == nullptr)
+  {
+    LOG_ERROR("Track: Null output buffer in get_next_audio_frame");
+    return;
+  }
+
+  if (frames == 0)
+  {
+    LOG_ERROR("Track: Zero frames requested in get_next_audio_frame");
+    return;
+  }
+
+  if (channels == 0)
+  {
+    LOG_ERROR("Track: Zero channels requested in get_next_audio_frame");
+    return;
+  }
+
+  if (sample_rate == 0)
+  {
+    LOG_ERROR("Track: Zero sample rate requested in get_next_audio_frame");
+    return;
+  }
+
+  // Verify output buffer size matches frames
+  // if (sizeof(output_buffer) < frames * channels * sizeof(float))
+  // {
+  //   LOG_ERROR("Track: Output buffer size is smaller than requested frames in get_next_audio_frame");
+  //   return;
+  // }
+
+  // TODO - Add actual audio data to output_buffer
+  if (!has_audio_input())
+  {
+    // No audio input configured, fill with silence
+    LOG_INFO("Track: No audio input configured, filling output buffer with silence.");
+    std::fill(output_buffer, output_buffer + frames * channels, 0.0f);
+    return;
+  }
+
+  // For demonstration, fill output buffer with a simple sine wave tone
+  // Generate a test tone (sine wave at 440 Hz)
+  double phase = m_test_tone_phase.load(std::memory_order_relaxed);
+  double phase_increment = 2.0 * M_PI * 440.0 / static_cast<double>(sample_rate);
+
+  for (unsigned int i = 0; i < frames; ++i)
+  {
+    float sample = static_cast<float>(0.1 * sin(phase)); // 0.1 to reduce volume
+    for (unsigned int ch = 0; ch < channels; ++ch)
+    {
+      output_buffer[i * channels + ch] = sample;
+    }
+    phase += phase_increment;
+    if (phase >= 2.0 * M_PI)
+      phase -= 2.0 * M_PI;
+  }
+
+  m_test_tone_phase.store(phase, std::memory_order_relaxed);
 }
 
 std::string Track::to_string() const

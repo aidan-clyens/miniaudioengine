@@ -20,4 +20,5 @@ target_link_libraries(audioengine PUBLIC
   rtaudio
   framework
   devicemanager
+  trackmanager
 )

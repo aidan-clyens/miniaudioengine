@@ -6,6 +6,8 @@
 #include <memory>
 #include <optional>
 #include <variant>
+#include <atomic>
+#include <string>
 
 #include "observer.h"
 #include "midiengine.h"
@@ -84,7 +86,7 @@ public:
 
   void handle_midi_message();
 
-  void get_next_audio_frame(float *output_buffer, unsigned int n_frames);
+  void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate);
 
   std::string to_string() const;
 
@@ -96,6 +98,9 @@ private:
   MidiIOVariant m_midi_input;
   AudioIOVariant m_audio_output;
   MidiIOVariant m_midi_output;
+
+  // TEST
+  std::atomic<double> m_test_tone_phase{0.0};
 };
 
 }  // namespace Tracks

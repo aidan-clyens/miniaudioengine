@@ -1,5 +1,7 @@
 #include "audiointerface.h"
 
+#include "trackmanager.h"
+#include "track.h"
 #include "devicemanager.h"
 #include "logger.h"
 
@@ -50,7 +52,7 @@ int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frame
 AudioInterface::AudioInterface() : m_buffer_frames(512),
                                    m_sample_rate(44100),
                                    m_channels(2),
-                                   m_test_tone_enabled(true)
+                                   m_test_tone_enabled(false)
 {}
 
 /** @brief Open audio stream on specified device
@@ -107,7 +109,18 @@ bool AudioInterface::open(const Devices::AudioDevice &device)
  */
 bool AudioInterface::start()
 {
-  if (m_rtaudio.startStream() != RTAUDIO_NO_ERROR)
+  RtAudioErrorType rc = m_rtaudio.startStream();
+  if (rc == RTAUDIO_SYSTEM_ERROR)
+  {
+    LOG_ERROR("AudioInterface: System error occurred while starting RtAudio stream.");
+    return false;
+  }
+  else if (rc == RTAUDIO_WARNING)
+  {
+    LOG_ERROR("AudioInterface: Stream is not open or already running.");
+    return false;
+  }
+  else if (rc != RTAUDIO_NO_ERROR)
   {
     LOG_ERROR("AudioInterface: Failed to start RtAudio stream.");
     return false;
@@ -178,6 +191,18 @@ void AudioInterface::process_audio(float *output_buffer, unsigned int n_frames)
 
   // Placeholder implementation - fill output buffer with silence
   std::fill(output_buffer, output_buffer + n_frames * get_channels(), 0.0f);
+
+  // TODO - Get output buffer from the Tracks in the TrackManager
+  Tracks::TrackManager &track_manager = Tracks::TrackManager::instance();
+  for (size_t i = 0; i < track_manager.get_track_count(); ++i)
+  {
+    auto track = track_manager.get_track(i);
+    // TODO - Check if audio output matches the interface settings
+    if (track->has_audio_output())
+    {
+      track->get_next_audio_frame(output_buffer, n_frames, get_channels(), get_sample_rate());
+    }
+  }
 }
 
 /** @brief AudioInterface destructor
