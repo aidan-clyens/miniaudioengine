@@ -7,7 +7,8 @@
     "rtmidi",
     "libsndfile",
     "gtest",
-    "cli11"
+    "cli11",
+    "replxx"
   ],
   "builtin-baseline": "1d611efb49276c65d69fb6d010c2aaaf039322b0"
 }

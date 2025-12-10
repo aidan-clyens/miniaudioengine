@@ -18,11 +18,15 @@ target_include_directories(cli
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
+find_package(Threads REQUIRED)
 find_package(CLI11 CONFIG REQUIRED)
+find_package(replxx CONFIG REQUIRED)
 
 target_link_libraries(cli PUBLIC
   coreengine
+  Threads::Threads
   CLI11::CLI11
+  replxx::replxx
 )
 
 set_target_properties(cli PROPERTIES LINKER_LANGUAGE CXX)

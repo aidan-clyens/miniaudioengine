@@ -3,6 +3,9 @@
 
 #include <string>
 #include <memory>
+#include <vector>
+
+#include <replxx.hxx>
 
 #include "coreengine.h"
 
@@ -28,7 +31,11 @@ public:
 
 private:
   void setup_commands();
+  void setup_autocomplete();
   
+  // Autocomplete callback
+  replxx::Replxx::completions_t completion_callback(std::string const& input, int& contextLen);
+
   // Command handlers
   void cmd_list_midi_devices();
   void cmd_list_audio_devices();
@@ -47,6 +54,7 @@ private:
 
   Core::CoreEngine m_engine;
   std::unique_ptr<::CLI::App> m_cli_app;
+  std::unique_ptr<replxx::Replxx> m_replxx;
 
   // Command argument storage
   unsigned int m_track_id;

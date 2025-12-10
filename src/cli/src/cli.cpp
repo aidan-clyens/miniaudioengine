@@ -10,6 +10,7 @@
 #include <thread>
 #include <chrono>
 #include <csignal>
+#include <algorithm>
 
 using namespace GUI;
 
@@ -19,7 +20,8 @@ bool CommandLine::m_app_running = false;
  * Initializes CLI11 app and starts the CoreEngine thread.
  */
 CommandLine::CommandLine()
-  : m_cli_app(std::make_unique<::CLI::App>("Minimal Audio Engine CLI"))
+  : m_cli_app(std::make_unique<::CLI::App>("Minimal Audio Engine CLI")),
+    m_replxx(std::make_unique<replxx::Replxx>())
 {
   m_app_running = true;
   std::signal(SIGINT, CommandLine::handle_shutdown_signal);
@@ -27,6 +29,7 @@ CommandLine::CommandLine()
   m_engine.start_thread();
   
   setup_commands();
+  setup_autocomplete();
 }
 
 /** @brief Destructor for the CommandLine class.
@@ -43,6 +46,149 @@ void CommandLine::stop()
 {
   m_engine.push_message({Core::CoreEngineMessage::eType::Shutdown, "CLI stop requested"});
   m_engine.stop_thread();
+}
+
+void CommandLine::setup_autocomplete()
+{
+  // Configure replxx settings
+  m_replxx->set_max_history_size(128);
+  m_replxx->set_max_hint_rows(3);
+  
+  m_replxx->set_completion_callback(
+    [this](std::string const& input, int& contextLen) -> replxx::Replxx::completions_t {
+      return completion_callback(input, contextLen);
+    }
+  );
+}
+
+replxx::Replxx::completions_t CommandLine::completion_callback(std::string const& input, int& contextLen)
+{
+  replxx::Replxx::completions_t completions;
+  
+  // Split input into tokens
+  std::vector<std::string> tokens;
+  std::istringstream iss(input);
+  std::string token;
+  while (iss >> token)
+  {
+    tokens.push_back(token);
+  }
+  
+  // Check if input ends with space (user wants next token suggestions)
+  bool ends_with_space = !input.empty() && (input.back() == ' ' || input.back() == '\t');
+  
+  // Base commands - always check these first
+  std::vector<std::string> base_commands = {
+    "help", "quit", "midi-devices", "audio-devices", "track"
+  };
+  
+  if (tokens.empty())
+  {
+    // Show all base commands
+    for (const auto& cmd : base_commands)
+    {
+      completions.emplace_back(cmd.c_str());
+    }
+  }
+  else if (tokens.size() == 1 && !ends_with_space)
+  {
+    // Complete base commands
+    for (const auto& cmd : base_commands)
+    {
+      if (cmd.find(tokens[0]) == 0)
+      {
+        completions.emplace_back(cmd.c_str());
+      }
+    }
+  }
+  else if (tokens[0] == "track")
+  {
+    if ((tokens.size() == 1 && ends_with_space) || (tokens.size() == 2 && !ends_with_space))
+    {
+      // After "track ", suggest subcommands or track IDs
+      std::string partial = (tokens.size() == 2) ? tokens[1] : "";
+      std::vector<std::string> track_subcommands = {"list", "add"};
+      
+      // Add subcommands first
+      for (const auto& subcmd : track_subcommands)
+      {
+        if (subcmd.find(partial) == 0)
+        {
+          completions.emplace_back((tokens[0] + " " + subcmd).c_str());
+        }
+      }
+      
+      // Add actual track IDs
+      try
+      {
+        auto tracks = m_engine.get_tracks();
+        for (size_t i = 0; i < tracks.size(); ++i)
+        {
+          std::string track_id_str = std::to_string(i);
+          if (track_id_str.find(partial) == 0)
+          {
+            completions.emplace_back((tokens[0] + " " + track_id_str).c_str());
+          }
+        }
+      }
+      catch (...) {}
+    }
+    else if ((tokens.size() == 2 && ends_with_space && std::all_of(tokens[1].begin(), tokens[1].end(), ::isdigit)) ||
+             (tokens.size() == 3 && !ends_with_space && std::all_of(tokens[1].begin(), tokens[1].end(), ::isdigit)))
+    {
+      // After "track <id> ", suggest track operations
+      std::string partial = (tokens.size() == 3) ? tokens[2] : "";
+      std::vector<std::string> track_ops = {"play", "stop", "set-audio-input", "set-audio-output"};
+      for (const auto& op : track_ops)
+      {
+        if (op.find(partial) == 0)
+        {
+          completions.emplace_back((tokens[0] + " " + tokens[1] + " " + op).c_str());
+        }
+      }
+    }
+    else if ((tokens.size() == 3 && ends_with_space && (tokens[2] == "set-audio-input" || tokens[2] == "set-audio-output")) ||
+             (tokens.size() == 4 && !ends_with_space && (tokens[2] == "set-audio-input" || tokens[2] == "set-audio-output")))
+    {
+      // After "track <id> set-audio-input/output ", suggest device or file
+      std::string partial = (tokens.size() == 4) ? tokens[3] : "";
+      std::vector<std::string> input_types = {"device"};
+      if (tokens[2] == "set-audio-input")
+      {
+        input_types.push_back("file");
+      }
+      
+      for (const auto& type : input_types)
+      {
+        if (type.find(partial) == 0)
+        {
+          completions.emplace_back((tokens[0] + " " + tokens[1] + " " + tokens[2] + " " + type).c_str());
+        }
+      }
+    }
+    else if ((tokens.size() == 4 && ends_with_space && tokens[3] == "device") ||
+             (tokens.size() == 5 && !ends_with_space && tokens[3] == "device"))
+    {
+      // After "track <id> set-audio-input/output device ", suggest device IDs
+      std::string partial = (tokens.size() == 5) ? tokens[4] : "";
+      try
+      {
+        auto devices = m_engine.get_audio_devices();
+        for (size_t i = 0; i < devices.size(); ++i)
+        {
+          std::string device_id_str = std::to_string(devices[i].id);
+          if (device_id_str.find(partial) == 0)
+          {
+            completions.emplace_back((tokens[0] + " " + tokens[1] + " " + tokens[2] + " " + tokens[3] + " " + device_id_str).c_str());
+          }
+        }
+      }
+      catch (...) {}
+    }
+  }
+  
+  contextLen = static_cast<int>(input.length());
+  return completions;
 }
 
 /** @brief Sets up all CLI11 commands and subcommands.
@@ -312,18 +458,22 @@ void CommandLine::run()
   std::string command_str;
   while (m_app_running)
   {
-    std::cout << CLI_PROMPT;
-    if (!std::getline(std::cin, command_str))
+    const char *input = m_replxx->input(CLI_PROMPT);
+    if (input == nullptr)
     {
-      // Handle EOF or input error
+      // EOF or error
       break;
     }
+
+    std::string command_str(input);
 
     // Skip empty lines
     if (command_str.empty())
     {
       continue;
     }
+
+    m_replxx->history_add(command_str);
 
     // Handle help specially
     if (command_str == "help" || command_str == "h")
