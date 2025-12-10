@@ -1,79 +1,58 @@
 #ifndef __CLI_H__
 #define __CLI_H__
 
-#include <functional>
-#include <map>
 #include <string>
-#include <vector>
-#include <sstream>
-#include <optional>
+#include <memory>
 
 #include "coreengine.h"
+
+namespace CLI { class App; }
 
 namespace GUI
 {
 
+constexpr const char *CLI_WELCOME_MESSAGE = "Welcome to the Minimal Audio Engine CommandLine! Type 'help' for a list of commands.\n";
 constexpr const char *CLI_PROMPT = "> ";
-constexpr const char *CLI_WELCOME_MESSAGE = "Welcome to the Minimal Audio Engine CLI! Type 'help' for a list of commands.\n";
-constexpr const char *CLI_CMD_LIST_AUDIO_DEVICES = "audio-devices";
-constexpr const char *CLI_CMD_LIST_MIDI_DEVICES = "midi-devices";
-constexpr const char *CLI_CMD_TRACK = "track";
-constexpr const char *CLI_CMD_QUIT = "quit";
 
-constexpr const char *CLI_CMD_TRACK_LIST = "list";
-constexpr const char *CLI_CMD_TRACK_ADD = "add";
-constexpr const char *CLI_CMD_TRACK_REMOVE = "remove";
-
-constexpr const char *CLI_CMD_TRACK_ADD_AUDIO_INPUT = "set-audio-input";
-constexpr const char *CLI_CMD_TRACK_ADD_AUDIO_OUTPUT = "set-audio-output";
-
-constexpr const char *CLI_CMD_TRACK_PLAY = "play";
-constexpr const char *CLI_CMD_TRACK_STOP = "stop";
-
-/** @enum eCLICommand
- *  @brief Supported CLI commands
- */
-enum class eCLICommand
-{
-  Help,
-  Quit,
-  ListMidiDevices,
-  ListAudioDevices,
-  ListTracks,
-  AddTrack,
-  AddTrackAudioInput,
-  AddTrackAudioOutput,
-  PlayTrack,
-  StopTrack,
-  Unknown
-};
-
-/** @class CLI
+/** @class CommandLine
  *  @brief Command-Line Interface for interacting with the application
  */
-class CLI
+class CommandLine
 {
 public:
-  CLI();
-  ~CLI();
+  CommandLine();
+  ~CommandLine();
 
   void run();
   void stop();
 
 private:
-  eCLICommand parse_command(const std::string &cmd, const std::vector<std::string>& args);
-  eCLICommand parse_track_subcommand(const std::vector<std::string>& args);
-
-  void help();
+  void setup_commands();
+  
+  // Command handlers
+  void cmd_list_midi_devices();
+  void cmd_list_audio_devices();
+  void cmd_list_tracks();
+  void cmd_add_track();
+  void cmd_get_track(unsigned int track_id);
+  void cmd_add_track_audio_input_device(unsigned int track_id, unsigned int device_id);
+  void cmd_add_track_audio_input_file(unsigned int track_id, const std::string& file_path);
+  void cmd_add_track_audio_output_device(unsigned int track_id, unsigned int device_id);
+  void cmd_play_track(unsigned int track_id);
+  void cmd_stop_track(unsigned int track_id);
+  
+  void show_help();
 
   static void handle_shutdown_signal(int signum);
 
-  std::map<eCLICommand, std::function<void()>> m_cmd_function_map;
-
   Core::CoreEngine m_engine;
+  std::unique_ptr<::CLI::App> m_cli_app;
 
-  std::optional<unsigned int> m_track_id;
-  std::optional<unsigned int> m_device_id;
+  // Command argument storage
+  unsigned int m_track_id;
+  unsigned int m_input_device_id;
+  unsigned int m_output_device_id;
+  std::string m_input_file_path;
 
   static bool m_app_running;
 };

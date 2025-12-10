@@ -11,7 +11,7 @@ int main()
   LOG_INFO("Embedded Audio Engine");
   LOG_INFO("---------------------");
 
-  CLI cli;
+  CommandLine cli;
   cli.run();
 
   LOG_INFO("Shutting down application...");

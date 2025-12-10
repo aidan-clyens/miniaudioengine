@@ -3,243 +3,272 @@
 #include "coreengine.h"
 #include "logger.h"
 
+#include <CLI/CLI.hpp>
+
 #include <iostream>
 #include <string>
 #include <thread>
 #include <chrono>
-
 #include <csignal>
 
 using namespace GUI;
 
-bool CLI::m_app_running = false;
+bool CommandLine::m_app_running = false;
 
-/** @brief Constructor for the CLI class.
- * Initializes the command function map and starts the CoreEngine thread.
+/** @brief Constructor for the CommandLine class.
+ * Initializes CLI11 app and starts the CoreEngine thread.
  */
-CLI::CLI():
-  m_track_id(std::nullopt),
-  m_device_id(std::nullopt)
+CommandLine::CommandLine()
+  : m_cli_app(std::make_unique<::CLI::App>("Minimal Audio Engine CLI"))
 {
   m_app_running = true;
-  std::signal(SIGINT, CLI::handle_shutdown_signal);
+  std::signal(SIGINT, CommandLine::handle_shutdown_signal);
 
   m_engine.start_thread();
-
-  // Initialize command function map
-  m_cmd_function_map =
-  {
-    {eCLICommand::Quit, []() { CLI::m_app_running = false; }},
-    {eCLICommand::Help, [this]() { this->help(); }},
-    {eCLICommand::ListMidiDevices, [this]() {
-      auto devices = m_engine.get_midi_devices();
-      for (const auto &device : devices)
-      {
-        std::cout << device.to_string() << "\n";
-      }
-    }},
-    {eCLICommand::ListAudioDevices, [this]() {
-      auto devices = m_engine.get_audio_devices();
-      for (const auto &device : devices)
-      {
-        std::cout << device.to_string() << "\n";
-      }
-    }},
-    {eCLICommand::ListTracks, [this]() {
-      auto tracks = m_engine.get_tracks();
-      for (const auto &track : tracks)
-      {
-        std::cout << track->to_string() << "\n";
-      }
-    }},
-    {eCLICommand::AddTrack, [this]() {
-      m_engine.add_track();
-      std::cout << "Track added. Total tracks: " << m_engine.get_track_count() << "\n";
-    }},
-    {eCLICommand::AddTrackAudioInput, [this]() {
-      try
-      {
-        unsigned int track_id = m_track_id.value_or(m_engine.get_track_count() - 1);
-
-        auto track = m_engine.get_track(track_id);
-        auto device = m_engine.get_audio_device(m_device_id.value_or(0));
-        std::cout << "Adding Audio Input Device " << device.name << " to Track " << track_id << "...\n";
-
-        track->add_audio_device_input(device);
-        std::cout << "Added Audio Input Device to Track\n";
-        std::cout << track->to_string() << "\n";
-      }
-      catch (const std::exception &e)
-      {
-        std::cout << "Error: " << e.what() << "\n";
-        return;
-      }
-    }},
-    {eCLICommand::AddTrackAudioOutput, [this]() {
-      try
-      {
-        unsigned int track_id = m_track_id.value_or(m_engine.get_track_count() - 1);
-
-        auto track = m_engine.get_track(track_id);
-        auto device = m_engine.get_audio_device(m_device_id.value_or(0));
-        std::cout << "Adding Audio Output Device " << device.name << " to Track " << track_id << "...\n";
-
-        track->add_audio_device_output(device);
-        std::cout << "Added Audio Output Device to Track\n";
-        std::cout << track->to_string() << "\n";
-      }
-      catch (const std::exception &e)
-      {
-        std::cout << "Error: " << e.what() << "\n";
-        return;
-      }
-    }},
-    {eCLICommand::PlayTrack, [this]() {
-      try
-      {
-        unsigned int track_id = m_track_id.value_or(0);
-
-        auto track = m_engine.get_track(track_id);
-        std::cout << "Playing Track " << track_id << "...\n";
-
-        track->play();
-        std::cout << "Track is now playing.\n";
-      }
-      catch (const std::exception &e)
-      {
-        std::cout << "Error: " << e.what() << "\n";
-        return;
-      }
-    }},
-    {eCLICommand::StopTrack, [this]() {
-      try
-      {
-        unsigned int track_id = m_track_id.value_or(0);
-
-        auto track = m_engine.get_track(track_id);
-        std::cout << "Stopping Track " << track_id << "...\n";
-
-        track->stop();
-        std::cout << "Track is now stopped.\n";
-      }
-      catch (const std::exception &e)
-      {
-        std::cout << "Error: " << e.what() << "\n";
-        return;
-      }
-    }},
-  };
+  
+  setup_commands();
 }
 
-/** @brief Destructor for the CLI class.
+/** @brief Destructor for the CommandLine class.
  *  Ensures that the CoreEngine thread is stopped before destruction.
  */
-CLI::~CLI()
+CommandLine::~CommandLine()
 {
   stop();
 }
 
-/** @brief Stops the CLI and shuts down the CoreEngine thread.
+/** @brief Stops the CommandLine and shuts down the CoreEngine thread.
  */
-void CLI::stop()
+void CommandLine::stop()
 {
   m_engine.push_message({Core::CoreEngineMessage::eType::Shutdown, "CLI stop requested"});
   m_engine.stop_thread();
 }
 
-/** @brief Parses a command string and returns the corresponding eCLICommand enum value.
- *
- *  @param cmd The command string to parse.
- *  @param args The list of arguments associated with the command.
- *  @return The corresponding eCLICommand enum value.
+/** @brief Sets up all CLI11 commands and subcommands.
  */
-eCLICommand CLI::parse_command(const std::string &cmd, const std::vector<std::string>& args)
+void CommandLine::setup_commands()
 {
-  m_track_id = std::nullopt;
-  m_device_id = std::nullopt;
-
-  if (cmd == "help" || cmd == "h")
-    return eCLICommand::Help;
-  else if (cmd == CLI_CMD_QUIT || cmd == "q")
-    return eCLICommand::Quit;
-  else if (cmd == CLI_CMD_LIST_MIDI_DEVICES)
-    return eCLICommand::ListMidiDevices;
-  else if (cmd == CLI_CMD_LIST_AUDIO_DEVICES)
-    return eCLICommand::ListAudioDevices;
-  else if (cmd == CLI_CMD_TRACK)
-  {
-    if (!args.empty())
-    {
-      return parse_track_subcommand(args);
+  m_cli_app->require_subcommand(0, 1);
+  m_cli_app->fallthrough(); // Allow parsing to continue
+  m_cli_app->allow_extras(); // Allow extra arguments for interactive mode
+  
+  // Quit command
+  auto quit_cmd = m_cli_app->add_subcommand("quit", "Exit the application");
+  quit_cmd->alias("q");
+  quit_cmd->callback([this]() { m_app_running = false; });
+  
+  // List MIDI devices
+  auto midi_devices_cmd = m_cli_app->add_subcommand("midi-devices", "List available MIDI devices");
+  midi_devices_cmd->callback([this]() { cmd_list_midi_devices(); });
+  
+  // List Audio devices
+  auto audio_devices_cmd = m_cli_app->add_subcommand("audio-devices", "List available audio devices");
+  audio_devices_cmd->callback([this]() { cmd_list_audio_devices(); });
+  
+  // Track commands
+  auto track_cmd = m_cli_app->add_subcommand("track", "Track operations");
+  track_cmd->require_subcommand(0, 1);
+  
+  // Optional track ID for track-specific operations
+  m_track_id = 0;
+  auto track_id_opt = track_cmd->add_option("track_id", m_track_id, "Track ID");
+  
+  // track list
+  auto track_list_cmd = track_cmd->add_subcommand("list", "List all tracks");
+  track_list_cmd->callback([this]() { cmd_list_tracks(); });
+  track_list_cmd->excludes(track_id_opt);
+  
+  // track add
+  auto track_add_cmd = track_cmd->add_subcommand("add", "Add a new track");
+  track_add_cmd->callback([this]() { cmd_add_track(); });
+  track_add_cmd->excludes(track_id_opt);
+  
+  // track <id> (get track info when no subcommand)
+  track_cmd->callback([this, track_id_opt, track_cmd]() {
+    if (*track_id_opt && track_cmd->get_subcommands().empty()) {
+      cmd_get_track(m_track_id);
     }
-    return eCLICommand::Unknown;
-  }
-  else
-    return eCLICommand::Unknown;
+  });
+  
+  // track <id> play
+  auto track_play_cmd = track_cmd->add_subcommand("play", "Play the track");
+  track_play_cmd->needs(track_id_opt);
+  track_play_cmd->callback([this]() { cmd_play_track(m_track_id); });
+  
+  // track <id> stop
+  auto track_stop_cmd = track_cmd->add_subcommand("stop", "Stop the track");
+  track_stop_cmd->needs(track_id_opt);
+  track_stop_cmd->callback([this]() { cmd_stop_track(m_track_id); });
+  
+  // track <id> set-audio-input
+  auto track_input_cmd = track_cmd->add_subcommand("set-audio-input", "Set audio input for track");
+  track_input_cmd->needs(track_id_opt);
+  track_input_cmd->require_subcommand(1);
+  
+  // track <id> set-audio-input device <device_id>
+  auto track_input_device_cmd = track_input_cmd->add_subcommand("device", "Set audio input from device");
+  m_input_device_id = 0;
+  track_input_device_cmd->add_option("device_id", m_input_device_id, "Audio device ID")->required();
+  track_input_device_cmd->callback([this]() {
+    cmd_add_track_audio_input_device(m_track_id, m_input_device_id);
+  });
+  
+  // track <id> set-audio-input file <file_path>
+  auto track_input_file_cmd = track_input_cmd->add_subcommand("file", "Set audio input from file");
+  m_input_file_path = "";
+  track_input_file_cmd->add_option("file_path", m_input_file_path, "Audio file path")->required();
+  track_input_file_cmd->callback([this]() {
+    cmd_add_track_audio_input_file(m_track_id, m_input_file_path);
+  });
+  
+  // track <id> set-audio-output
+  auto track_output_cmd = track_cmd->add_subcommand("set-audio-output", "Set audio output for track");
+  track_output_cmd->needs(track_id_opt);
+  track_output_cmd->require_subcommand(1);
+  
+  // track <id> set-audio-output device <device_id>
+  auto track_output_device_cmd = track_output_cmd->add_subcommand("device", "Set audio output to device");
+  m_output_device_id = 0;
+  track_output_device_cmd->add_option("device_id", m_output_device_id, "Audio device ID")->required();
+  track_output_device_cmd->callback([this]() {
+    cmd_add_track_audio_output_device(m_track_id, m_output_device_id);
+  });
 }
 
-/** @brief Parses track sub-commands and returns the corresponding eCLICommand enum value. 
- *  @param args The list of arguments associated with the track command.
- *  @return The corresponding eCLICommand enum value.
-*/
-eCLICommand CLI::parse_track_subcommand(const std::vector<std::string> &args)
-{
-  if (args[0] == CLI_CMD_TRACK_LIST)
-  {
-    return eCLICommand::ListTracks;
-  }
-  else if (args[0] == CLI_CMD_TRACK_ADD)
-  {
-    return eCLICommand::AddTrack;
-  }
-  else if (std::all_of(args[0].begin(), args[0].end(), ::isdigit))
-  {
-    m_track_id = std::stoul(args[0]);
-    if (args.size() > 1)
-    {
-      if (args[1] == CLI_CMD_TRACK_ADD_AUDIO_INPUT)
-      {
-        if (args.size() > 2 && std::all_of(args[2].begin(), args[2].end(), ::isdigit))
-        {
-          m_device_id = std::stoul(args[2]);
-        }
-        return eCLICommand::AddTrackAudioInput;
-      }
-      else if (args[1] == CLI_CMD_TRACK_ADD_AUDIO_OUTPUT)
-      {
-        if (args.size() > 2 && std::all_of(args[2].begin(), args[2].end(), ::isdigit))
-        {
-          m_device_id = std::stoul(args[2]);
-        }
-        return eCLICommand::AddTrackAudioOutput;
-      }
-      else if (args[1] == CLI_CMD_TRACK_PLAY)
-      {
-        return eCLICommand::PlayTrack;
-      }
-      else if (args[1] == CLI_CMD_TRACK_STOP)
-      {
-        return eCLICommand::StopTrack;
-      }
-    }
-  }
+// ============================================================================
+// Command Handler Implementations
+// ============================================================================
 
-  return eCLICommand::Unknown;
+void CommandLine::cmd_list_midi_devices()
+{
+  auto devices = m_engine.get_midi_devices();
+  for (const auto &device : devices)
+  {
+    std::cout << device.to_string() << "\n";
+  }
 }
 
-/** @brief Displays help information for available CLI commands.
- */
-void CLI::help()
+void CommandLine::cmd_list_audio_devices()
 {
-  std::cout << "Available commands:\n";
-  std::cout << "  help, h  - Show this help message\n";
-  std::cout << "  " << CLI_CMD_LIST_MIDI_DEVICES << "  - List available MIDI devices\n";
-  std::cout << "  " << CLI_CMD_LIST_AUDIO_DEVICES << "  - List available Audio devices\n";
-  std::cout << "  " << CLI_CMD_TRACK << " " << CLI_CMD_TRACK_LIST << "  - List all tracks\n";
-  std::cout << "  " << CLI_CMD_TRACK << " " << CLI_CMD_TRACK_ADD << "  - Add a new track\n";
-  std::cout << "  " << CLI_CMD_TRACK << " <track_id> " << CLI_CMD_TRACK_ADD_AUDIO_INPUT << " <device_id> - Add default audio input to the specified track\n";
-  std::cout << "  " << CLI_CMD_TRACK << " <track_id> " << CLI_CMD_TRACK_ADD_AUDIO_OUTPUT << " <device_id> - Add default audio output to the specified track\n";
-  std::cout << "  " << CLI_CMD_QUIT << ", q  - Quit the application\n";
+  auto devices = m_engine.get_audio_devices();
+  for (const auto &device : devices)
+  {
+    std::cout << device.to_string() << "\n";
+  }
+}
+
+void CommandLine::cmd_list_tracks()
+{
+  auto tracks = m_engine.get_tracks();
+  for (const auto &track : tracks)
+  {
+    std::cout << track->to_string() << "\n";
+  }
+}
+
+void CommandLine::cmd_add_track()
+{
+  m_engine.add_track();
+  auto track = m_engine.get_track(m_engine.get_track_count() - 1);
+  std::cout << "Added: " << track->to_string() << "\n";
+}
+
+void CommandLine::cmd_get_track(unsigned int track_id)
+{
+  try
+  {
+    auto track = m_engine.get_track(track_id);
+    std::cout << "Track " << track_id << ": " << track->to_string() << "\n";
+  }
+  catch (const std::exception &e)
+  {
+    std::cout << "Error: " << e.what() << "\n";
+  }
+}
+
+void CommandLine::cmd_add_track_audio_input_device(unsigned int track_id, unsigned int device_id)
+{
+  try
+  {
+    auto track = m_engine.get_track(track_id);
+    auto device = m_engine.get_audio_device(device_id);
+    std::cout << "Adding Audio Input Device " << device.name << " to Track " << track_id << "...\n";
+
+    track->add_audio_device_input(device);
+    std::cout << "Added Audio Input Device to Track\n";
+    std::cout << track->to_string() << "\n";
+  }
+  catch (const std::exception &e)
+  {
+    std::cout << "Error: " << e.what() << "\n";
+  }
+}
+
+void CommandLine::cmd_add_track_audio_input_file(unsigned int track_id, const std::string& file_path)
+{
+  try
+  {
+    auto track = m_engine.get_track(track_id);
+    std::cout << "Adding Audio File Input " << file_path << " to Track " << track_id << "...\n";
+    
+    // TODO: Implement file input when track->add_audio_file_input is available
+    std::cout << "File input not yet implemented\n";
+  }
+  catch (const std::exception &e)
+  {
+    std::cout << "Error: " << e.what() << "\n";
+  }
+}
+
+void CommandLine::cmd_add_track_audio_output_device(unsigned int track_id, unsigned int device_id)
+{
+  try
+  {
+    auto track = m_engine.get_track(track_id);
+    auto device = m_engine.get_audio_device(device_id);
+    std::cout << "Adding Audio Output Device " << device.name << " to Track " << track_id << "...\n";
+
+    track->add_audio_device_output(device);
+    std::cout << "Added Audio Output Device to Track\n";
+    std::cout << track->to_string() << "\n";
+  }
+  catch (const std::exception &e)
+  {
+    std::cout << "Error: " << e.what() << "\n";
+  }
+}
+
+void CommandLine::cmd_play_track(unsigned int track_id)
+{
+  try
+  {
+    auto track = m_engine.get_track(track_id);
+    std::cout << "Playing Track " << track_id << "...\n";
+
+    track->play();
+    std::cout << "Track is now playing.\n";
+  }
+  catch (const std::exception &e)
+  {
+    std::cout << "Error: " << e.what() << "\n";
+  }
+}
+
+void CommandLine::cmd_stop_track(unsigned int track_id)
+{
+  try
+  {
+    auto track = m_engine.get_track(track_id);
+    std::cout << "Stopping Track " << track_id << "...\n";
+
+    track->stop();
+    std::cout << "Track is now stopped.\n";
+  }
+  catch (const std::exception &e)
+  {
+    std::cout << "Error: " << e.what() << "\n";
+  }
 }
 
 /** @brief Signal handler for graceful shutdown on SIGINT (Ctrl+C).
@@ -247,14 +276,33 @@ void CLI::help()
  *
  *  @param signum The signal number (not used here).
  */
-void CLI::handle_shutdown_signal(int signum)
+void CommandLine::show_help()
+{
+  std::cout << "Available commands:\n";
+  std::cout << "  help, h                    - Show this help message\n";
+  std::cout << "  quit, q                    - Exit the application\n";
+  std::cout << "  midi-devices               - List available MIDI devices\n";
+  std::cout << "  audio-devices              - List available audio devices\n";
+  std::cout << "\n";
+  std::cout << "Track commands:\n";
+  std::cout << "  track list                                     - List all tracks\n";
+  std::cout << "  track add                                      - Add a new track\n";
+  std::cout << "  track <track_id>                               - Show track information\n";
+  std::cout << "  track <track_id> play                          - Play the track\n";
+  std::cout << "  track <track_id> stop                          - Stop the track\n";
+  std::cout << "  track <track_id> set-audio-input device <device_id>   - Set audio input from device\n";
+  std::cout << "  track <track_id> set-audio-input file <file_path>     - Set audio input from file\n";
+  std::cout << "  track <track_id> set-audio-output device <device_id>  - Set audio output to device\n";
+}
+
+void CommandLine::handle_shutdown_signal(int signum)
 {
   m_app_running = false;
 }
 
 /** @brief Runs the command-line interface, processing user input and executing commands.
  */
-void CLI::run()
+void CommandLine::run()
 {
   // Small delay to ensure engine thread starts properly
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -271,30 +319,37 @@ void CLI::run()
       break;
     }
 
-    // Split string into command and arguments (if any)
-    std::vector<std::string> args;
-    std::string arg;
-    std::istringstream iss(command_str);
-    while (iss >> arg)
+    // Skip empty lines
+    if (command_str.empty())
     {
-      args.push_back(arg);
+      continue;
     }
 
-    if (!args.empty())
+    // Handle help specially
+    if (command_str == "help" || command_str == "h")
     {
-      command_str = args[0];
+      show_help();
+      continue;
     }
 
-    eCLICommand command = parse_command(command_str, std::vector<std::string>(args.begin() + 1, args.end()));
-
-    auto it = m_cmd_function_map.find(command);
-    if (it != m_cmd_function_map.end())
+    try
     {
-      it->second();  // Execute the command function
+      // Reset the app for new parse
+      m_cli_app->clear();
+      
+      // Parse the command string
+      m_cli_app->parse(command_str);
     }
-    else
+    catch (const ::CLI::ParseError &e)
     {
-      std::cout << "Unknown command: " << command_str << "\n";
+      // Handle parse errors gracefully
+      if (e.get_exit_code() == static_cast<int>(::CLI::ExitCodes::Success))
+      {
+        // This was --help or similar, already handled
+        continue;
+      }
+      std::cout << "Error: " << e.what() << "\n";
+      std::cout << "Type 'help' for available commands.\n";
     }
 
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
