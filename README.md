@@ -1,5 +1,5 @@
 ## 1. Introduction
-The Minimal Audio Engine is a cross-platform, cross-architecture, modern C++ project designed to be the backend of a digital audio processing workstation / application. It is an SDK that can included by and used to build other audio applications. These may include an audio plugin VST, a digital audio workstation, or an embedded audio platform, for example.
+The Minimal Audio Engine is a cross-platform, cross-architecture, modern C++ library designed to be the backend of a digital audio processing workstation / application. It is a library that can be included by and used to build digital audio processing applications. For examples, these may include an audio plugin VST, a digital audio workstation, or an embedded audio platform.
 
 This specification defines the design, build environment, architecture, and operational requirements of the system. It is intended to document engineering decisions, ensure reproducibility, and provide a foundation for future extensions.
 
