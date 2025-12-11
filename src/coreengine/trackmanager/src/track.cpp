@@ -283,7 +283,7 @@ void Track::handle_midi_message()
  */
 void Track::get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate)
 {
-  LOG_INFO("Track: (TODO) get_next_audio_frame with ", frames, " frames.", 
+  LOG_INFO("Track: get_next_audio_frame with ", frames, " frames.", 
            " Channels: ", channels, 
            " Sample Rate: ", sample_rate);
 
@@ -311,14 +311,6 @@ void Track::get_next_audio_frame(float *output_buffer, unsigned int frames, unsi
     return;
   }
 
-  // Verify output buffer size matches frames
-  // if (sizeof(output_buffer) < frames * channels * sizeof(float))
-  // {
-  //   LOG_ERROR("Track: Output buffer size is smaller than requested frames in get_next_audio_frame");
-  //   return;
-  // }
-
-  // TODO - Add actual audio data to output_buffer
   if (!has_audio_input())
   {
     // No audio input configured, fill with silence
@@ -327,24 +319,46 @@ void Track::get_next_audio_frame(float *output_buffer, unsigned int frames, unsi
     return;
   }
 
-  // For demonstration, fill output buffer with a simple sine wave tone
-  // Generate a test tone (sine wave at 440 Hz)
-  double phase = m_test_tone_phase.load(std::memory_order_relaxed);
-  double phase_increment = 2.0 * M_PI * 440.0 / static_cast<double>(sample_rate);
-
-  for (unsigned int i = 0; i < frames; ++i)
+  // If audio input is a WAV file, read data from it
+  if (std::holds_alternative<Files::WavFilePtr>(m_audio_input))
   {
-    float sample = static_cast<float>(0.1 * sin(phase)); // 0.1 to reduce volume
-    for (unsigned int ch = 0; ch < channels; ++ch)
-    {
-      output_buffer[i * channels + ch] = sample;
-    }
-    phase += phase_increment;
-    if (phase >= 2.0 * M_PI)
-      phase -= 2.0 * M_PI;
-  }
+    Files::WavFilePtr wav_file = std::get<Files::WavFilePtr>(m_audio_input);
 
-  m_test_tone_phase.store(phase, std::memory_order_relaxed);
+    unsigned int file_channels = wav_file->get_channels();
+    unsigned int samples_to_read = frames * file_channels;
+
+    std::vector<float> file_buffer(samples_to_read, 0.0f);
+    sf_count_t read_frames = wav_file->read_frames(file_buffer, frames);
+
+    if (read_frames != frames)
+    {
+      LOG_INFO("Track: Reached end of WAV file or read less frames than requested. Stopping playback.");
+      // Fill remaining buffer with silence
+      for (unsigned int i = read_frames * channels; i < frames * channels; ++i)
+      {
+        output_buffer[i] = 0.0f;
+      }
+
+      // Stop playback if end of file reached
+      stop();
+    }
+
+    // Add data to output buffer, handling channel mismatch
+    for (unsigned int i = 0; i < static_cast<unsigned int>(read_frames); ++i)
+    {
+      for (unsigned int ch = 0; ch < channels; ++ch)
+      {
+        if (ch < file_channels)
+        {
+          output_buffer[i * channels + ch] = file_buffer[i * file_channels + ch];
+        }
+        else
+        {
+          output_buffer[i * channels + ch] = 0.0f; // Fill extra channels with silence
+        }
+      }
+    }
+  }
 }
 
 std::string Track::to_string() const

@@ -19,3 +19,12 @@ WavFile::WavFile(const std::filesystem::path &path):
     throw std::runtime_error("Failed to open WAV file: " + path.string());
   }
 }
+
+sf_count_t WavFile::read_frames(std::vector<float> &buffer, sf_count_t frames_to_read)
+{
+  if (m_sndfile)
+  {
+    return sf_readf_float(m_sndfile.get(), const_cast<float *>(buffer.data()), frames_to_read);
+  }
+  return 0;
+}

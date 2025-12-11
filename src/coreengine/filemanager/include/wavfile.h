@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <sndfile.h>
+#include <vector>
 
 #include "filemanager.h"
 
@@ -50,6 +51,8 @@ public:
         return "Unknown";
     }
   }
+
+  sf_count_t read_frames(std::vector<float>& buffer, sf_count_t frames_to_read);
 
   std::string to_string() const override
   {
