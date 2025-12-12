@@ -1,6 +1,9 @@
 #ifndef __INPUT_H__
 #define __INPUT_H__
 
+namespace MinimalAudioEngine
+{
+
 /** @enum eInputType
  *  @brief Types of implementations of the IInput interface
  */
@@ -24,5 +27,7 @@ public:
 private:
   eInputType m_input_type = eInputType::None;
 };
+
+} // namespace MinimalAudioEngine
 
 #endif // __INPUT_H__

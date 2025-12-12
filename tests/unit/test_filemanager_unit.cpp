@@ -7,7 +7,7 @@
 #include "midifile.h"
 #include "logger.h"
 
-using namespace Files;
+using namespace MinimalAudioEngine;
 
 
 TEST(FileSystemTest, PathExists)

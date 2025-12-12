@@ -11,12 +11,12 @@
 #include "audiointerface.h"
 #include "audiodevice.h"
 
-namespace Devices
+namespace MinimalAudioEngine
 {
 class DeviceManager;
 }
 
-namespace Audio
+namespace MinimalAudioEngine
 {
 
 /** @enum eAudioEngineState
@@ -46,7 +46,7 @@ enum class eAudioEngineCommand
  */
 struct SetDevicePayload
 {
-  Devices::AudioDevice device;
+  MinimalAudioEngine::AudioDevice device;
 };
 
 /** @struct SetStreamParamsPayload
@@ -90,7 +90,7 @@ struct AudioEngineStatistics
  */
 class AudioEngine : public IEngine<AudioMessage>
 {
-  friend class Devices::DeviceManager;
+  friend class MinimalAudioEngine::DeviceManager;
 
 public:
   static AudioEngine& instance()
@@ -103,7 +103,7 @@ public:
 
   void play();
   void stop();
-  void set_output_device(const Devices::AudioDevice& device);
+  void set_output_device(const MinimalAudioEngine::AudioDevice& device);
   void set_stream_parameters(
     const unsigned int channels,
     const unsigned int sample_rate,
@@ -114,7 +114,7 @@ public:
     return m_state.load(std::memory_order_acquire);
   }
 
-  inline Devices::AudioDevice get_output_device() const noexcept
+  inline MinimalAudioEngine::AudioDevice get_output_device() const noexcept
   {
     return m_output_device;
   }
@@ -166,9 +166,9 @@ private:
   std::atomic<uint64_t> m_total_frames_processed;
 
   std::atomic<unsigned int> m_device_id;
-  Devices::AudioDevice m_output_device;
+  MinimalAudioEngine::AudioDevice m_output_device;
 };
 
-}  // namespace Audio
+}  // namespace MinimalAudioEngine
 
 #endif  // _AUDIO_ENGINE_H

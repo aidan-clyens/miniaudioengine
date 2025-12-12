@@ -7,6 +7,9 @@
 #include <atomic>
 #include <optional>
 
+namespace MinimalAudioEngine
+{
+
 /** @class MessageQueue
  *  @brief A thread-safe message queue for passing messages between threads.
  */
@@ -91,5 +94,7 @@ private:
   std::condition_variable m_condition;
   std::atomic<bool> m_stopped;
 };
+
+} // namespace MinimalAudioEngine
 
 #endif  // __MESSAGE_QUEUE_H_

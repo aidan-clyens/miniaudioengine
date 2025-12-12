@@ -17,11 +17,7 @@ target_include_directories(coreengine
 )
 
 target_link_libraries(coreengine PUBLIC
-  rtaudio
   framework
   audioengine
   midiengine
-  trackmanager
-  filemanager
-  devicemanager
 )

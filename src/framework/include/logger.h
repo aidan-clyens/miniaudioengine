@@ -10,10 +10,19 @@
 #include <iomanip>
 
 #define LOG_INFO(...) \
-  Logger::instance().log(eLogLevel::Info, __VA_ARGS__)
+  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Info, __VA_ARGS__)
+
+#define LOG_WARNING(...) \
+  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Warning, __VA_ARGS__)
 
 #define LOG_ERROR(...) \
-  Logger::instance().log(eLogLevel::Error, __VA_ARGS__)
+  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Error, __VA_ARGS__)
+
+#define LOG_DEBUG(...) \
+  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Debug, __VA_ARGS__)
+
+namespace MinimalAudioEngine
+{
 
 enum class eLogLevel
 {
@@ -89,5 +98,7 @@ private:
     }
   }
 };
+
+} // namespace MinimalAudioEngine
 
 #endif // __LOGGER_H__

@@ -1,6 +1,9 @@
 #include "cli.h"
 
 #include "coreengine.h"
+#include "trackmanager.h"
+#include "devicemanager.h"
+#include "filemanager.h"
 #include "logger.h"
 
 #include <CLI/CLI.hpp>
@@ -44,7 +47,7 @@ CommandLine::~CommandLine()
  */
 void CommandLine::stop()
 {
-  m_engine.push_message({Core::CoreEngineMessage::eType::Shutdown, "CLI stop requested"});
+  m_engine.push_message({MinimalAudioEngine::CoreEngineMessage::eType::Shutdown, "CLI stop requested"});
   m_engine.stop_thread();
 }
 
@@ -127,7 +130,7 @@ replxx::Replxx::completions_t CommandLine::completion_callback(std::string const
       // Add actual track IDs
       try
       {
-        auto tracks = m_engine.get_tracks();
+        auto tracks = MinimalAudioEngine::TrackManager::instance().get_tracks();
         for (size_t i = 0; i < tracks.size(); ++i)
         {
           std::string track_id_str = std::to_string(i);
@@ -179,7 +182,7 @@ replxx::Replxx::completions_t CommandLine::completion_callback(std::string const
       std::string partial = (tokens.size() == 5) ? tokens[4] : "";
       try
       {
-        auto devices = m_engine.get_audio_devices();
+        auto devices = MinimalAudioEngine::DeviceManager::instance().get_audio_devices();
         for (size_t i = 0; i < devices.size(); ++i)
         {
           std::string device_id_str = std::to_string(devices[i].id);
@@ -299,7 +302,7 @@ void CommandLine::setup_commands()
 
 void CommandLine::cmd_list_midi_devices()
 {
-  auto devices = m_engine.get_midi_devices();
+  auto devices = MinimalAudioEngine::DeviceManager::instance().get_midi_devices();
   for (const auto &device : devices)
   {
     std::cout << device.to_string() << "\n";
@@ -308,7 +311,7 @@ void CommandLine::cmd_list_midi_devices()
 
 void CommandLine::cmd_list_audio_devices()
 {
-  auto devices = m_engine.get_audio_devices();
+  auto devices = MinimalAudioEngine::DeviceManager::instance().get_audio_devices();
   for (const auto &device : devices)
   {
     std::cout << device.to_string() << "\n";
@@ -317,7 +320,7 @@ void CommandLine::cmd_list_audio_devices()
 
 void CommandLine::cmd_list_tracks()
 {
-  auto tracks = m_engine.get_tracks();
+  auto tracks = MinimalAudioEngine::TrackManager::instance().get_tracks();
   for (const auto &track : tracks)
   {
     std::cout << track->to_string() << "\n";
@@ -326,8 +329,8 @@ void CommandLine::cmd_list_tracks()
 
 void CommandLine::cmd_add_track()
 {
-  m_engine.add_track();
-  auto track = m_engine.get_track(m_engine.get_track_count() - 1);
+  size_t track_id = MinimalAudioEngine::TrackManager::instance().add_track();
+  auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
   std::cout << "Added: " << track->to_string() << "\n";
 }
 
@@ -335,7 +338,7 @@ void CommandLine::cmd_get_track(unsigned int track_id)
 {
   try
   {
-    auto track = m_engine.get_track(track_id);
+    auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
     std::cout << "Track " << track_id << ": " << track->to_string() << "\n";
   }
   catch (const std::exception &e)
@@ -348,8 +351,8 @@ void CommandLine::cmd_add_track_audio_input_device(unsigned int track_id, unsign
 {
   try
   {
-    auto track = m_engine.get_track(track_id);
-    auto device = m_engine.get_audio_device(device_id);
+    auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
+    auto device = MinimalAudioEngine::DeviceManager::instance().get_audio_device(device_id);
     std::cout << "Adding Audio Input Device " << device.name << " to Track " << track_id << "...\n";
 
     track->add_audio_device_input(device);
@@ -366,11 +369,14 @@ void CommandLine::cmd_add_track_audio_input_file(unsigned int track_id, const st
 {
   try
   {
-    auto track = m_engine.get_track(track_id);
+    auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
     std::cout << "Adding Audio File Input " << file_path << " to Track " << track_id << "...\n";
 
-    auto wav_file = m_engine.get_wav_file(file_path);
-    track->add_audio_file_input(wav_file);
+    auto wav_file = MinimalAudioEngine::FileManager::instance().read_wav_file(file_path);
+    if (wav_file.has_value())
+    {
+      track->add_audio_file_input(wav_file.value());
+    }
     std::cout << "Added Audio File Input to Track\n";
     std::cout << track->to_string() << "\n";
   }
@@ -384,8 +390,8 @@ void CommandLine::cmd_add_track_audio_output_device(unsigned int track_id, unsig
 {
   try
   {
-    auto track = m_engine.get_track(track_id);
-    auto device = m_engine.get_audio_device(device_id);
+    auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
+    auto device = MinimalAudioEngine::DeviceManager::instance().get_audio_device(device_id);
     std::cout << "Adding Audio Output Device " << device.name << " to Track " << track_id << "...\n";
 
     track->add_audio_device_output(device);
@@ -402,7 +408,7 @@ void CommandLine::cmd_play_track(unsigned int track_id)
 {
   try
   {
-    auto track = m_engine.get_track(track_id);
+    auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
     std::cout << "Playing Track " << track_id << "...\n";
 
     track->play();
@@ -418,7 +424,7 @@ void CommandLine::cmd_stop_track(unsigned int track_id)
 {
   try
   {
-    auto track = m_engine.get_track(track_id);
+    auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
     std::cout << "Stopping Track " << track_id << "...\n";
 
     track->stop();

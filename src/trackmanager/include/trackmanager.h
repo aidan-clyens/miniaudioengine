@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-namespace Tracks
+namespace MinimalAudioEngine
 {
 
 /** @class TrackManager
@@ -24,6 +24,7 @@ public:
   size_t add_track();
   void remove_track(size_t index);
   TrackPtr get_track(size_t index);
+  std::vector<TrackPtr> get_tracks() const;
 
   void clear_tracks();
 
@@ -36,6 +37,6 @@ private:
   std::vector<TrackPtr> m_tracks;
 };
 
-}  // namespace Tracks
+}  // namespace MinimalAudioEngine
 
 #endif  // __TRACK_MANAGER_H_

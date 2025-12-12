@@ -1,6 +1,6 @@
 #include "trackmanager.h"
 
-using namespace Tracks;
+using namespace MinimalAudioEngine;
 
 /** @brief Add a Track to the TrackManager.
  *  @return The index of the newly added track.
@@ -43,6 +43,14 @@ TrackPtr TrackManager::get_track(size_t index)
   }
 
   return m_tracks[index];
+}
+
+/** @brief Get all Tracks from the TrackManager.
+ *  @return A vector of shared pointers to all Tracks.
+ */
+std::vector<TrackPtr> TrackManager::get_tracks() const
+{
+  return m_tracks;
 }
 
 /** @brief Clear all tracks from the TrackManager.

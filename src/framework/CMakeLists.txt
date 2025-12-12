@@ -6,7 +6,6 @@ target_sources(framework
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
-      include/alsa_utils.h
       include/messagequeue.h
       include/observer.h
       include/subject.h
@@ -16,7 +15,6 @@ target_sources(framework
 )
 
 target_sources(framework PRIVATE 
-  src/alsa_utils.cpp
   src/logger.cpp
 )
 

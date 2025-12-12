@@ -1,6 +1,9 @@
 #ifndef __OBSERVER_H__
 #define __OBSERVER_H__
 
+namespace MinimalAudioEngine
+{
+
 /** @class Observer
  *  @brief The Observer class is part of the Observer design pattern.
  *         It defines an interface for objects that should be notified of changes in a subject.
@@ -14,5 +17,7 @@ public:
 	virtual void update(const T& data) = 0;
 	virtual ~Observer() = default;
 };
+
+} // namespace MinimalAudioEngine
 
 #endif  // __OBSERVER_H__

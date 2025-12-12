@@ -3,7 +3,7 @@
 
 #include "device.h"
 
-namespace Devices
+namespace MinimalAudioEngine
 {
 
 /** @class AudioDevice
@@ -58,6 +58,6 @@ public:
   }
 };
 
-} // namespace Devices
+} // namespace MinimalAudioEngine
 
 #endif // __AUDIO_DEVICE_H__

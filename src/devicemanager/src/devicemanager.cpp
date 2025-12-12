@@ -2,12 +2,12 @@
 #include "audioengine.h"
 #include "midiengine.h"
 
-using namespace Devices;
+using namespace MinimalAudioEngine;
 
 std::vector<AudioDevice> DeviceManager::get_audio_devices() const
 {
   std::vector<AudioDevice> devices;
-  auto audio_devices = Audio::AudioEngine::instance().get_devices();
+  auto audio_devices = MinimalAudioEngine::AudioEngine::instance().get_devices();
 
   size_t index = 0;
   for (const auto& info : audio_devices)
@@ -45,7 +45,7 @@ AudioDevice DeviceManager::get_audio_device(const unsigned int id) const
 std::vector<MidiDevice> DeviceManager::get_midi_devices() const
 {
   std::vector<MidiDevice> devices;
-  auto midi_devices = Midi::MidiEngine::instance().get_ports();
+  auto midi_devices = MinimalAudioEngine::MidiEngine::instance().get_ports();
 
   for (const auto &port : midi_devices)
   {

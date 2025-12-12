@@ -1,11 +1,10 @@
 #include "midiengine.h"
-#include "alsa_utils.h"
 
 #include <rtmidi/RtMidi.h>
 #include <iostream>
 #include <stdexcept>
 
-using namespace Midi;
+using namespace MinimalAudioEngine;
 
 /** @brief Callback function to handle incoming MIDI messages.
  *  This function is called by the RtMidi library when a MIDI message is received.
@@ -66,11 +65,6 @@ void midi_callback(double deltatime, std::vector<unsigned char> *message, void *
  */
 MidiEngine::MidiEngine(): IEngine("MidiEngine")
 {
-  if (is_alsa_seq_available())
-  {
-    LOG_INFO("ALSA sequencer not available on Windows");
-  }
-
   p_midi_in = std::make_unique<RtMidiIn>();
   if (!p_midi_in)
   {

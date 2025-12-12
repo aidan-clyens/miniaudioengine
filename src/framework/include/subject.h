@@ -8,6 +8,9 @@
 
 #include "observer.h"
 
+namespace MinimalAudioEngine
+{
+
 /** @class Subject
  *  @brief The Subject class is part of the Observer design pattern.
  *         It maintains a list of observers and notifies them of changes.
@@ -61,5 +64,7 @@ private:
 	std::vector<std::weak_ptr<Observer<T>>> m_observers;
   std::mutex m_mutex;
 };
+
+} // namespace MinimalAudioEngine
 
 #endif  // __SUBJECT_H__

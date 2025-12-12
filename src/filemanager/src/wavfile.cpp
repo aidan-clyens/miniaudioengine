@@ -1,6 +1,6 @@
 #include "wavfile.h"
 
-using namespace Files;
+using namespace MinimalAudioEngine;
 
 /** @brief Constructs an AudioFile object and opens the specified WAV file.
  *  @param path The path to the WAV file to open.

@@ -11,6 +11,9 @@
 #include "messagequeue.h"
 #include "logger.h"
 
+namespace MinimalAudioEngine
+{
+
 /** @class IEngine
  @  @brief A base class for engines that can process messages in a separate thread.
  */
@@ -89,5 +92,7 @@ private:
   std::atomic<bool> m_running{false};
   std::mutex m_mutex;
 };
+
+} // namespace MinimalAudioEngine
 
 #endif  // ___ENGINE_H_

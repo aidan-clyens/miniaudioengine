@@ -10,10 +10,10 @@
 #include "devicemanager.h"
 #include "logger.h"
 
-using namespace Audio;
-using namespace Tracks;
-using namespace Files;
-using namespace Devices;
+using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine;
 
 TEST(AudioInputIntegrationTest, AudioInput)
 {

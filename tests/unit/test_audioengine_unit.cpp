@@ -5,8 +5,8 @@
 #include "audioengine.h"
 #include "audiodevice.h"
 
-using namespace Audio;
-using namespace Devices;
+using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine;
 
 class AudioEngineTest : public ::testing::Test
 {

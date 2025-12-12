@@ -10,7 +10,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-using namespace Audio;
+using namespace MinimalAudioEngine;
 
 /** @brief Audio callback function
  *  @param output_buffer Pointer to the output audio buffer
@@ -59,7 +59,7 @@ AudioInterface::AudioInterface() : m_buffer_frames(512),
  *  @param device Audio output device to open
  *  @return true on success, false on failure
  */
-bool AudioInterface::open(const Devices::AudioDevice &device)
+bool AudioInterface::open(const MinimalAudioEngine::AudioDevice &device)
 {
   LOG_INFO("Open AudioInterface on device: ", device.to_string(), " as output.");
   
@@ -193,7 +193,7 @@ void AudioInterface::process_audio(float *output_buffer, unsigned int n_frames)
   std::fill(output_buffer, output_buffer + n_frames * get_channels(), 0.0f);
 
   // TODO - Get output buffer from the Tracks in the TrackManager
-  Tracks::TrackManager &track_manager = Tracks::TrackManager::instance();
+  MinimalAudioEngine::TrackManager &track_manager = MinimalAudioEngine::TrackManager::instance();
   for (size_t i = 0; i < track_manager.get_track_count(); ++i)
   {
     auto track = track_manager.get_track(i);

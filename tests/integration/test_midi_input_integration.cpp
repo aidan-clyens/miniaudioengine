@@ -8,9 +8,9 @@
 #include "midifile.h"
 #include "logger.h"
 
-using namespace Midi;
-using namespace Tracks;
-using namespace Files;
+using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine;
 
 TEST(MidiInputIntegrationTest, MidiInput)
 {

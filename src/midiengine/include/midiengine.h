@@ -10,7 +10,7 @@
 
 class RtMidiIn;  // Forward declaration for RtMidiIn class
 
-namespace Midi
+namespace MinimalAudioEngine
 {
 
 /** @class MidiEngine
@@ -52,6 +52,6 @@ private:
   std::unique_ptr<RtMidiIn> p_midi_in;
 };
 
-}  // namespace Midi
+}  // namespace MinimalAudioEngine
 
 #endif  // _MIDI_ENGINE_H

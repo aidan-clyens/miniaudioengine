@@ -24,6 +24,9 @@ find_package(replxx CONFIG REQUIRED)
 
 target_link_libraries(cli PUBLIC
   coreengine
+  trackmanager
+  devicemanager
+  filemanager
   Threads::Threads
   CLI11::CLI11
   replxx::replxx

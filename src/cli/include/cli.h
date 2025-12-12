@@ -52,7 +52,7 @@ private:
 
   static void handle_shutdown_signal(int signum);
 
-  Core::CoreEngine m_engine;
+  MinimalAudioEngine::CoreEngine m_engine;
   std::unique_ptr<::CLI::App> m_cli_app;
   std::unique_ptr<replxx::Replxx> m_replxx;
 

@@ -1,7 +1,7 @@
 #ifndef __DEVICE_H__
 #define __DEVICE_H__
 
-namespace Devices
+namespace MinimalAudioEngine
 {
 
 /** @class IDevice
@@ -40,6 +40,6 @@ public:
   }
 };
 
-} // namespace Devices
+} // namespace MinimalAudioEngine
 
 #endif // __DEVICE_H__

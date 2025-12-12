@@ -8,7 +8,7 @@
 #include "audiodevice.h"
 #include "logger.h"
 
-namespace Audio
+namespace MinimalAudioEngine
 {
 
 /** @struct AudioDeviceInfo
@@ -50,7 +50,7 @@ public:
   AudioInterface();
   ~AudioInterface();
 
-  bool open(const Devices::AudioDevice &device);
+  bool open(const MinimalAudioEngine::AudioDevice &device);
   bool start();
   bool close();
 
@@ -123,6 +123,6 @@ private:
   std::atomic<double> m_test_tone_phase{0.0};
 };
 
-} // namespace Audio
+} // namespace MinimalAudioEngine
 
 #endif // _AUDIO_INTERFACE_H_

@@ -1,12 +1,11 @@
 #include "audioengine.h"
-#include "alsa_utils.h"
 
 #include <cmath>
 #include <stdexcept>
 #include <thread>
 #include <iostream>
 
-using namespace Audio;
+using namespace MinimalAudioEngine;
 
 /** @brief AudioEngine constructor
  */
@@ -74,7 +73,7 @@ void AudioEngine::stop()
 /** @brief Set Audio Output Device - External API
  *  - Audio Output Device ID
  */
-void AudioEngine::set_output_device(const Devices::AudioDevice& device)
+void AudioEngine::set_output_device(const MinimalAudioEngine::AudioDevice& device)
 {
   AudioMessage msg;
   msg.command = eAudioEngineCommand::SetDevice;

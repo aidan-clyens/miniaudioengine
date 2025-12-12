@@ -6,7 +6,7 @@
 #include <array>
 #include <iostream>
 
-namespace Midi
+namespace MinimalAudioEngine
 {
 
 /** @enum eMidiMessageType
@@ -94,6 +94,6 @@ inline std::ostream& operator<<(std::ostream& os, const MidiMessage& msg)
   return os;
 }
 
-}  // namespace Midi
+}  // namespace MinimalAudioEngine
 
 #endif  // __MIDI_TYPES_H_

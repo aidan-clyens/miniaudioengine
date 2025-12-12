@@ -9,7 +9,7 @@
 #include <memory>
 #include <optional>
 
-namespace Files
+namespace MinimalAudioEngine
 {
 
 // Forward declaration
@@ -145,6 +145,6 @@ private:
   FileManager& operator=(const FileManager&) = delete;
 };
 
-}  // namespace Files
+}  // namespace MinimalAudioEngine
 
 #endif  // __FILE_SYSTEM_H__

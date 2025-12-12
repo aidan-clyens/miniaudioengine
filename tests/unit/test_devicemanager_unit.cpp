@@ -4,7 +4,7 @@
 #include "devicemanager.h"
 #include "logger.h"
 
-using namespace Devices;
+using namespace MinimalAudioEngine;
 
 TEST(DeviceManagerTest, GetAudioDevices)
 {
