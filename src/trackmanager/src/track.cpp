@@ -233,7 +233,14 @@ void Track::update(const MinimalAudioEngine::MidiMessage& message)
  */
 void Track::update(const MinimalAudioEngine::AudioMessage &message)
 {
-  (void)message;
+  if (message.command == eAudioEngineCommand::StoppedPlayback)
+  {
+    LOG_INFO("Track: Received AudioEngine Stop notification.");
+    if (m_event_callback)
+    {
+      m_event_callback(eTrackEvent::PlaybackFinished);
+    }
+  }
 }
 
 /** @brief Handles a MIDI message.

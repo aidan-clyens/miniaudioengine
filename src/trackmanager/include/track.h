@@ -8,6 +8,7 @@
 #include <variant>
 #include <atomic>
 #include <string>
+#include <functional>
 
 #include "observer.h"
 #include "midiengine.h"
@@ -15,31 +16,35 @@
 #include "devicemanager.h"
 #include "audiodevice.h"
 
+namespace MinimalAudioEngine
+{
+
 // Forward declarations
-namespace MinimalAudioEngine
-{
-  struct AudioMessage;
-}
-
-namespace MinimalAudioEngine
-{
-  class WavFile;
-  class MidiFile;
-}
-
-namespace MinimalAudioEngine
-{
-
+struct AudioMessage;
+class WavFile;
+class MidiFile;
+  
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
-typedef std::variant<MinimalAudioEngine::AudioDevice, MinimalAudioEngine::WavFilePtr, std::nullopt_t> AudioIOVariant;
-typedef std::variant<MinimalAudioEngine::MidiDevice, MinimalAudioEngine::MidiFilePtr, std::nullopt_t> MidiIOVariant;
+typedef std::variant<AudioDevice, WavFilePtr, std::nullopt_t> AudioIOVariant;
+typedef std::variant<MidiDevice, MidiFilePtr, std::nullopt_t> MidiIOVariant;
+
+/** @enum eTrackEvent
+ *  @brief Track events to handle in callbacks.
+ */
+enum class eTrackEvent
+{
+  PlaybackFinished
+};
+
+typedef std::function<void(eTrackEvent)> TrackEventCallback;
 
 /** @class Track
- *  @brief The Track class represents a track in the Digital Audio Workstation.
+ *  @brief The Track can one handle audio or MIDI input and output.
+ *  It implements the Observer pattern to receive MIDI and audio messages.
  */
-class Track : public Observer<MinimalAudioEngine::MidiMessage>, 
-          public Observer<MinimalAudioEngine::AudioMessage>,
+class Track : public Observer<MidiMessage>, 
+          public Observer<AudioMessage>,
           public std::enable_shared_from_this<Track>
 {
 public:
@@ -53,15 +58,14 @@ public:
   ~Track() = default;
 
   // Audio/MIDI Inputs
-  void add_audio_device_input(const MinimalAudioEngine::AudioDevice &device);
-  void add_audio_file_input(const MinimalAudioEngine::WavFilePtr wav_file);
-  void add_midi_device_input(const MinimalAudioEngine::MidiDevice &device);
-  void add_midi_file_input(const MinimalAudioEngine::MidiFilePtr midi_file);
+  void add_audio_device_input(const AudioDevice &device);
+  void add_audio_file_input(const WavFilePtr wav_file);
+  void add_midi_device_input(const MidiDevice &device);
+  void add_midi_file_input(const MidiFilePtr midi_file);
 
   // Audio/MIDI Outputs
-  void add_audio_device_output(const MinimalAudioEngine::AudioDevice& device);
-  void add_midi_device_output(const MinimalAudioEngine::MidiDevice& device);
-
+  void add_audio_device_output(const AudioDevice& device);
+  void add_midi_device_output(const MidiDevice& device);
   void remove_audio_input();
   void remove_midi_input();
   void remove_audio_output();
@@ -80,9 +84,14 @@ public:
   void play();
   void stop();
 
+  void set_event_callback(TrackEventCallback callback)
+  {
+    m_event_callback = callback;
+  }
+
   // Observer interface
-  void update(const MinimalAudioEngine::MidiMessage& message) override;
-  void update(const MinimalAudioEngine::AudioMessage& message) override;
+  void update(const MidiMessage& message) override;
+  void update(const AudioMessage& message) override;
 
   void handle_midi_message();
 
@@ -91,8 +100,10 @@ public:
   std::string to_string() const;
 
 private:
-  std::queue<MinimalAudioEngine::MidiMessage> m_message_queue;
+  std::queue<MidiMessage> m_message_queue;
   std::mutex m_queue_mutex;
+
+  TrackEventCallback m_event_callback;
 
   AudioIOVariant m_audio_input;
   MidiIOVariant m_midi_input;

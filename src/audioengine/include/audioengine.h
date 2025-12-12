@@ -8,6 +8,7 @@
 #include <rtaudio/RtAudio.h>
 
 #include "engine.h"
+#include "subject.h"
 #include "audiointerface.h"
 #include "audiodevice.h"
 
@@ -39,6 +40,7 @@ enum class eAudioEngineCommand
   Stop,
   SetDevice,
   SetParams,
+  StoppedPlayback
 };
 
 /** @struct SetDevicePayload
@@ -46,7 +48,7 @@ enum class eAudioEngineCommand
  */
 struct SetDevicePayload
 {
-  MinimalAudioEngine::AudioDevice device;
+  AudioDevice device;
 };
 
 /** @struct SetStreamParamsPayload
@@ -88,7 +90,7 @@ struct AudioEngineStatistics
 /** @class AudioEngine
  *  @brief Handles internal audio processing.
  */
-class AudioEngine : public IEngine<AudioMessage>
+class AudioEngine : public IEngine<AudioMessage>, public Subject<AudioMessage>
 {
   friend class MinimalAudioEngine::DeviceManager;
 
@@ -103,7 +105,7 @@ public:
 
   void play();
   void stop();
-  void set_output_device(const MinimalAudioEngine::AudioDevice& device);
+  void set_output_device(const AudioDevice& device);
   void set_stream_parameters(
     const unsigned int channels,
     const unsigned int sample_rate,
@@ -114,7 +116,7 @@ public:
     return m_state.load(std::memory_order_acquire);
   }
 
-  inline MinimalAudioEngine::AudioDevice get_output_device() const noexcept
+  inline AudioDevice get_output_device() const noexcept
   {
     return m_output_device;
   }
@@ -166,7 +168,7 @@ private:
   std::atomic<uint64_t> m_total_frames_processed;
 
   std::atomic<unsigned int> m_device_id;
-  MinimalAudioEngine::AudioDevice m_output_device;
+  AudioDevice m_output_device;
 };
 
 }  // namespace MinimalAudioEngine

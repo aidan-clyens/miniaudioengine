@@ -269,4 +269,7 @@ void AudioEngine::update_state_stopped()
 
   LOG_INFO("AudioEngine: Stopped playing audio... Change state to Idle.");
   m_state.store(eAudioEngineState::Idle, std::memory_order_release);
+
+  // Notify tracks that playback has finished
+  notify(AudioMessage{eAudioEngineCommand::StoppedPlayback, std::monostate{}});
 }
