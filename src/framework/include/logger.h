@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <fstream>
 #include <string>
 #include <chrono>
 #include <mutex>
@@ -44,6 +45,26 @@ public:
     return instance;
   }
 
+  void set_log_file(const std::string &file_path)
+  {
+    std::lock_guard<std::mutex> lock(m_log_mutex);
+    static std::ofstream file_stream;
+    file_stream.open(file_path, std::ios::out | std::ios::app);
+    if (file_stream.is_open())
+    {
+      p_file_out_stream = &file_stream;
+    }
+    else
+    {
+      p_file_out_stream = nullptr;
+    }
+  }
+
+  void enable_console_output(bool enable)
+  {
+    m_console_output_enabled = enable;
+  }
+
   template <typename... Args>
   void log(eLogLevel level, Args &&...args)
   {
@@ -66,15 +87,29 @@ public:
     std::ostringstream message_stream;
     (message_stream << ... << args); // C++17 fold expression
 
-    m_out_stream << "[" << timestamp_stream.str() << "] "
-                 << "[" << log_level_to_string(level) << "] "
-                 << "[Thread: " << get_thread_name() << "] "
-                 << message_stream.str() << "\n";
+    if (m_console_output_enabled)
+    {
+      (*p_out_stream) << "[" << timestamp_stream.str() << "] "
+                   << "[" << log_level_to_string(level) << "] "
+                   << "[Thread: " << get_thread_name() << "] "
+                   << message_stream.str() << "\n";
+    }
+
+    if (p_file_out_stream)
+    {
+      (*p_file_out_stream) << "[" << timestamp_stream.str() << "] "
+                      << "[" << log_level_to_string(level) << "] "
+                      << "[Thread: " << get_thread_name() << "] "
+                      << message_stream.str() << "\n";
+    }
   }
 
 private:
-  std::ostream &m_out_stream = std::cout;
+  std::ostream *p_out_stream = &std::cout;
+  std::ostream *p_file_out_stream;
   std::mutex m_log_mutex;
+
+  bool m_console_output_enabled = true;
 
   Logger() = default;
   ~Logger() = default;
