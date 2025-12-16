@@ -17,7 +17,8 @@
       "displayName": "Windows x64 Debug",
       "inherits": "windows-base",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "OFF"
       }
     },
     {
@@ -26,6 +27,24 @@
       "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
+        "BUILD_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "windows-relwithdebinfo",
+      "displayName": "Windows x64 RelWithDebInfo",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "BUILD_TESTS": "OFF"
+      }
+    },
+    {
+      "name": "windows-minsizerel",
+      "displayName": "Windows x64 MinSizeRel",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel",
         "BUILD_TESTS": "OFF"
       }
     }
@@ -42,6 +61,18 @@
       "displayName": "Windows Release Build",
       "configurePreset": "windows-release",
       "configuration": "Release"
+    },
+    {
+      "name": "windows-relwithdebinfo",
+      "displayName": "Windows RelWithDebInfo Build",
+      "configurePreset": "windows-relwithdebinfo",
+      "configuration": "RelWithDebInfo"
+    },
+    {
+      "name": "windows-minsizerel",
+      "displayName": "Windows MinSizeRel Build",
+      "configurePreset": "windows-minsizerel",
+      "configuration": "MinSizeRel"
     }
   ]
 }
