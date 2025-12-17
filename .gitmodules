@@ -1,3 +1,0 @@
-[submodule "examples/wav-audio-player"]
-	path = examples/wav-audio-player
-	url = git@github.com:aidan-clyens/wav-audio-player.git
