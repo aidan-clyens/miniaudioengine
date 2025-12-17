@@ -5,10 +5,6 @@
 
 using namespace MinimalAudioEngine;
 
-/** @brief Parse command line arguments from CLI 
- *  @param argc Argument count
- *  @param argv Argument vector
-*/
 void CLI::parse_command_line_arguments(int argc, char *argv[])
 {
   if (argc < 2)

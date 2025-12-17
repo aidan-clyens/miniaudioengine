@@ -24,18 +24,16 @@ struct Command
 
 typedef std::vector<Command> CommandList;
 
-/** @class CLI 
+/** @class CLI
  *  @brief Command Line Interface (CLI) parser
+ *  @param program_name Name of the program
+ *  @param description Description of the program
+ *  @param version Version of the program
+ *  @param commands List of possible user-defined commands
  */
 class CLI
 {
 public:
-  /** @brief CLI Constructor
-   *  @param program_name Name of the program
-   *  @param description Description of the program
-   *  @param version Version of the program
-   *  @param commands List of possible user-defined commands
-   */
   CLI(const std::string &program_name,
       const std::string &description,
       const std::string &version,
