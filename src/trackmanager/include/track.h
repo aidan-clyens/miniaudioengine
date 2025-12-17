@@ -93,7 +93,7 @@ public:
   void update(const MidiMessage& message) override;
   void update(const AudioMessage& message) override;
 
-  void handle_midi_message();
+  void handle_midi_message(const MidiMessage& message);
 
   void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate);
 

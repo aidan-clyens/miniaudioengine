@@ -48,7 +48,7 @@ void Track::add_audio_file_input(const MinimalAudioEngine::WavFilePtr wav_file)
 
   m_audio_input = wav_file;
 
-  // MinimalAudioEngine::AudioEngine::instance().set_stream_parameters(wav_file->get_channels(), wav_file->get_sample_rate(), 512);
+  MinimalAudioEngine::AudioEngine::instance().set_stream_parameters(wav_file->get_channels(), wav_file->get_sample_rate(), 512);
   LOG_INFO("Track: Added audio input file: ", wav_file->to_string());
 }
 
@@ -64,6 +64,8 @@ void Track::add_midi_device_input(const MinimalAudioEngine::MidiDevice &device)
 
   m_midi_input = device;
 
+  MinimalAudioEngine::MidiEngine::instance().open_input_port(device.id);
+  MinimalAudioEngine::MidiEngine::instance().attach(shared_from_this());
   LOG_INFO("Track: Added MIDI input device: ", device.to_string());
 }
 
@@ -125,6 +127,7 @@ void Track::remove_midi_input()
 {
   m_midi_input = std::nullopt;
   MinimalAudioEngine::MidiEngine::instance().close_input_port();
+  MinimalAudioEngine::MidiEngine::instance().detach(shared_from_this());
 }
 
 /** @brief Removes the audio output from the track.
@@ -221,17 +224,16 @@ void Track::stop()
  *  This function is called by the MidiEngine when a new MIDI message is received.
  *  @param message The MIDI message to process.
  */
-void Track::update(const MinimalAudioEngine::MidiMessage& message)
+void Track::update(const MidiMessage& message)
 {
-  std::lock_guard<std::mutex> lock(m_queue_mutex);
-  m_message_queue.push(message);
+  handle_midi_message(message);
 }
 
 /** @brief Updates the track with a new audio message.
  *  This function is called by the AudioEngine when a new audio message is received.
  *  @param message The audio message to process.
  */
-void Track::update(const MinimalAudioEngine::AudioMessage &message)
+void Track::update(const AudioMessage &message)
 {
   if (message.command == eAudioEngineCommand::StoppedPlayback)
   {
@@ -247,17 +249,9 @@ void Track::update(const MinimalAudioEngine::AudioMessage &message)
  *  This function processes the MIDI message received from the MidiEngine.
  *  @param message The MIDI message to handle.
  */
-void Track::handle_midi_message()
+void Track::handle_midi_message(const MidiMessage& message)
 {
-  MinimalAudioEngine::MidiMessage message;
-  {
-    std::lock_guard<std::mutex> lock(m_queue_mutex);
-    if (m_message_queue.empty())
-      return;
-  
-    message = m_message_queue.front();
-    m_message_queue.pop();
-  }
+  LOG_INFO("Track: Handling MIDI message: ", message.to_string());
 
   // Process the MIDI message here
   switch (message.type)

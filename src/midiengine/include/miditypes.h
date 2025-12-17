@@ -79,6 +79,18 @@ struct MidiMessage
   unsigned char data1;   // First data byte (e.g., note number, control change number)
   unsigned char data2;   // Second data byte (e.g., velocity, control change value)
   std::string_view type_name; // Human-readable name of the MIDI message type
+
+  std::string to_string() const
+  {
+    return "MidiMessage(" +
+           std::string("Deltatime=") + std::to_string(deltatime) +
+           ", Status=0x" + std::to_string(static_cast<int>(status)) +
+           ", Type=" + std::string(type_name) +
+           ", Channel=" + std::to_string(static_cast<int>(channel)) +
+           ", Data1=" + std::to_string(static_cast<int>(data1)) +
+           ", Data2=" + std::to_string(static_cast<int>(data2)) +
+           ")";
+  }
 };
 
 inline std::ostream& operator<<(std::ostream& os, const MidiMessage& msg)

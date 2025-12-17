@@ -1,0 +1,153 @@
+#include <iostream>
+#include <csignal>
+#include <thread>
+#include <chrono>
+#include <optional>
+
+#include <logger.h>
+#include <cli.h>
+#include <devicemanager.h>
+#include <trackmanager.h>
+#include <coreengine.h>
+
+#ifndef PROGRAM_NAME
+#define PROGRAM_NAME "midi-device-input"
+#endif
+
+#ifndef VERSION
+#define VERSION "1.0.0"
+#endif
+
+static bool running = false;
+
+static std::optional<unsigned int> midi_input_device_id = std::nullopt;
+
+static MinimalAudioEngine::CommandList commands = {
+  MinimalAudioEngine::Command(
+    "start",
+    "-s",
+    "Open the MIDI input device and start receiving MIDI messages",
+    [](const char *arg){
+      LOG_INFO("Starting MIDI Device Input...");
+      running = true;
+    }
+  ),
+  MinimalAudioEngine::Command(
+    "--list-midi-devices",
+    "-lm",
+    "List available MIDI input devices",
+    [](const char *arg){
+      LOG_INFO("Listing available MIDI input devices...");
+      auto midi_devices = MinimalAudioEngine::DeviceManager::instance().get_midi_devices();
+      for (const auto& device : midi_devices)
+      {
+        std::cout << device.to_string() << std::endl;
+      }
+      std::exit(0);
+    }
+  ),
+  MinimalAudioEngine::Command(
+    "--set-midi-input",
+    "-i",
+    "Set the MIDI input device by ID",
+    [](const char *arg){
+      if (arg == nullptr)
+      {
+        LOG_ERROR("No MIDI input device ID provided.");
+        return;
+      }
+      unsigned int device_id = std::stoi(arg);
+      auto midi_device = MinimalAudioEngine::DeviceManager::instance().get_midi_device(device_id);
+      if (midi_device.id != device_id)
+      {
+        LOG_ERROR("MIDI input device with ID " + std::to_string(device_id) + " not found.");
+        return;
+      }
+      LOG_INFO("MIDI input device set to: " + midi_device.to_string());
+      std::cout << "MIDI input device set to: " << midi_device.to_string() << std::endl;
+      midi_input_device_id = device_id;
+    }
+  ),
+  MinimalAudioEngine::Command(
+    "--verbose",
+    "-vb",
+    "Enable verbose logging output",
+    [](const char *arg){
+      MinimalAudioEngine::Logger::instance().enable_console_output(true);
+      LOG_INFO("Verbose logging enabled.");
+    }
+  )
+};
+
+int main(int argc, char* argv[])
+{
+  // Setup logger
+  MinimalAudioEngine::Logger::instance().set_log_file("midi_device_input.log");
+  MinimalAudioEngine::Logger::instance().enable_console_output(false);
+
+  // Setup CLI
+  MinimalAudioEngine::CLI cli(
+    PROGRAM_NAME,
+    "A MIDI input example program using the minimal-audio-engine library.",
+    VERSION,
+    commands
+  );
+
+  cli.parse_command_line_arguments(argc, argv);
+
+  // Setup coreengine
+  MinimalAudioEngine::CoreEngine engine;
+  engine.start_thread();
+
+  LOG_INFO("MIDI Device Input Example started.");
+
+  // Setup signal handler for graceful shutdown
+  std::signal(SIGINT, [](int){
+    running = false;
+    LOG_INFO("SIGINT received, shutting down...");
+  });
+
+  // Add one track
+  size_t track_id = MinimalAudioEngine::TrackManager::instance().add_track();
+  auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
+  if (!track)
+  {
+    LOG_ERROR("Failed to create track.");
+    return -1;
+  }
+
+  // Set default MIDI input device if none specified
+  auto midi_input_device = (midi_input_device_id.has_value()) ?
+    MinimalAudioEngine::DeviceManager::instance().get_midi_device(midi_input_device_id.value()) :
+    MinimalAudioEngine::DeviceManager::instance().get_default_midi_input_device();
+
+  if (midi_input_device.has_value())
+  {
+    track->add_midi_device_input(midi_input_device.value());
+    std::cout << "Using MIDI input device: " << midi_input_device->to_string() << std::endl;
+  }
+  else 
+  {
+    LOG_ERROR("No MIDI input device available.");
+    return -1;
+  }
+
+  // Set callback for end of playback
+  track->set_event_callback([](MinimalAudioEngine::eTrackEvent event) {
+    if (event == MinimalAudioEngine::eTrackEvent::PlaybackFinished) {
+      LOG_INFO("Track playback finished.");
+      running = false;
+    }
+  });
+
+  // Program loop
+  while (running)
+  {
+    // Here would be the MIDI device input handling logic
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  engine.stop_thread();
+
+  return 0;
+}

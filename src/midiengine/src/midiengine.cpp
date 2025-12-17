@@ -115,9 +115,9 @@ std::vector<MidiPort> MidiEngine::get_ports()
   return ports;
 }
 
-/** @brief Opens a MIDI input port.
- *  @param port_number The index of the MIDI port to open (default is 0).
- *  @throws std::out_of_range if the port_number is invalid.
+/** @brief Opens a MIDI input device port.
+ *  @param port_number The MIDI device port number to open (default is 0).
+ *  @throws std::out_of_range if the port number is invalid.
  *  @throws std::runtime_error if the port cannot be opened.
  */
 void MidiEngine::open_input_port(unsigned int port_number)
