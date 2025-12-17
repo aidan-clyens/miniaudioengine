@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 if(WIN32)
     message(STATUS "Building for Windows")
     add_compile_definitions(PLATFORM_WINDOWS)
+    # Enable automatic DLL copying
+    cmake_policy(SET CMP0087 NEW)
 elseif(UNIX AND NOT APPLE)
     message(STATUS "Building for Linux")
     add_compile_definitions(PLATFORM_LINUX)
