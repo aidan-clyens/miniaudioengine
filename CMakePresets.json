@@ -9,7 +9,8 @@
       "binaryDir": "${sourceDir}/build",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "BUILD_TESTS": "ON"
+        "BUILD_TESTS": "ON",
+        "BUILD_EXAMPLES": "ON"
       }
     },
     {
