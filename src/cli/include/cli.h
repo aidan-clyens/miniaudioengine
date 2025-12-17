@@ -2,69 +2,74 @@
 #define __CLI_H__
 
 #include <string>
-#include <memory>
+#include <functional>
 #include <vector>
 
-#include <replxx.hxx>
-
-#include "coreengine.h"
-
-namespace CLI { class App; }
-
-namespace GUI
+namespace MinimalAudioEngine
 {
 
-constexpr const char *CLI_WELCOME_MESSAGE = "Welcome to the Minimal Audio Engine CommandLine! Type 'help' for a list of commands.\n";
-constexpr const char *CLI_PROMPT = "> ";
-
-/** @class CommandLine
- *  @brief Command-Line Interface for interacting with the application
+/** @struct Command 
+ *  @brief Structure to define a command line argument for the CLI parser
  */
-class CommandLine
+struct Command
 {
-public:
-  CommandLine();
-  ~CommandLine();
+  std::string argument;
+  std::string argument_short;
+  std::string description;
+  std::function<void(const char *arg)> action;
 
-  void run();
-  void stop();
-
-private:
-  void setup_commands();
-  void setup_autocomplete();
-  
-  // Autocomplete callback
-  replxx::Replxx::completions_t completion_callback(std::string const& input, int& contextLen);
-
-  // Command handlers
-  void cmd_list_midi_devices();
-  void cmd_list_audio_devices();
-  void cmd_list_tracks();
-  void cmd_add_track();
-  void cmd_get_track(unsigned int track_id);
-  void cmd_add_track_audio_input_device(unsigned int track_id, unsigned int device_id);
-  void cmd_add_track_audio_input_file(unsigned int track_id, const std::string& file_path);
-  void cmd_add_track_audio_output_device(unsigned int track_id, unsigned int device_id);
-  void cmd_play_track(unsigned int track_id);
-  void cmd_stop_track(unsigned int track_id);
-  
-  void show_help();
-
-  static void handle_shutdown_signal(int signum);
-
-  MinimalAudioEngine::CoreEngine m_engine;
-  std::unique_ptr<::CLI::App> m_cli_app;
-  std::unique_ptr<replxx::Replxx> m_replxx;
-
-  // Command argument storage
-  unsigned int m_track_id;
-  unsigned int m_input_device_id;
-  unsigned int m_output_device_id;
-  std::string m_input_file_path;
-
-  static bool m_app_running;
+  Command(const std::string& arg, const std::string& arg_short, const std::string& desc, std::function<void(const char *arg)> act = nullptr)
+    : argument(arg), argument_short(arg_short), description(desc), action(act) {}
 };
 
-}; // namespace GUI
+typedef std::vector<Command> CommandList;
+
+/** @class CLI 
+ *  @brief Command Line Interface (CLI) parser
+ */
+class CLI
+{
+public:
+  /** @brief CLI Constructor
+   *  @param program_name Name of the program
+   *  @param description Description of the program
+   *  @param version Version of the program
+   *  @param commands List of possible user-defined commands
+   */
+  CLI(const std::string &program_name,
+      const std::string &description,
+      const std::string &version,
+      const CommandList &commands)
+    : m_program_name(program_name), m_description(description), m_version(version), m_commands(commands)
+    {
+      // Add default commands for help and version
+      m_commands.push_back(Command("--help", "-h", "Show help message", [this](const char *){
+        this->help(nullptr);
+      }));
+      m_commands.push_back(Command("--version", "-v", "Show version information", [this](const char *){
+        this->version(nullptr);
+      }));
+    }
+
+  ~CLI() = default;
+
+  /** @brief Parse command line arguments from CLI
+   *  @param argc Argument count
+   *  @param argv Argument vector
+   */
+  void parse_command_line_arguments(int argc, char *argv[]);
+
+private:
+  std::string m_program_name;
+  std::string m_description;
+  std::string m_version;
+  CommandList m_commands;
+
+  void help(const char *arg);
+  void version(const char *arg);
+};
+
+
+} // namespace MinimalAudioEngine
 
 #endif // __CLI_H__
