@@ -257,19 +257,26 @@ void Track::handle_midi_message(const MidiMessage& message)
   switch (message.type)
   {
     case MinimalAudioEngine::eMidiMessageType::NoteOn:
-      LOG_INFO("Track: Note On - Channel: ", static_cast<int>(message.channel),
-               ", Note: ", static_cast<int>(message.data1),
-               ", Velocity: ", static_cast<int>(message.data2));
+    {
+      MidiNoteMessage note_on_msg = static_cast<const MidiNoteMessage&>(message);
+      LOG_INFO("Track: Note On - ", note_on_msg.to_string());
+      m_note_on_callback(note_on_msg, shared_from_this());
       break;
+    }
     case MinimalAudioEngine::eMidiMessageType::NoteOff:
-      LOG_INFO("Track: Note Off - Channel: ", static_cast<int>(message.channel),
-               ", Note: ", static_cast<int>(message.data1));
+    {
+      MidiNoteMessage note_off_msg = static_cast<const MidiNoteMessage&>(message);
+      LOG_INFO("Track: Note Off - ", note_off_msg.to_string());
+      m_note_off_callback(note_off_msg, shared_from_this());
       break;
+    }
     case MinimalAudioEngine::eMidiMessageType::ControlChange:
-      LOG_INFO("Track: Control Change - Channel: ", static_cast<int>(message.channel),
-               ", Controller: ", static_cast<int>(message.data1),
-               ", Value: ", static_cast<int>(message.data2));
+    {
+      MidiControlMessage control_change_msg = static_cast<const MidiControlMessage&>(message);
+      LOG_INFO("Track: Control Change - ", control_change_msg.to_string());
+      m_control_change_callback(control_change_msg, shared_from_this());
       break;
+    }
     default:
       LOG_INFO("Track: Unknown MIDI Message Type - ", message.type_name);
       break;

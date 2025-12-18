@@ -8,6 +8,7 @@ target_sources(midiengine
     FILES
       include/miditypes.h
       include/midiengine.h
+      include/midicontroller.h
 )
 
 target_sources(midiengine

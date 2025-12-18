@@ -3,12 +3,14 @@
 #include <thread>
 #include <chrono>
 #include <optional>
+#include <map>
 
 #include <logger.h>
 #include <cli.h>
 #include <devicemanager.h>
 #include <trackmanager.h>
 #include <coreengine.h>
+#include <midicontroller.h>
 
 #ifndef PROGRAM_NAME
 #define PROGRAM_NAME "midi-device-input"
@@ -79,6 +81,24 @@ static MinimalAudioEngine::CommandList commands = {
   )
 };
 
+static MinimalAudioEngine::MidiControllerActionMap midi_controller_actions = {
+  { MinimalAudioEngine::eMidiController::Play, [](int value){ std::cout << "MIDI: Play" <<  std::endl; } },
+  { MinimalAudioEngine::eMidiController::Record, [](int value){ std::cout << "MIDI: Record" <<  std::endl; } },
+  { MinimalAudioEngine::eMidiController::ModulationWheel, [](int value){ std::cout << "MIDI: Modulation Wheel changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::Pot1, [](int value){ std::cout << "MIDI: Pot 1 changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::Pot2, [](int value){ std::cout << "MIDI: Pot 2 changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::Pot3, [](int value){ std::cout << "MIDI: Pot 3 changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::Pot4, [](int value){ std::cout << "MIDI: Pot 4 changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::Pot5, [](int value){ std::cout << "MIDI: Pot 5 changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::Pot6, [](int value){ std::cout << "MIDI: Pot 6 changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::Pot7, [](int value){ std::cout << "MIDI: Pot 7 changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::Pot8, [](int value){ std::cout << "MIDI: Pot 8 changed to value " << value << std::endl; } },
+  { MinimalAudioEngine::eMidiController::PreviousTrack, [](int value){ std::cout << "MIDI: Previous Track" <<  std::endl; } },
+  { MinimalAudioEngine::eMidiController::NextTrack, [](int value){ std::cout << "MIDI: Next Track" <<  std::endl; } },
+  { MinimalAudioEngine::eMidiController::Up, [](int value){ std::cout << "MIDI: Up" <<  std::endl; } },
+  { MinimalAudioEngine::eMidiController::Down, [](int value){ std::cout << "MIDI: Down" <<  std::endl; } }
+};
+
 int main(int argc, char* argv[])
 {
   // Setup logger
@@ -137,6 +157,30 @@ int main(int argc, char* argv[])
     if (event == MinimalAudioEngine::eTrackEvent::PlaybackFinished) {
       LOG_INFO("Track playback finished.");
       running = false;
+    }
+  });
+
+  // Set MIDI message callback functions
+  track->set_midi_note_on_callback([](const MinimalAudioEngine::MidiNoteMessage& message, MinimalAudioEngine::TrackPtr _track) {
+    std::cout << "MIDI Note On received: " << message.to_string() << std::endl;
+  });
+  track->set_midi_note_off_callback([](const MinimalAudioEngine::MidiNoteMessage& message, MinimalAudioEngine::TrackPtr _track) {
+    std::cout << "MIDI Note Off received: " << message.to_string() << std::endl;
+  });
+  track->set_midi_control_change_callback([](const MinimalAudioEngine::MidiControlMessage& message, MinimalAudioEngine::TrackPtr _track) {
+    if (message.controller_value() == static_cast<int>(MinimalAudioEngine::eMidiControllerValues::Released))
+    {
+      // Ignore released events
+      return;
+    }
+
+    auto it = midi_controller_actions.find(static_cast<MinimalAudioEngine::eMidiController>(message.controller_number()));
+    if (it != midi_controller_actions.end()) {
+      it->second(static_cast<int>(message.controller_value()));
+    }
+    else
+    {
+      std::cout << "MIDI Control Change received: " << message.to_string() << std::endl;
     }
   });
 

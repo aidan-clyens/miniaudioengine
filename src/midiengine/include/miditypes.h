@@ -59,7 +59,7 @@ inline constexpr std::array<std::pair<eMidiMessageType, std::string_view>, 19> m
 }};
 
 /** @struct MidiPort
-  *  @brief Represents a MIDI port with its number and name.
+  * @brief Represents a MIDI port with its number and name.
   */
 struct MidiPort
 {
@@ -68,7 +68,7 @@ struct MidiPort
 };
 
 /** @struct MidiMessage
-  *  @brief Represents a MIDI message with its delta time received, status, data bytes, and type name.
+  * @brief Represents a MIDI message with its delta time received, status, data bytes, and type name.
   */
 struct MidiMessage
 {
@@ -80,29 +80,95 @@ struct MidiMessage
   unsigned char data2;   // Second data byte (e.g., velocity, control change value)
   std::string_view type_name; // Human-readable name of the MIDI message type
 
-  std::string to_string() const
+  int channel_num() const
+  {
+    return static_cast<int>(channel);
+  }
+
+  virtual std::string to_string() const
   {
     return "MidiMessage(" +
            std::string("Deltatime=") + std::to_string(deltatime) +
            ", Status=0x" + std::to_string(static_cast<int>(status)) +
            ", Type=" + std::string(type_name) +
-           ", Channel=" + std::to_string(static_cast<int>(channel)) +
+           ", Channel=" + std::to_string(channel_num()) +
            ", Data1=" + std::to_string(static_cast<int>(data1)) +
            ", Data2=" + std::to_string(static_cast<int>(data2)) +
            ")";
   }
 };
 
-inline std::ostream& operator<<(std::ostream& os, const MidiMessage& msg)
+/** @struct MidiNoteMessage 
+ *  @brief Represents a MIDI note message, derived from MidiMessage, with helper methods to get note number and velocity.
+ */
+struct MidiNoteMessage : public MidiMessage
 {
-  os << "MidiMessage { "
-      << "deltatime: " << msg.deltatime
-      << ", status: 0x" << std::hex << static_cast<int>(msg.status) << std::dec
-      << ", type: " << msg.type_name
-      << ", channel: " << static_cast<int>(msg.channel)
-      << ", data1: " << static_cast<int>(msg.data1)
-      << ", data2: " << static_cast<int>(msg.data2)
-      << " }";
+  int note_number() const
+  {
+    return static_cast<int>(data1);
+  }
+
+  int velocity() const
+  {
+    return static_cast<int>(data2);
+  }
+
+  std::string to_string() const override
+  {
+    return "MidiNoteMessage(" +
+           std::string("Deltatime=") + std::to_string(deltatime) +
+           ", Status=0x" + std::to_string(static_cast<int>(status)) +
+           ", Type=" + std::string(type_name) +
+           ", Channel=" + std::to_string(channel_num()) +
+           ", Note Number=" + std::to_string(note_number()) +
+           ", Velocity=" + std::to_string(velocity()) +
+           ")";
+  }
+};
+
+/** @struct MidiControlMessage 
+ *  @brief Represents a MIDI control change message, derived from MidiMessage, with helper methods to get controller number and value.
+ */
+struct MidiControlMessage : public MidiMessage
+{
+  int controller_number() const
+  {
+    return static_cast<int>(data1);
+  }
+
+  int controller_value() const
+  {
+    return static_cast<int>(data2);
+  }
+
+  std::string to_string() const override
+  {
+    return "MidiControlMessage(" +
+           std::string("Deltatime=") + std::to_string(deltatime) +
+           ", Status=0x" + std::to_string(static_cast<int>(status)) +
+           ", Type=" + std::string(type_name) +
+           ", Channel=" + std::to_string(channel_num()) +
+           ", Controller Number=" + std::to_string(controller_number()) +
+           ", Controller Value=" + std::to_string(controller_value()) +
+           ")";
+  }
+};
+
+inline std::ostream &operator<<(std::ostream &os, const MidiMessage &msg)
+{
+  os << msg.to_string();
+  return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const MidiNoteMessage &msg)
+{
+  os << msg.to_string();
+  return os;
+}
+
+inline std::ostream &operator<<(std::ostream &os, const MidiControlMessage &msg)
+{
+  os << msg.to_string();
   return os;
 }
 
