@@ -162,10 +162,14 @@ int main(int argc, char* argv[])
 
   // Set MIDI message callback functions
   track->set_midi_note_on_callback([](const MinimalAudioEngine::MidiNoteMessage& message, MinimalAudioEngine::TrackPtr _track) {
-    std::cout << "MIDI Note On received: " << message.to_string() << std::endl;
+    int note_value = message.note_number();
+    std::string note_name = MinimalAudioEngine::get_midi_note_name(static_cast<MinimalAudioEngine::eMidiNoteValues>(note_value));
+    std::cout << "MIDI Note On: " << note_name << std::endl;
   });
   track->set_midi_note_off_callback([](const MinimalAudioEngine::MidiNoteMessage& message, MinimalAudioEngine::TrackPtr _track) {
-    std::cout << "MIDI Note Off received: " << message.to_string() << std::endl;
+    int note_value = message.note_number();
+    std::string note_name = MinimalAudioEngine::get_midi_note_name(static_cast<MinimalAudioEngine::eMidiNoteValues>(note_value));
+    std::cout << "MIDI Note Off: " << note_name << std::endl;
   });
   track->set_midi_control_change_callback([](const MinimalAudioEngine::MidiControlMessage& message, MinimalAudioEngine::TrackPtr _track) {
     if (message.controller_value() == static_cast<int>(MinimalAudioEngine::eMidiControllerValues::Released))
