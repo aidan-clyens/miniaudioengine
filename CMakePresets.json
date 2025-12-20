@@ -23,6 +23,16 @@
       }
     },
     {
+      "name": "windows-debug-library-only",
+      "displayName": "Windows x64 Debug (Library Only)",
+      "inherits": "windows-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "OFF",
+        "BUILD_EXAMPLES": "OFF"
+      }
+    },
+    {
       "name": "windows-release",
       "displayName": "Windows x64 Release",
       "inherits": "windows-base",
@@ -55,6 +65,12 @@
       "name": "windows-debug",
       "displayName": "Windows Debug Build",
       "configurePreset": "windows-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-debug-library-only",
+      "displayName": "Windows Debug Build (Library Only)",
+      "configurePreset": "windows-debug-library-only",
       "configuration": "Debug"
     },
     {
