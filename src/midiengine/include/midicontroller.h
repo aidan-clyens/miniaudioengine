@@ -3,6 +3,9 @@
 
 #include <functional>
 #include <map>
+#include <string>
+#include <string_view>
+#include <ostream>
 
 namespace MinimalAudioEngine
 {
@@ -27,6 +30,25 @@ enum class eMidiController : int
   NextTrack = 102,
   Up = 104,
   Down = 105
+};
+
+static inline const std::map<eMidiController, std::string_view> midi_controller_names =
+{
+    {eMidiController::Play, "Play"},
+    {eMidiController::Record, "Record"},
+    {eMidiController::ModulationWheel, "Modulation Wheel"},
+    {eMidiController::Pot1, "Pot 1"},
+    {eMidiController::Pot2, "Pot 2"},
+    {eMidiController::Pot3, "Pot 3"},
+    {eMidiController::Pot4, "Pot 4"},
+    {eMidiController::Pot5, "Pot 5"},
+    {eMidiController::Pot6, "Pot 6"},
+    {eMidiController::Pot7, "Pot 7"},
+    {eMidiController::Pot8, "Pot 8"},
+    {eMidiController::PreviousTrack, "Previous Track"},
+    {eMidiController::NextTrack, "Next Track"},
+    {eMidiController::Up, "Up"},
+    {eMidiController::Down, "Down"}
 };
 
 /** @enum eMidiContollerValues
@@ -157,8 +179,8 @@ enum class eMidiNoteValues : int
   Max = 127
 };
 
-static inline constexpr std::array<std::pair<eMidiNoteValues, std::string_view>, 108> midi_note_names =
-{{
+static inline const std::map<eMidiNoteValues, std::string_view> midi_note_names =
+{
     {eMidiNoteValues::A_1, "A1"},
     {eMidiNoteValues::A_Sharp_1, "A#1"},
     {eMidiNoteValues::B_1, "B1"},
@@ -266,14 +288,79 @@ static inline constexpr std::array<std::pair<eMidiNoteValues, std::string_view>,
     {eMidiNoteValues::F_Sharp_9, "F#9"},
     {eMidiNoteValues::G_9, "G9"},
     {eMidiNoteValues::G_Sharp_9, "G#9"}
-}};
+};
+
+/** @brief Returns the name of the given MIDI controller.
+ *  @param controller The MIDI controller.
+ *  @return The name of the MIDI controller.
+ *  @throws std::out_of_range if the controller is invalid.
+ */
+std::string get_midi_controller_name(eMidiController controller)
+{
+  std::string name;
+  try
+  {
+    name = std::string(midi_controller_names.at(controller));
+  }
+  catch (const std::out_of_range& e) 
+  {
+    name = "Unknown: " + std::to_string(static_cast<int>(controller));
+  }
+
+  return name;
+}
 
 /** @brief Returns the name of the given MIDI note value.
  *  @param note_value The MIDI note value.
+ *  @return The name of the MIDI note.
+ *  @throws std::out_of_range if the note value is invalid.
  */
 std::string get_midi_note_name(eMidiNoteValues note_value)
 {
-  return std::string(midi_note_names[static_cast<size_t>(note_value) - static_cast<size_t>(eMidiNoteValues::A_1)].second);
+  std::string name;
+  try
+  {
+    name = std::string(midi_note_names.at(note_value));
+  }
+  catch (const std::out_of_range& e) 
+  {
+    name = "Unknown: " + std::to_string(static_cast<int>(note_value));
+  }
+
+  return name;
+}
+
+/** @brief Overload the output stream operator for eMidiController.
+ *  @param os The output stream.
+ *  @param controller The MIDI controller.
+ *  @return The output stream.
+ */
+inline std::ostream& operator<<(std::ostream& os, const eMidiController& controller)
+{
+  os << get_midi_controller_name(controller);
+  return os;
+}
+
+/** @brief Overload the output stream operator for eMidiControllerValues.
+ *  @param os The output stream.
+ *  @param controller_value The MIDI controller value.
+ *  @return The output stream.
+ */
+inline std::ostream& operator<<(std::ostream& os, const eMidiControllerValues& controller_value)
+{
+  os << static_cast<int>(controller_value);
+  return os;
+}
+
+/** @brief Overload the output stream operator for eMidiNoteValues.
+ *  @param os The output stream.
+ *  @param note_value The MIDI note value.
+ *  @return The output stream.
+ */
+inline std::ostream& operator<<(std::ostream& os, const eMidiNoteValues& note_value)
+{
+  os << get_midi_note_name(note_value);
+  return os;
 }
 
 } // namespace MinimalAudioEngine

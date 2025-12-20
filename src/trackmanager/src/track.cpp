@@ -211,12 +211,14 @@ MidiIOVariant Track::get_midi_output() const
 void Track::play()
 {
   LOG_INFO("Track: Play...");
+  m_is_playing = true;
   MinimalAudioEngine::AudioEngine::instance().play();
 }
 
 void Track::stop()
 {
   LOG_INFO("Track: Stop...");
+  m_is_playing = false;
   MinimalAudioEngine::AudioEngine::instance().stop();
 }
 

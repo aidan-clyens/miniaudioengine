@@ -153,6 +153,14 @@ public:
   /** @brief Stop playback of the track. */
   void stop();
 
+  /** @brief Check if the track is currently playing.
+   *  @return True if the track is playing, false otherwise.
+   */
+  bool is_playing() const
+  {
+    return m_is_playing;
+  }
+
   /** @brief Set a callback function for track events.
    *  @param callback The callback function to set e.g. `void playback_func(MinimalAudioEngine::eTrackEvent event)`.
    */
@@ -200,6 +208,8 @@ private:
   std::mutex m_queue_mutex;
 
   TrackEventCallback m_event_callback;
+
+  bool m_is_playing{false};
 
   AudioIOVariant m_audio_input;
   MidiIOVariant m_midi_input;
