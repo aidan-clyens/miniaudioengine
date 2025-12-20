@@ -15,6 +15,7 @@
 #include "filemanager.h"
 #include "devicemanager.h"
 #include "audiodevice.h"
+#include "audioprocessor.h"
 
 namespace MinimalAudioEngine
 {
@@ -23,7 +24,8 @@ namespace MinimalAudioEngine
 struct AudioMessage;
 class WavFile;
 class MidiFile;
-  
+class IAudioProcessor;
+
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
 typedef std::variant<AudioDevice, WavFilePtr, std::nullopt_t> AudioIOVariant;
@@ -49,6 +51,7 @@ typedef std::function<void(eTrackEvent)> TrackEventCallback;
  */
 class Track : public Observer<MidiMessage>, 
           public Observer<AudioMessage>,
+          public IAudioProcessor,
           public std::enable_shared_from_this<Track>
 {
 public:
@@ -132,6 +135,18 @@ public:
    */
   MidiIOVariant get_midi_output() const;
 
+  // Audio Processing
+  void add_audio_processor(const std::shared_ptr<IAudioProcessor> node)
+  {
+    LOG_INFO("Adding audio processor to track: ", node->to_string());
+    m_audio_processing_nodes.push_back(node);
+  }
+
+  std::vector<std::shared_ptr<IAudioProcessor>> get_audio_processors() const
+  {
+    return m_audio_processing_nodes;
+  }
+
   // Playback control
   /** @brief Start playback of the track. */
   void play();
@@ -176,7 +191,7 @@ public:
 
   void handle_midi_message(const MidiMessage& message); // TODO - Make private
 
-  void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate); // TODO - Make private
+  void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate) override; // TODO - Make private
 
   std::string to_string() const;
 
@@ -190,6 +205,8 @@ private:
   MidiIOVariant m_midi_input;
   AudioIOVariant m_audio_output;
   MidiIOVariant m_midi_output;
+
+  std::vector<std::shared_ptr<IAudioProcessor>> m_audio_processing_nodes;
 
   MidiNoteOnCallbackFunc m_note_on_callback;
   MidiNoteOffCallbackFunc m_note_off_callback;

@@ -11,6 +11,7 @@
 #include <trackmanager.h>
 #include <coreengine.h>
 #include <midicontroller.h>
+#include <audioprocessor.h>
 
 #ifndef PROGRAM_NAME
 #define PROGRAM_NAME "midi-device-input"
@@ -20,9 +21,61 @@
 #define VERSION "1.0.0"
 #endif
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+/** @class OscillatorAudioProcessor 
+ *  @brief Simple audio processor that generates a sine wave oscillator.
+ */
+class OscillatorAudioProcessor : public MinimalAudioEngine::IAudioProcessor
+{
+public:
+  OscillatorAudioProcessor() = default;
+  ~OscillatorAudioProcessor() override = default;
+
+  void set_frequency(const float frequency)
+  {
+    m_frequency = frequency;
+  }
+
+  void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate) override
+  {
+    LOG_INFO("Generating oscillator audio frame: " +
+             std::to_string(frames) + " frames, " +
+             std::to_string(channels) + " channels, " +
+             std::to_string(sample_rate) + " Hz");
+
+    for (unsigned int i = 0; i < frames; ++i)
+    {
+      float sample = static_cast<float>(std::sin(m_phase));
+      m_phase += (2.0 * M_PI * m_frequency) / static_cast<float>(sample_rate);
+      if (m_phase >= (2.0 * M_PI))
+      {
+        m_phase -= (2.0 * M_PI);
+      }
+
+      for (unsigned int ch = 0; ch < channels; ++ch)
+      {
+        output_buffer[i * channels + ch] = sample;
+      }
+    }
+  }
+
+  std::string to_string() const override
+  {
+    return "OscillatorAudioProcessor(Frequency=" + std::to_string(m_frequency) + " Hz)";
+  }
+
+private:
+  float m_frequency = 440.0f; // A4
+  float m_phase = 0.0f;
+};
+
 static bool running = false;
 
 static std::optional<unsigned int> midi_input_device_id = std::nullopt;
+static std::optional<unsigned int> audio_output_device_id = std::nullopt;
 
 static MinimalAudioEngine::CommandList commands = {
   MinimalAudioEngine::Command(
@@ -36,12 +89,26 @@ static MinimalAudioEngine::CommandList commands = {
   ),
   MinimalAudioEngine::Command(
     "--list-midi-devices",
-    "-lm",
+    "-lmd",
     "List available MIDI input devices",
     [](const char *arg){
       LOG_INFO("Listing available MIDI input devices...");
       auto midi_devices = MinimalAudioEngine::DeviceManager::instance().get_midi_devices();
       for (const auto& device : midi_devices)
+      {
+        std::cout << device.to_string() << std::endl;
+      }
+      std::exit(0);
+    }
+  ),
+  MinimalAudioEngine::Command(
+    "--list-audio-devices",
+    "-lad",
+    "List available Audio output devices",
+    [](const char *arg){
+      LOG_INFO("Listing available Audio output devices...");
+      auto audio_devices = MinimalAudioEngine::DeviceManager::instance().get_audio_devices();
+      for (const auto& device : audio_devices)
       {
         std::cout << device.to_string() << std::endl;
       }
@@ -68,6 +135,28 @@ static MinimalAudioEngine::CommandList commands = {
       LOG_INFO("MIDI input device set to: " + midi_device.to_string());
       std::cout << "MIDI input device set to: " << midi_device.to_string() << std::endl;
       midi_input_device_id = device_id;
+    }
+  ),
+  MinimalAudioEngine::Command(
+    "--set-audio-output",
+    "-o",
+    "Set the Audio output device by ID",
+    [](const char *arg){
+      if (arg == nullptr)
+      {
+        LOG_ERROR("No Audio output device ID provided.");
+        return;
+      }
+      unsigned int device_id = std::stoi(arg);
+      auto audio_device = MinimalAudioEngine::DeviceManager::instance().get_audio_device(device_id);
+      if (audio_device.id != device_id)
+      {
+        LOG_ERROR("Audio output device with ID " + std::to_string(device_id) + " not found.");
+        return;
+      }
+      LOG_INFO("Audio output device set to: " + audio_device.to_string());
+      std::cout << "Audio output device set to: " << audio_device.to_string() << std::endl;
+      audio_output_device_id = device_id;
     }
   ),
   MinimalAudioEngine::Command(
@@ -151,6 +240,26 @@ int main(int argc, char* argv[])
     LOG_ERROR("No MIDI input device available.");
     return -1;
   }
+
+  // Set default Audio output device if none specified
+  auto audio_output_device = (audio_output_device_id.has_value()) ?
+    MinimalAudioEngine::DeviceManager::instance().get_audio_device(audio_output_device_id.value()) :
+    MinimalAudioEngine::DeviceManager::instance().get_default_audio_output_device();
+
+  if (audio_output_device.has_value())
+  {
+    track->add_audio_device_output(audio_output_device.value());
+    std::cout << "Using Audio output device: " << audio_output_device->to_string() << std::endl;
+  }
+  else 
+  {
+    LOG_ERROR("No Audio output device available.");
+    return -1;
+  }
+
+  // Add an oscillator audio processor to the track
+  auto oscillator_processor = std::make_shared<OscillatorAudioProcessor>();
+  track->add_audio_processor(oscillator_processor);
 
   // Set callback for end of playback
   track->set_event_callback([](MinimalAudioEngine::eTrackEvent event) {

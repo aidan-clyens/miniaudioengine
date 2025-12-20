@@ -167,37 +167,14 @@ bool AudioInterface::close()
  */
 void AudioInterface::process_audio(float *output_buffer, unsigned int n_frames)
 {
-  if (m_test_tone_enabled.load(std::memory_order_relaxed))
-  {
-    // Generate a test tone (sine wave at 440 Hz)
-    double phase = m_test_tone_phase.load(std::memory_order_relaxed);
-    double phase_increment = 2.0 * M_PI * 440.0 / static_cast<double>(get_sample_rate());
-
-    for (unsigned int i = 0; i < n_frames; ++i)
-    {
-      float sample = static_cast<float>(0.1 * sin(phase)); // 0.1 to reduce volume
-      for (unsigned int ch = 0; ch < get_channels(); ++ch)
-      {
-        output_buffer[i * get_channels() + ch] = sample;
-      }
-      phase += phase_increment;
-      if (phase >= 2.0 * M_PI)
-        phase -= 2.0 * M_PI;
-    }
-
-    m_test_tone_phase.store(phase, std::memory_order_relaxed);
-    return;
-  }
-
-  // Placeholder implementation - fill output buffer with silence
   std::fill(output_buffer, output_buffer + n_frames * get_channels(), 0.0f);
 
-  // TODO - Get output buffer from the Tracks in the TrackManager
+  // TODO - Instead of using TrackManager, get audio from AudioProcessors
+  // Get output buffer from the Tracks in the TrackManager
   MinimalAudioEngine::TrackManager &track_manager = MinimalAudioEngine::TrackManager::instance();
   for (size_t i = 0; i < track_manager.get_track_count(); ++i)
   {
     auto track = track_manager.get_track(i);
-    // TODO - Check if audio output matches the interface settings
     if (track->has_audio_output())
     {
       track->get_next_audio_frame(output_buffer, n_frames, get_channels(), get_sample_rate());

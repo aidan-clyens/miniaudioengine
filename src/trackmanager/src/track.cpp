@@ -319,18 +319,19 @@ void Track::get_next_audio_frame(float *output_buffer, unsigned int frames, unsi
     return;
   }
 
-  if (!has_audio_input())
-  {
-    // No audio input configured, fill with silence
-    LOG_INFO("Track: No audio input configured, filling output buffer with silence.");
-    std::fill(output_buffer, output_buffer + frames * channels, 0.0f);
-    return;
-  }
+  // if (!has_audio_input())
+  // {
+  //   // No audio input configured, fill with silence
+  //   LOG_INFO("Track: No audio input configured, filling output buffer with silence.");
+  //   std::fill(output_buffer, output_buffer + frames * channels, 0.0f);
+  //   return;
+  // }
 
   // If audio input is a WAV file, read data from it
   if (std::holds_alternative<MinimalAudioEngine::WavFilePtr>(m_audio_input))
   {
     MinimalAudioEngine::WavFilePtr wav_file = std::get<MinimalAudioEngine::WavFilePtr>(m_audio_input);
+    LOG_INFO("Track: Reading next audio frame from WAV file: ", wav_file->to_string());
 
     unsigned int file_channels = wav_file->get_channels();
     unsigned int samples_to_read = frames * file_channels;
@@ -367,6 +368,13 @@ void Track::get_next_audio_frame(float *output_buffer, unsigned int frames, unsi
       }
     }
   }
+
+  // Audio processing nodes
+  for (auto node_ptr : m_audio_processing_nodes)
+  {
+    LOG_INFO("Track: Processing audio frame with processing node: ", node_ptr->to_string());
+    node_ptr->get_next_audio_frame(output_buffer, frames, channels, sample_rate);
+  }
 }
 
 std::string Track::to_string() const
@@ -391,7 +399,9 @@ std::string Track::to_string() const
   std::string midi_output_str = std::holds_alternative<std::nullopt_t>(midi_output) ? "None" :
                                 std::holds_alternative<MinimalAudioEngine::MidiDevice>(midi_output) ? std::get<MinimalAudioEngine::MidiDevice>(midi_output).to_string() :
                                 std::get<MinimalAudioEngine::MidiFilePtr>(midi_output)->to_string();
-  
+
+  // TODO - Include audio processing nodes in the string representation
+
   return "Track(AudioInput=" + audio_input_str +
          ", MidiInput=" + midi_input_str +
          ", AudioOutput=" + audio_output_str +
