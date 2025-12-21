@@ -23,8 +23,8 @@ target_include_directories(trackmanager
 
 target_link_libraries(trackmanager PUBLIC
   framework
-  midiengine
-  audioengine
+  dataplane-midi
+  dataplane-audio
   filemanager
   devicemanager
 )

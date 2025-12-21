@@ -23,8 +23,8 @@ target_include_directories(devicemanager
 
 target_link_libraries(devicemanager
   PUBLIC
-    audioengine
-    midiengine
+    dataplane-audio
+    dataplane-midi
 )
 
 set_target_properties(devicemanager PROPERTIES LINKER_LANGUAGE CXX)

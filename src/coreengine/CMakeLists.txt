@@ -18,6 +18,6 @@ target_include_directories(coreengine
 
 target_link_libraries(coreengine PUBLIC
   framework
-  audioengine
-  midiengine
+  dataplane-audio
+  dataplane-midi
 )

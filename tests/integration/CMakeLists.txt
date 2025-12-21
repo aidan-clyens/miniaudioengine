@@ -9,8 +9,8 @@ target_link_libraries(EmbeddedAudioEngineTests PRIVATE
   GTest::gtest
   GTest::gtest_main
   framework
-  audioengine
-  midiengine
+  dataplane-audio
+  dataplane-midi
   trackmanager
   filemanager
   devicemanager

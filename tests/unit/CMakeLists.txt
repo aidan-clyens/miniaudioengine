@@ -11,7 +11,7 @@ add_executable(EmbeddedAudioEngineUnitTests
 target_link_libraries(EmbeddedAudioEngineUnitTests PRIVATE
   GTest::gtest
   GTest::gtest_main
-  audioengine
+  dataplane-audio
   trackmanager
   filemanager
   devicemanager
