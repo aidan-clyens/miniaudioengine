@@ -1,6 +1,7 @@
 enable_testing()
 
 add_executable(minimal-audio-engine-realtime-tests
+  test_double_buffer.cpp
   test_lockfree_ringbuffer.cpp
 )
 
