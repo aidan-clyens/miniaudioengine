@@ -23,9 +23,9 @@ TEST(AudioInputIntegrationTest, AudioInput)
   AudioEngine::instance().start_thread();
 
   // Add a track
-  ASSERT_EQ(TrackManager::instance().get_track_count(), 0);
+  EXPECT_EQ(TrackManager::instance().get_track_count(), 0);
   size_t track_index = TrackManager::instance().add_track();
-  ASSERT_EQ(TrackManager::instance().get_track_count(), 1);
+  EXPECT_EQ(TrackManager::instance().get_track_count(), 1);
 
   auto track = TrackManager::instance().get_track(track_index);
 
@@ -39,15 +39,17 @@ TEST(AudioInputIntegrationTest, AudioInput)
   std::string test_wav_file = "samples/test.wav";
 
   auto wav_file = FileManager::instance().read_wav_file(test_wav_file);
-  ASSERT_EQ(wav_file->get_filepath(), FileManager::instance().convert_to_absolute(test_wav_file));
-  ASSERT_EQ(wav_file->get_filename(), FileManager::instance().convert_to_absolute(test_wav_file).filename().string());
+  EXPECT_EQ(wav_file.has_value(), true);
+  WavFilePtr wav_file_ptr = wav_file.value();
+  EXPECT_EQ(wav_file_ptr->get_filepath(), FileManager::instance().convert_to_absolute(test_wav_file));
+  EXPECT_EQ(wav_file_ptr->get_filename(), FileManager::instance().convert_to_absolute(test_wav_file).filename().string());
 
-  LOG_INFO("WAV file loaded: ", wav_file->get_filepath());
+  LOG_INFO("WAV file loaded: ", wav_file_ptr->get_filepath());
 
-  track->add_audio_file_input(wav_file);
+  track->add_audio_file_input(wav_file_ptr);
 
   // Add audio output to track
-  track->add_audio_output();
+  track->add_audio_device_output(DeviceManager::instance().get_default_audio_output_device().value_or(AudioDevice()));
 
   track->play();
   std::this_thread::sleep_for(std::chrono::seconds(2));

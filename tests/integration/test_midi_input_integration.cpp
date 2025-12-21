@@ -31,13 +31,15 @@ TEST(MidiInputIntegrationTest, MidiInput)
   // Open a test MIDI file and load it into the track
   std::string test_midi_file = "samples/midi_c_major_monophonic.mid";
 
-  MidiFile midi_file = FileManager::instance().read_midi_file(test_midi_file);
-  ASSERT_EQ(midi_file.get_filepath(), FileManager::instance().convert_to_absolute(test_midi_file));
-  ASSERT_EQ(midi_file.get_filename(), FileManager::instance().convert_to_absolute(test_midi_file).filename().string());
+  auto midi_file = FileManager::instance().read_midi_file(test_midi_file);
+  EXPECT_EQ(midi_file.has_value(), true);
+  MidiFilePtr midi_file_ptr = midi_file.value();
+  EXPECT_EQ(midi_file_ptr->get_filepath(), FileManager::instance().convert_to_absolute(test_midi_file));
+  EXPECT_EQ(midi_file_ptr->get_filename(), FileManager::instance().convert_to_absolute(test_midi_file).filename().string());
 
-  LOG_INFO("MIDI file loaded: ", midi_file.get_filepath());
+  LOG_INFO("MIDI file loaded: ", midi_file_ptr->get_filepath());
 
-  track->add_midi_file_input(midi_file);
+  track->add_midi_file_input(midi_file_ptr);
 
   // Stop the MIDI engine
   MidiEngine::instance().stop_thread();
