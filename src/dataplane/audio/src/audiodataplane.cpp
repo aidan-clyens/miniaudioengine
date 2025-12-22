@@ -1,4 +1,4 @@
-#include "audiointerface.h"
+#include "audiodataplane.h"
 
 #include "trackmanager.h"
 #include "track.h"
@@ -18,7 +18,7 @@ using namespace MinimalAudioEngine;
  *  @param n_frames Number of frames to process
  *  @param stream_time Current stream time
  *  @param status Stream status
- *  @param user_data User data pointer (should be AudioInterface instance)
+ *  @param user_data User data pointer (should be AudioDataplane instance)
  *  @return 0 on success, non-zero on error
  */
 int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
@@ -31,25 +31,25 @@ int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frame
 
   if (output_buffer == nullptr)
   {
-    LOG_ERROR("AudioInterface: Null output buffer in audio callback");
+    LOG_ERROR("AudioDataplane: Null output buffer in audio callback");
     return 1; // Error code
   }
 
   if (user_data == nullptr)
   {
-    LOG_ERROR("AudioInterface: Null user data in audio callback");
+    LOG_ERROR("AudioDataplane: Null user data in audio callback");
     return 1; // Error code
   }
 
-  AudioInterface *audio_interface = reinterpret_cast<AudioInterface *>(user_data);
-  audio_interface->process_audio(static_cast<float *>(output_buffer), n_frames);
+  AudioDataplane *audio_dataplane = reinterpret_cast<AudioDataplane *>(user_data);
+  audio_dataplane->process_audio(static_cast<float *>(output_buffer), n_frames);
 
   return 0;
 }
 
-/** @brief AudioInterface constructor
+/** @brief AudioDataplane constructor
  */
-AudioInterface::AudioInterface() : m_buffer_frames(512),
+AudioDataplane::AudioDataplane() : m_buffer_frames(512),
                                    m_sample_rate(44100),
                                    m_channels(2),
                                    m_test_tone_enabled(false)
@@ -59,20 +59,20 @@ AudioInterface::AudioInterface() : m_buffer_frames(512),
  *  @param device Audio output device to open
  *  @return true on success, false on failure
  */
-bool AudioInterface::open(const MinimalAudioEngine::AudioDevice &device)
+bool AudioDataplane::open(const MinimalAudioEngine::AudioDevice &device)
 {
-  LOG_INFO("Open AudioInterface on device: ", device.to_string(), " as output.");
+  LOG_INFO("Open AudioDataplane on device: ", device.to_string(), " as output.");
   
   unsigned int channels = device.output_channels;
   unsigned int sample_rate = m_sample_rate.load(std::memory_order_relaxed);
   unsigned int buffer_frames = m_buffer_frames.load(std::memory_order_relaxed);
 
-  LOG_INFO("AudioInterface: Open stream on device: ", device.id, ", with channels: ", channels, ", sample rate: ", sample_rate, ", buffer frames: ", buffer_frames);
+  LOG_INFO("AudioDataplane: Open stream on device: ", device.id, ", with channels: ", channels, ", sample rate: ", sample_rate, ", buffer frames: ", buffer_frames);
   RtAudio::StreamParameters params{device.id, channels, 0};
 
   for (const auto &id : get_device_ids())
   {
-    LOG_INFO("AudioInterface: Device ID: ", id);
+    LOG_INFO("AudioDataplane: Device ID: ", id);
   }
 
   RtAudioErrorType rc;
@@ -86,17 +86,17 @@ bool AudioInterface::open(const MinimalAudioEngine::AudioDevice &device)
 
   if (rc == RTAUDIO_SYSTEM_ERROR)
   {
-    LOG_ERROR("AudioInterface: Stream cannot be opened with the specified parameters or an error occurs during processing on device: ", device.to_string());
+    LOG_ERROR("AudioDataplane: Stream cannot be opened with the specified parameters or an error occurs during processing on device: ", device.to_string());
     return false;
   }
   else if (rc == RTAUDIO_INVALID_USE)
   {
-    LOG_ERROR("AudioInterface: Stream is already open or any invalid stream parameters are specified on device: ", device.to_string());
+    LOG_ERROR("AudioDataplane: Stream is already open or any invalid stream parameters are specified on device: ", device.to_string());
     return false;
   }
   else if (rc != RTAUDIO_NO_ERROR)
   {
-    LOG_ERROR("AudioInterface: Unknown error opening RtAudio stream on device: ", device.to_string());
+    LOG_ERROR("AudioDataplane: Unknown error opening RtAudio stream on device: ", device.to_string());
     return false;
   }
 
@@ -107,22 +107,22 @@ bool AudioInterface::open(const MinimalAudioEngine::AudioDevice &device)
 /** @brief Start the audio stream
  *  @return true on success, false on failure
  */
-bool AudioInterface::start()
+bool AudioDataplane::start()
 {
   RtAudioErrorType rc = m_rtaudio.startStream();
   if (rc == RTAUDIO_SYSTEM_ERROR)
   {
-    LOG_ERROR("AudioInterface: System error occurred while starting RtAudio stream.");
+    LOG_ERROR("AudioDataplane: System error occurred while starting RtAudio stream.");
     return false;
   }
   else if (rc == RTAUDIO_WARNING)
   {
-    LOG_ERROR("AudioInterface: Stream is not open or already running.");
+    LOG_ERROR("AudioDataplane: Stream is not open or already running.");
     return false;
   }
   else if (rc != RTAUDIO_NO_ERROR)
   {
-    LOG_ERROR("AudioInterface: Failed to start RtAudio stream.");
+    LOG_ERROR("AudioDataplane: Failed to start RtAudio stream.");
     return false;
   }
 
@@ -132,7 +132,7 @@ bool AudioInterface::start()
 /** @brief Close the audio stream
  *  @return true on success, false on failure
  */
-bool AudioInterface::close()
+bool AudioDataplane::close()
 {
   try
   {
@@ -140,21 +140,21 @@ bool AudioInterface::close()
     {
       if (m_rtaudio.stopStream() != RTAUDIO_NO_ERROR)
       {
-        LOG_ERROR("AudioInterface: Failed to stop RtAudio stream.");
+        LOG_ERROR("AudioDataplane: Failed to stop RtAudio stream.");
         return false;
       }
-      LOG_INFO("AudioInterface: Stopped RtAudio stream.");
+      LOG_INFO("AudioDataplane: Stopped RtAudio stream.");
     }
     if (m_rtaudio.isStreamOpen())
     {
-      LOG_INFO("AudioInterface: Closing RtAudio stream...");
+      LOG_INFO("AudioDataplane: Closing RtAudio stream...");
       m_rtaudio.closeStream();
-      LOG_INFO("AudioInterface: Closed RtAudio stream.");
+      LOG_INFO("AudioDataplane: Closed RtAudio stream.");
     }
   }
   catch (const std::exception &e)
   {
-    LOG_ERROR("AudioInterface: RtAudio error during close: ", e.what());
+    LOG_ERROR("AudioDataplane: RtAudio error during close: ", e.what());
     return false;
   }
   m_should_close.store(false, std::memory_order_release);
@@ -165,7 +165,7 @@ bool AudioInterface::close()
  *  @param output_buffer Pointer to the output buffer
  *  @param n_frames Number of frames to process
  */
-void AudioInterface::process_audio(float *output_buffer, unsigned int n_frames)
+void AudioDataplane::process_audio(float *output_buffer, unsigned int n_frames)
 {
   std::fill(output_buffer, output_buffer + n_frames * get_channels(), 0.0f);
 
@@ -182,9 +182,9 @@ void AudioInterface::process_audio(float *output_buffer, unsigned int n_frames)
   }
 }
 
-/** @brief AudioInterface destructor
+/** @brief AudioDataplane destructor
  */
-AudioInterface::~AudioInterface()
+AudioDataplane::~AudioDataplane()
 {
   if (m_should_close.load(std::memory_order_acquire))
   {
@@ -197,7 +197,7 @@ AudioInterface::~AudioInterface()
     }
     catch (const std::exception &e)
     {
-      LOG_ERROR("AudioInterface: RtAudio error during close: ", e.what());
+      LOG_ERROR("AudioDataplane: RtAudio error during close: ", e.what());
     }
 
     m_should_close.store(false, std::memory_order_release);

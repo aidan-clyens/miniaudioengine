@@ -1,5 +1,5 @@
-#ifndef _AUDIO_INTERFACE_H_
-#define _AUDIO_INTERFACE_H_
+#ifndef _AUDIO_DATAPLANE_H_
+#define _AUDIO_DATAPLANE_H_
 
 #include <memory>
 #include <atomic>
@@ -41,14 +41,14 @@ struct AudioDeviceInfo : public RtAudio::DeviceInfo
   }
 };
 
-/** @class AudioInterface
+/** @class AudioDataplane
  *  @brief Wrapper around RtAudio for audio stream management
  */
-class AudioInterface
+class AudioDataplane
 {
 public:
-  AudioInterface();
-  ~AudioInterface();
+  AudioDataplane();
+  ~AudioDataplane();
 
   bool open(const MinimalAudioEngine::AudioDevice &device);
   bool start();
@@ -107,8 +107,8 @@ public:
   void process_audio(float *output_buffer, unsigned int n_frames);
 
   // Disable copy constructor and assignment operator
-  AudioInterface(const AudioInterface & ) = delete;
-  AudioInterface & operator=(const AudioInterface & ) = delete;
+  AudioDataplane(const AudioDataplane & ) = delete;
+  AudioDataplane & operator=(const AudioDataplane & ) = delete;
 
 private:
   RtAudio m_rtaudio;
@@ -125,4 +125,4 @@ private:
 
 } // namespace MinimalAudioEngine
 
-#endif // _AUDIO_INTERFACE_H_
+#endif // _AUDIO_DATAPLANE_H_

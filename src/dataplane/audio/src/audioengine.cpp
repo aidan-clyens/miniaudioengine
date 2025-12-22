@@ -16,7 +16,7 @@ AudioEngine::AudioEngine() : IEngine("AudioEngine"),
   m_total_frames_processed(0)
 {
   // Set up RtAudio
-  p_audio_interface = std::make_unique<AudioInterface>();
+  p_audio_dataplane = std::make_unique<AudioDataplane>();
 }
 
 /** @brief Return a copy of the AudioEngine statistics
@@ -36,16 +36,16 @@ AudioEngineStatistics AudioEngine::get_statistics() const
  */
 std::vector<AudioDeviceInfo> AudioEngine::get_devices()
 {
-  if (!p_audio_interface)
+  if (!p_audio_dataplane)
   {
     LOG_ERROR("AudioEngine: RtAudio is not initialized.");
     throw std::runtime_error("AudioEngine: RtAudio is not initialized");
   }
 
   std::vector<AudioDeviceInfo> devices;
-  for (unsigned int i : p_audio_interface->get_device_ids())
+  for (unsigned int i : p_audio_dataplane->get_device_ids())
   {
-    AudioDeviceInfo info = p_audio_interface->get_device_info(i);
+    AudioDeviceInfo info = p_audio_dataplane->get_device_info(i);
     devices.push_back(info);
   }
 
@@ -168,9 +168,9 @@ void AudioEngine::handle_messages()
 
           auto &payload = std::get<SetStreamParamsPayload>(message->payload);
 
-          p_audio_interface->set_channels(payload.channels);
-          p_audio_interface->set_sample_rate(payload.sample_rate);
-          p_audio_interface->set_buffer_frames(payload.buffer_frames);
+          p_audio_dataplane->set_channels(payload.channels);
+          p_audio_dataplane->set_sample_rate(payload.sample_rate);
+          p_audio_dataplane->set_buffer_frames(payload.buffer_frames);
         }
         break;
       default:
@@ -213,27 +213,27 @@ void AudioEngine::update_state()
  */
 void AudioEngine::update_state_start()
 {
-  if (p_audio_interface == nullptr)
+  if (p_audio_dataplane == nullptr)
   {
     LOG_ERROR("AudioEngine: RtAudio is not initialized.");
     throw std::runtime_error("AudioEngine: RtAudio is not initialized");
   }
 
-  if (!p_audio_interface->close())
+  if (!p_audio_dataplane->close())
   {
     LOG_ERROR("AudioEngine: Failed to close existing audio interface.");
     m_state.store(eAudioEngineState::Idle, std::memory_order_release);
     return;
   }
 
-  if (!p_audio_interface->open(m_output_device))
+  if (!p_audio_dataplane->open(m_output_device))
   {
     LOG_ERROR("AudioEngine: Failed to open audio interface.");
     m_state.store(eAudioEngineState::Idle, std::memory_order_release);
     return;
   }
 
-  if (!p_audio_interface->start())
+  if (!p_audio_dataplane->start())
   {
     LOG_ERROR("AudioEngine: Failed to start audio interface.");
     m_state.store(eAudioEngineState::Idle, std::memory_order_release);
@@ -248,7 +248,7 @@ void AudioEngine::update_state_start()
  */
 void AudioEngine::update_state_running()
 {
-  if (!p_audio_interface->is_stream_running())
+  if (!p_audio_dataplane->is_stream_running())
   {
     LOG_INFO("AudioEngine: Finished playing audio... Change state to Stopped.");
     m_state.store(eAudioEngineState::Stopped, std::memory_order_release);
@@ -259,7 +259,7 @@ void AudioEngine::update_state_running()
  */
 void AudioEngine::update_state_stopped()
 {
-  if (!p_audio_interface->close())
+  if (!p_audio_dataplane->close())
   {
     LOG_ERROR("AudioEngine: Failed to close audio interface.");
     return;

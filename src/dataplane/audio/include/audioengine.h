@@ -9,7 +9,7 @@
 
 #include "engine.h"
 #include "subject.h"
-#include "audiointerface.h"
+#include "audiodataplane.h"
 #include "audiodevice.h"
 
 namespace MinimalAudioEngine
@@ -121,17 +121,17 @@ public:
 
   inline unsigned int get_channels() const noexcept
   {
-    return p_audio_interface->get_channels();
+    return p_audio_dataplane->get_channels();
   }
 
   inline unsigned int get_sample_rate() const noexcept
   {
-    return p_audio_interface->get_sample_rate();
+    return p_audio_dataplane->get_sample_rate();
   }
 
   inline unsigned int get_buffer_frames() const noexcept
   {
-    return p_audio_interface->get_buffer_frames();
+    return p_audio_dataplane->get_buffer_frames();
   }
 
   void stop_thread()
@@ -159,7 +159,7 @@ private:
   void update_state_running();
   void update_state_stopped();
 
-  std::unique_ptr<AudioInterface> p_audio_interface;
+  std::unique_ptr<AudioDataplane> p_audio_dataplane;
 
   std::atomic<eAudioEngineState> m_state;
   std::atomic<unsigned int> m_tracks_playing;
