@@ -1,7 +1,4 @@
 add_subdirectory(framework)
-add_subdirectory(coreengine)
-add_subdirectory(trackmanager)
-add_subdirectory(devicemanager)
-add_subdirectory(filemanager)
 add_subdirectory(cli)
+add_subdirectory(controlplane)
 add_subdirectory(dataplane)
