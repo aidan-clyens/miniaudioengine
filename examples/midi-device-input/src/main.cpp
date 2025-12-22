@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
 
   if (midi_input_device.has_value())
   {
-    track->add_midi_device_input(midi_input_device.value());
+    track->add_midi_input(midi_input_device.value());
     std::cout << "Using MIDI input device: " << midi_input_device->to_string() << std::endl;
   }
   else 

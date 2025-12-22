@@ -14,11 +14,9 @@
 
 namespace MinimalAudioEngine
 {
-class DeviceManager;
-}
 
-namespace MinimalAudioEngine
-{
+// Forward declaration
+class DeviceManager;
 
 /** @enum eAudioEngineState
  *  @brief AudioEngine states

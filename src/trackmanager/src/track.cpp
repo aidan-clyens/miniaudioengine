@@ -16,9 +16,9 @@
 using namespace MinimalAudioEngine;
 
 /** @brief Adds an audio input to the track.
- *  @param device The audio input device.
+ *  @param input The audio input device or file.
  */
-void Track::add_audio_device_input(const MinimalAudioEngine::AudioDevice& device)
+void Track::add_audio_input(const AudioIOVariant& input)
 {
   if (has_audio_input())
   {
@@ -26,61 +26,42 @@ void Track::add_audio_device_input(const MinimalAudioEngine::AudioDevice& device
   }
 
   // Verify the audio device has input channels
-  if (device.input_channels < 1)
+  if (std::holds_alternative<AudioDevice>(input) && std::get<AudioDevice>(input).input_channels < 1)
   {
-    throw std::runtime_error("Selected audio device " + device.name + " has no input channels.");
+    throw std::runtime_error("Selected audio device " + std::get<AudioDevice>(input).name + " has no input channels.");
   }
 
-  m_audio_input = device;
+  m_audio_input = input;
 
-  LOG_INFO("Track: Added audio input device: ", device.to_string());
+  LOG_INFO("Track: Added audio input device: ", std::get<AudioDevice>(input).to_string());
 }
 
-/** @brief Adds an audio file input to the track.
- *  @param wav_file The audio file.
+/** @brief Adds a MIDI input to the track.
+ *  @param input The MIDI input device or file.
  */
-void Track::add_audio_file_input(const MinimalAudioEngine::WavFilePtr wav_file)
-{
-  if (has_audio_input())
-  {
-    throw std::runtime_error("This track already has an audio input.");
-  }
-
-  m_audio_input = wav_file;
-
-  MinimalAudioEngine::AudioEngine::instance().set_stream_parameters(wav_file->get_channels(), wav_file->get_sample_rate(), 512);
-  LOG_INFO("Track: Added audio input file: ", wav_file->to_string());
-}
-
-/** @brief Adds a MIDI input device to the track.
- *  @param device The MIDI input device.
- */
-void Track::add_midi_device_input(const MinimalAudioEngine::MidiDevice &device)
+void Track::add_midi_input(const MidiIOVariant& input)
 {
   if (has_midi_input())
   {
     throw std::runtime_error("This track already has a MIDI input.");
   }
 
-  m_midi_input = device;
+  m_midi_input = input;
 
-  MinimalAudioEngine::MidiEngine::instance().open_input_port(device.id);
-  MinimalAudioEngine::MidiEngine::instance().attach(shared_from_this());
-  LOG_INFO("Track: Added MIDI input device: ", device.to_string());
-}
+  // TODO - Move to dataplane
+  if (std::holds_alternative<MidiDevice>(input))
+  {
+    MinimalAudioEngine::MidiEngine::instance().open_input_port(std::get<MidiDevice>(input).id);
+    MinimalAudioEngine::MidiEngine::instance().attach(shared_from_this());
+  }
 
-/** @brief Adds a MIDI file input to the track.
- *  @param midi_file The MIDI file.
- */
-void Track::add_midi_file_input(const MinimalAudioEngine::MidiFilePtr midi_file)
-{
-  LOG_INFO("Track: (TODO) Added MIDI file input: ", midi_file->get_filename());
+  LOG_INFO("Track: Added MIDI input: ", std::get<MidiDevice>(input).to_string());
 }
 
 /** @brief Adds an audio output to the track.
- *  @param device The audio output device.
+ *  @param device The audio output device or file.
  */
-void Track::add_audio_device_output(const MinimalAudioEngine::AudioDevice &device)
+void Track::add_audio_output(const AudioIOVariant &output)
 {
   if (has_audio_output())
   {
@@ -88,30 +69,34 @@ void Track::add_audio_device_output(const MinimalAudioEngine::AudioDevice &devic
   }
 
   // Verify the audio device has output channels
-  if (device.output_channels < 1)
+  if (std::holds_alternative<AudioDevice>(output) && std::get<AudioDevice>(output).output_channels < 1)
   {
-    throw std::runtime_error("Selected audio device " + device.name + " has no output channels.");
+    throw std::runtime_error("Selected audio device " + std::get<AudioDevice>(output).name + " has no output channels.");
   }
 
-  m_audio_output = device;
-  MinimalAudioEngine::AudioEngine::instance().set_output_device(device);
+  m_audio_output = output;
 
-  LOG_INFO("Track: Added audio output device: ", device.name);
+  if (std::holds_alternative<AudioDevice>(output))
+  {
+    MinimalAudioEngine::AudioEngine::instance().set_output_device(std::get<AudioDevice>(output));
+  }
+
+  LOG_INFO("Track: Added audio output device: ", std::get<AudioDevice>(output).name);
 }
 
 /** @brief Adds a MIDI output to the track.
- *  @param device The MIDI output device.
+ *  @param device The MIDI output device or file.
  */
-void Track::add_midi_device_output(const MinimalAudioEngine::MidiDevice &device)
+void Track::add_midi_output(const MidiIOVariant &output)
 {
   if (has_midi_output())
   {
     throw std::runtime_error("This track already has a MIDI output.");
   }
 
-  m_midi_output = device;
+  m_midi_output = output;
 
-  LOG_INFO("Track: Added MIDI output device: ", device.name);
+  LOG_INFO("Track: Added MIDI output device: ", std::get<MidiDevice>(output).name);
 }
 
 /** @brief Removes the audio input from the track.
@@ -126,6 +111,8 @@ void Track::remove_audio_input()
 void Track::remove_midi_input()
 {
   m_midi_input = std::nullopt;
+
+  // TODO - Move to dataplane
   MinimalAudioEngine::MidiEngine::instance().close_input_port();
   MinimalAudioEngine::MidiEngine::instance().detach(shared_from_this());
 }

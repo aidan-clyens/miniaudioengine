@@ -64,33 +64,27 @@ public:
 
   ~Track() = default;
 
-  // Audio/MIDI Inputs
-  /** @brief Add an audio device input to the track. 
-   *  @param device The audio input device retrieved from DeviceManager.
-   */
-  void add_audio_device_input(const AudioDevice &device);
-  /** @brief Add an audio file input to the track.
-   *  @param wav_file The WAV file retrieved from FileManager.
-   */
-  void add_audio_file_input(const WavFilePtr wav_file);
-  /** @brief Add a MIDI input device to the track.
-   *  @param device The MIDI input device retrieved from DeviceManager.
-   */
-  void add_midi_device_input(const MidiDevice &device);
-  /** @brief Add a MIDI file input to the track.
-   *  @param midi_file The MIDI file retrieved from FileManager.
-   */
-  void add_midi_file_input(const MidiFilePtr midi_file);
+  // Audio/MIDI IO
 
-  // Audio/MIDI Outputs
-  /** @brief Add an audio device output to the track.
-   *  @param device The audio output device retrieved from DeviceManager.
+  /** @brief Add an audio input to the track. 
+   *  @param device The audio input device or file retrieved from DeviceManager or FileManager.
    */
-  void add_audio_device_output(const AudioDevice& device);
-  /** @brief Add a MIDI device output to the track.
-   *  @param device The MIDI output device retrieved from DeviceManager.
+  void add_audio_input(const AudioIOVariant &input);
+
+  /** @brief Add a MIDI input to the track.
+   *  @param device The MIDI input device or file retrieved from DeviceManager or FileManager.
    */
-  void add_midi_device_output(const MidiDevice& device);
+  void add_midi_input(const MidiIOVariant &input);
+
+  /** @brief Add an audio output to the track.
+   *  @param device The audio output device or file retrieved from DeviceManager or FileManager.
+   */
+  void add_audio_output(const AudioIOVariant &output);
+
+  /** @brief Add a MIDI output to the track.
+   *  @param device The MIDI output device or file retrieved from DeviceManager or FileManager.
+   */
+  void add_midi_output(const MidiIOVariant &output);
 
   /** @brief Remove the audio input from the track. */
   void remove_audio_input();
@@ -221,9 +215,6 @@ private:
   MidiNoteOnCallbackFunc m_note_on_callback;
   MidiNoteOffCallbackFunc m_note_off_callback;
   MidiControlCallbackFunc m_control_change_callback;
-
-  // TEST
-  std::atomic<double> m_test_tone_phase{0.0};
 };
 
 }  // namespace MinimalAudioEngine
