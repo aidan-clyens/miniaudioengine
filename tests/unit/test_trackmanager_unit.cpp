@@ -47,3 +47,27 @@ TEST(TrackManagerTest, RemoveTrack)
   // Verify the track was removed successfully
   EXPECT_EQ(TrackManager::instance().get_track_count(), 0);
 }
+
+/** @brief Track Manager - List All Tracks
+ */
+TEST(TrackManagerTest, ListAllTracks)
+{
+  TrackManager::instance().clear_tracks();
+  EXPECT_EQ(TrackManager::instance().get_track_count(), 0);
+
+  // Add multiple tracks
+  const size_t num_tracks_to_add = 5;
+  for (size_t i = 0; i < num_tracks_to_add; ++i)
+  {
+    TrackManager::instance().add_track();
+  }
+
+  // Get all tracks
+  auto tracks = TrackManager::instance().get_tracks();
+  auto track_dataplanes = TrackManager::instance().get_track_audio_dataplanes();
+
+  // Verify the number of tracks matches
+  EXPECT_EQ(tracks.size(), num_tracks_to_add);
+  EXPECT_EQ(track_dataplanes.size(), num_tracks_to_add);
+  EXPECT_EQ(TrackManager::instance().get_track_count(), num_tracks_to_add);
+}
