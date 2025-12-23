@@ -27,7 +27,7 @@ protected:
   }
 };
 
-TEST(AudioInputIntegrationTest, AudioInput)
+TEST(AudioInputIntegrationTest, AudioFileInput)
 {
   set_thread_name("Main");
 
@@ -50,7 +50,7 @@ TEST(AudioInputIntegrationTest, AudioInput)
   // LOG_INFO("Total frames processed: ", stats.total_frames_processed);
 
   // Open a test WAV file and load it into the track
-  std::string test_wav_file = "samples/test.wav";
+  std::string test_wav_file = "../../../../samples/test.wav";
 
   auto wav_file = FileManager::instance().read_wav_file(test_wav_file);
   EXPECT_EQ(wav_file.has_value(), true);
