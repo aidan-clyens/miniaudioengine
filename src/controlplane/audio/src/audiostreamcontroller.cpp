@@ -1,14 +1,9 @@
 #include "audiostreamcontroller.h"
 
+#include "trackmanager.h"
 #include "logger.h"
 
 using namespace MinimalAudioEngine;
-
-int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                   double stream_time, RtAudioStreamStatus status, void *user_data) noexcept
-{
-  return 0;
-}
 
 std::vector<RtAudio::DeviceInfo> AudioStreamController::get_audio_devices()
 {
@@ -58,14 +53,23 @@ void AudioStreamController::start_stream()
   unsigned int sample_rate = m_audio_output_device->preferred_sample_rate;
   unsigned int buffer_frames = 256; // Default buffer size
 
+  if (!m_callback_context)
+  {
+    LOG_ERROR("AudioStreamController: No AudioCallbackContext registered. Cannot start stream.");
+    throw std::runtime_error("AudioStreamController: No AudioCallbackContext registered. Cannot start stream.");
+  }
+
+  m_callback_context->active_tracks.clear();
+  m_callback_context->active_tracks = TrackManager::instance().get_track_audio_dataplanes();
+
   RtAudioErrorType rc;
   rc = m_rtaudio.openStream(&params,
                             nullptr,
                             RTAUDIO_FLOAT32,
                             sample_rate,
                             &buffer_frames,
-                            &audio_callback,
-                            this);
+                            &AudioCallbackHandler::audio_callback,
+                            m_callback_context.get());
 
   if (rc != RTAUDIO_NO_ERROR)
   {
@@ -111,9 +115,4 @@ void AudioStreamController::stop_stream()
 
   LOG_INFO("AudioStreamController: RtAudio stream stopped successfully.");
   m_stream_state = eAudioState::Stopped;
-}
-
-void AudioStreamController::register_callback_context(const AudioCallbackContext &context)
-{
-  m_callback_context = const_cast<AudioCallbackContext*>(&context);
 }

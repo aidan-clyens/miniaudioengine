@@ -16,6 +16,7 @@
 #include "devicemanager.h"
 #include "audiodevice.h"
 #include "audioprocessor.h"
+#include "trackaudiodataplane.h"
 
 namespace MinimalAudioEngine
 {
@@ -58,7 +59,8 @@ public:
   Track():
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
-    m_midi_output(std::nullopt)
+    m_midi_output(std::nullopt),
+    p_audio_dataplane(std::make_shared<TrackAudioDataPlane>())
   {}
 
   ~Track() = default;
@@ -186,11 +188,18 @@ public:
 
   void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate) override; // TODO - Make private
 
+  TrackAudioDataPlanePtr get_audio_dataplane() const
+  {
+    return p_audio_dataplane;
+  }
+
   std::string to_string() const;
 
 private:
   std::queue<MidiMessage> m_message_queue; // TODO - Remove?
   std::mutex m_queue_mutex; // TODO - Remove?
+
+  TrackAudioDataPlanePtr p_audio_dataplane;
 
   TrackEventCallback m_event_callback;
 

@@ -1,17 +1,16 @@
 #ifndef __AUDIO_STREAM_CONTROLLER_H__
 #define __AUDIO_STREAM_CONTROLLER_H__
 
+#include "audiocallbackhandler.h"
 #include "audiodevice.h"
 
 #include <rtaudio/RtAudio.h>
 #include <optional>
 #include <vector>
+#include <memory>
 
 namespace MinimalAudioEngine
 {
-
-// Forward declaration - TODO implement later
-class AudioCallbackContext;
 
 /** @enum eAudioState
  *  @brief AudioEngine states
@@ -45,20 +44,18 @@ public:
   void start_stream();
   void stop_stream();
 
-  void register_callback_context(const AudioCallbackContext& context); // Set context for RtAudio callback
-
   eAudioState get_stream_state() const
   {
     return m_stream_state;
   }
 
 private:
-  AudioStreamController() = default;
+  AudioStreamController(): m_callback_context(std::make_shared<AudioCallbackContext>()) {}
   virtual ~AudioStreamController() = default;
 
   RtAudio m_rtaudio;
   std::optional<AudioDevice> m_audio_output_device;
-  AudioCallbackContext* m_callback_context{nullptr};
+  std::shared_ptr<AudioCallbackContext> m_callback_context;
 
   eAudioState m_stream_state{eAudioState::Idle};
 };

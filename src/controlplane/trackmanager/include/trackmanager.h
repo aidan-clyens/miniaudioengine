@@ -26,6 +26,7 @@ public:
   void remove_track(size_t index);
   TrackPtr get_track(size_t index);
   std::vector<TrackPtr> get_tracks() const;
+  std::vector<TrackAudioDataPlanePtr> get_track_audio_dataplanes(); // TODO - Make private and accessible by AudioCallbackHandler only
 
   void clear_tracks();
 

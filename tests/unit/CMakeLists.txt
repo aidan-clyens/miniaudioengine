@@ -5,6 +5,7 @@ add_executable(minimal-audio-engine-unit-tests
   test_filemanager_unit.cpp
   test_trackmanager_unit.cpp
   test_track_unit.cpp
+  test_trackaudiodataplane_unit.cpp
   test_devicemanager_unit.cpp
 )
 
