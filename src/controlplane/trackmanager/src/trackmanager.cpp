@@ -1,6 +1,6 @@
 #include "trackmanager.h"
 
-#include "audioengine.h"
+#include "audiostreamcontroller.h"
 
 using namespace MinimalAudioEngine;
 
@@ -12,7 +12,7 @@ size_t TrackManager::add_track()
   auto new_track = std::make_shared<Track>();
   m_tracks.push_back(new_track);
 
-  AudioEngine::instance().attach(new_track);
+  // AudioEngine::instance().attach(new_track);
 
   LOG_INFO("Adding a new track. Total tracks: ", m_tracks.size());
   return m_tracks.size() - 1; // Return the index of the newly added track
@@ -30,7 +30,7 @@ void TrackManager::remove_track(size_t index)
     throw std::out_of_range("Track index out of range");
   }
 
-  AudioEngine::instance().detach(m_tracks[index]);
+  // AudioEngine::instance().detach(m_tracks[index]);
 
   m_tracks.erase(m_tracks.begin() + index);
   LOG_INFO("Removed track at index: ", index, ". Total tracks: ", m_tracks.size());

@@ -19,7 +19,7 @@
       "inherits": "windows-base",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "BUILD_TESTS": "OFF"
+        "BUILD_TESTS": "ON"
       }
     },
     {
@@ -90,6 +90,14 @@
       "displayName": "Windows MinSizeRel Build",
       "configurePreset": "windows-minsizerel",
       "configuration": "MinSizeRel"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "Windows x86 Debug",
+      "description": "",
+      "displayName": "Windows x86 Debug Tests",
+      "configurePreset": "windows-debug"
     }
   ]
 }

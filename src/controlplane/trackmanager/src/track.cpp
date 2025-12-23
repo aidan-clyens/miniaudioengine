@@ -2,7 +2,7 @@
 
 #include "wavfile.h"
 #include "midifile.h"
-#include "audioengine.h"
+#include "audiostreamcontroller.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -33,7 +33,14 @@ void Track::add_audio_input(const AudioIOVariant& input)
 
   m_audio_input = input;
 
-  LOG_INFO("Track: Added audio input device: ", std::get<AudioDevice>(input).to_string());
+  if (std::holds_alternative<AudioDevice>(input))
+  {
+    LOG_INFO("Track: Added audio input device: ", std::get<AudioDevice>(input).to_string());
+  }
+  else if (std::holds_alternative<WavFilePtr>(input))
+  {
+    LOG_INFO("Track: Added audio input file: ", std::get<WavFilePtr>(input)->to_string());
+  }
 }
 
 /** @brief Adds a MIDI input to the track.
@@ -56,32 +63,6 @@ void Track::add_midi_input(const MidiIOVariant& input)
   }
 
   LOG_INFO("Track: Added MIDI input: ", std::get<MidiDevice>(input).to_string());
-}
-
-/** @brief Adds an audio output to the track.
- *  @param device The audio output device or file.
- */
-void Track::add_audio_output(const AudioIOVariant &output)
-{
-  if (has_audio_output())
-  {
-    throw std::runtime_error("This track already has an audio output.");
-  }
-
-  // Verify the audio device has output channels
-  if (std::holds_alternative<AudioDevice>(output) && std::get<AudioDevice>(output).output_channels < 1)
-  {
-    throw std::runtime_error("Selected audio device " + std::get<AudioDevice>(output).name + " has no output channels.");
-  }
-
-  m_audio_output = output;
-
-  if (std::holds_alternative<AudioDevice>(output))
-  {
-    MinimalAudioEngine::AudioEngine::instance().set_output_device(std::get<AudioDevice>(output));
-  }
-
-  LOG_INFO("Track: Added audio output device: ", std::get<AudioDevice>(output).name);
 }
 
 /** @brief Adds a MIDI output to the track.
@@ -117,13 +98,6 @@ void Track::remove_midi_input()
   MinimalAudioEngine::MidiEngine::instance().detach(shared_from_this());
 }
 
-/** @brief Removes the audio output from the track.
- */
-void Track::remove_audio_output()
-{
-  m_audio_output = std::nullopt;
-}
-
 /** @brief Removes the MIDI output from the track.
  */
 void Track::remove_midi_output()
@@ -145,14 +119,6 @@ bool Track::has_audio_input() const
 bool Track::has_midi_input() const
 {
   return !std::holds_alternative<std::nullopt_t>(m_midi_input);
-}
-
-/** @brief Checks if the track has an audio output configured.
- *  @return True if an audio output is configured, false otherwise.
- */
-bool Track::has_audio_output() const
-{
-  return !std::holds_alternative<std::nullopt_t>(m_audio_output);
 }
 
 /** @brief Checks if the track has a MIDI output configured.
@@ -179,14 +145,6 @@ MidiIOVariant Track::get_midi_input() const
   return m_midi_input;
 }
 
-/** @brief Gets the audio output of the track.
- *  @return The audio output variant (device, file, or nullopt).
- */
-AudioIOVariant Track::get_audio_output() const
-{
-  return m_audio_output;
-}
-
 /** @brief Gets the MIDI output of the track.
  *  @return The MIDI output variant (device, file, or nullopt).
  */
@@ -199,14 +157,14 @@ void Track::play()
 {
   LOG_INFO("Track: Play...");
   m_is_playing = true;
-  MinimalAudioEngine::AudioEngine::instance().play();
+  AudioStreamController::instance().start_stream();
 }
 
 void Track::stop()
 {
   LOG_INFO("Track: Stop...");
   m_is_playing = false;
-  MinimalAudioEngine::AudioEngine::instance().stop();
+  AudioStreamController::instance().stop_stream();
 }
 
 /** @brief Updates the track with a new MIDI message.
@@ -224,14 +182,14 @@ void Track::update(const MidiMessage& message)
  */
 void Track::update(const AudioMessage &message)
 {
-  if (message.command == eAudioEngineCommand::StoppedPlayback)
-  {
-    LOG_INFO("Track: Received AudioEngine Stop notification.");
-    if (m_event_callback)
-    {
-      m_event_callback(eTrackEvent::PlaybackFinished);
-    }
-  }
+  // if (message.command == eAudioEngineCommand::StoppedPlayback)
+  // {
+  //   LOG_INFO("Track: Received AudioEngine Stop notification.");
+  //   if (m_event_callback)
+  //   {
+  //     m_event_callback(eTrackEvent::PlaybackFinished);
+  //   }
+  // }
 }
 
 /** @brief Handles a MIDI message.
@@ -370,7 +328,6 @@ std::string Track::to_string() const
 {
   AudioIOVariant audio_input = get_audio_input();
   MidiIOVariant midi_input = get_midi_input();
-  AudioIOVariant audio_output = get_audio_output();
   MidiIOVariant midi_output = get_midi_output();
 
   std::string audio_input_str = std::holds_alternative<std::nullopt_t>(audio_input) ? "None" :
@@ -381,10 +338,6 @@ std::string Track::to_string() const
                                std::holds_alternative<MinimalAudioEngine::MidiDevice>(midi_input) ? std::get<MinimalAudioEngine::MidiDevice>(midi_input).to_string() :
                                std::get<MinimalAudioEngine::MidiFilePtr>(midi_input)->to_string();
 
-  std::string audio_output_str = std::holds_alternative<std::nullopt_t>(audio_output) ? "None" :
-                                 std::holds_alternative<MinimalAudioEngine::AudioDevice>(audio_output) ? std::get<MinimalAudioEngine::AudioDevice>(audio_output).to_string() :
-                                 std::get<MinimalAudioEngine::WavFilePtr>(audio_output)->to_string();
-
   std::string midi_output_str = std::holds_alternative<std::nullopt_t>(midi_output) ? "None" :
                                 std::holds_alternative<MinimalAudioEngine::MidiDevice>(midi_output) ? std::get<MinimalAudioEngine::MidiDevice>(midi_output).to_string() :
                                 std::get<MinimalAudioEngine::MidiFilePtr>(midi_output)->to_string();
@@ -393,6 +346,5 @@ std::string Track::to_string() const
 
   return "Track(AudioInput=" + audio_input_str +
          ", MidiInput=" + midi_input_str +
-         ", AudioOutput=" + audio_output_str +
          ", MidiOutput=" + midi_output_str + ")";
 }

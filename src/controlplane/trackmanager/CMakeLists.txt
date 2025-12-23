@@ -23,6 +23,7 @@ target_include_directories(trackmanager
 
 target_link_libraries(trackmanager PUBLIC
   framework
+  controlplane-audio
   dataplane-midi
   dataplane-audio
   filemanager

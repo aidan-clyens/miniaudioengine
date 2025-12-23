@@ -1,6 +1,6 @@
 #include "coreengine.h"
 
-#include "audioengine.h"
+#include "audiostreamcontroller.h"
 #include "midiengine.h"
 
 using namespace MinimalAudioEngine;
@@ -8,14 +8,12 @@ using namespace MinimalAudioEngine;
 void CoreEngine::start_thread()
 {
   IEngine<CoreEngineMessage>::start_thread();
-  MinimalAudioEngine::AudioEngine::instance().start_thread();
   MinimalAudioEngine::MidiEngine::instance().start_thread();
 }
 
 void CoreEngine::stop_thread()
 {
   IEngine<CoreEngineMessage>::stop_thread();
-  MinimalAudioEngine::AudioEngine::instance().stop_thread();
   MinimalAudioEngine::MidiEngine::instance().stop_thread();
 }
 

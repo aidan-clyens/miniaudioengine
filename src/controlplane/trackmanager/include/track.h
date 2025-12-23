@@ -58,7 +58,6 @@ public:
   Track():
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
-    m_audio_output(std::nullopt),
     m_midi_output(std::nullopt)
   {}
 
@@ -76,11 +75,6 @@ public:
    */
   void add_midi_input(const MidiIOVariant &input);
 
-  /** @brief Add an audio output to the track.
-   *  @param device The audio output device or file retrieved from DeviceManager or FileManager.
-   */
-  void add_audio_output(const AudioIOVariant &output);
-
   /** @brief Add a MIDI output to the track.
    *  @param device The MIDI output device or file retrieved from DeviceManager or FileManager.
    */
@@ -88,10 +82,10 @@ public:
 
   /** @brief Remove the audio input from the track. */
   void remove_audio_input();
+
   /** @brief Remove the MIDI input from the track. */
   void remove_midi_input();
-  /** @brief Remove the audio output from the track. */
-  void remove_audio_output();
+
   /** @brief Remove the MIDI output from the track. */
   void remove_midi_output();
 
@@ -99,14 +93,12 @@ public:
    *  @return True if an audio input is configured, false otherwise.
    */
   bool has_audio_input() const;
+
   /** @brief Check if the track has a MIDI input.
    *   @return True if a MIDI input is configured, false otherwise.
    */
   bool has_midi_input() const;
-  /** @brief Check if the track has an audio output.
-   *  @return True if an audio output is configured, false otherwise.
-   */
-  bool has_audio_output() const;
+
   /** @brief Check if the track has a MIDI output.
    *  @return True if a MIDI output is configured, false otherwise.
    */
@@ -116,14 +108,12 @@ public:
    *  @return An audio input variant type (AudioDevice, WavFilePtr, std::nullopt_t).
    */
   AudioIOVariant get_audio_input() const;
+
   /** @brief Gets the MIDI input of the track.
    *  @return A MIDI input variant type (MidiDevice, MidiFilePtr, std::nullopt_t).
    */
   MidiIOVariant get_midi_input() const;
-  /** @brief Gets the audio output of the track.
-   *  @return The audio output variant (device, file, or nullopt).
-   */
-  AudioIOVariant get_audio_output() const;
+
   /** @brief Gets the MIDI output of the track.
    *  @return The MIDI output variant (device, file, or nullopt).
    */
@@ -144,6 +134,7 @@ public:
   // Playback control
   /** @brief Start playback of the track. */
   void play();
+
   /** @brief Stop playback of the track. */
   void stop();
 
@@ -198,8 +189,8 @@ public:
   std::string to_string() const;
 
 private:
-  std::queue<MidiMessage> m_message_queue;
-  std::mutex m_queue_mutex;
+  std::queue<MidiMessage> m_message_queue; // TODO - Remove?
+  std::mutex m_queue_mutex; // TODO - Remove?
 
   TrackEventCallback m_event_callback;
 
@@ -207,7 +198,6 @@ private:
 
   AudioIOVariant m_audio_input;
   MidiIOVariant m_midi_input;
-  AudioIOVariant m_audio_output;
   MidiIOVariant m_midi_output;
 
   std::vector<std::shared_ptr<IAudioProcessor>> m_audio_processing_nodes;

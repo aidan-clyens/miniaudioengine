@@ -6,6 +6,8 @@
 
 using namespace MinimalAudioEngine;
 
+static unsigned int audio_device_id = 0;
+
 TEST(DeviceManagerTest, GetAudioDevices)
 {
   std::vector<AudioDevice> devices = DeviceManager::instance().get_audio_devices();
@@ -15,16 +17,19 @@ TEST(DeviceManagerTest, GetAudioDevices)
   {
     LOG_INFO(device.id, " - ", device.name);
   }
+
+  audio_device_id = devices.empty() ? 0 : devices[0].id;
 }
 
 TEST(DeviceManagerTest, GetAudioDevice)
 {
   std::vector<AudioDevice> devices = DeviceManager::instance().get_audio_devices();
 
-  AudioDevice device = DeviceManager::instance().get_audio_device(0);
+  AudioDevice device = DeviceManager::instance().get_audio_device(audio_device_id);
 
   LOG_INFO(device.id, " - ", device.name);
 
+  EXPECT_EQ(device.id, audio_device_id);
   EXPECT_EQ(device.id, devices[0].id);
   EXPECT_EQ(device.name, devices[0].name);
   EXPECT_EQ(device.input_channels, devices[0].input_channels);

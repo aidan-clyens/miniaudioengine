@@ -3,6 +3,9 @@
 
 #include "device.h"
 
+#include <vector>
+#include <string>
+
 namespace MinimalAudioEngine
 {
 

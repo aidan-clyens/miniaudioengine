@@ -39,7 +39,7 @@ TEST(MidiInputIntegrationTest, MidiInput)
 
   LOG_INFO("MIDI file loaded: ", midi_file_ptr->get_filepath());
 
-  track->add_midi_file_input(midi_file_ptr);
+  track->add_midi_input(midi_file_ptr);
 
   // Stop the MIDI engine
   MidiEngine::instance().stop_thread();

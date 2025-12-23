@@ -1,5 +1,5 @@
 #include "devicemanager.h"
-#include "audioengine.h"
+#include "audiostreamcontroller.h"
 #include "midiengine.h"
 
 using namespace MinimalAudioEngine;
@@ -7,7 +7,7 @@ using namespace MinimalAudioEngine;
 std::vector<AudioDevice> DeviceManager::get_audio_devices() const
 {
   std::vector<AudioDevice> devices;
-  auto audio_devices = MinimalAudioEngine::AudioEngine::instance().get_devices();
+  auto audio_devices = AudioStreamController::instance().get_audio_devices();
 
   size_t index = 0;
   for (const auto& info : audio_devices)

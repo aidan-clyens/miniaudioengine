@@ -6,13 +6,11 @@ target_sources(dataplane-audio
     BASE_DIRS 
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
-      include/audioengine.h
-      include/audiodataplane.h
       include/audioprocessor.h
       include/oscillator.h
 )
 
-target_sources(dataplane-audio PRIVATE src/audiodataplane.cpp src/audioengine.cpp)
+# target_sources(dataplane-audio PRIVATE)
 
 target_include_directories(dataplane-audio
   PUBLIC

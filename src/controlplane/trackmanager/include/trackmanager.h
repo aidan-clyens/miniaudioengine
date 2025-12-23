@@ -2,6 +2,7 @@
 #define __TRACK_MANAGER_H_
 
 #include "track.h"
+#include "audiostreamcontroller.h"
 
 #include <memory>
 #include <vector>
