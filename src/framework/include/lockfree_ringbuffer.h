@@ -126,6 +126,15 @@ public:
     return Size - 1; // One slot is used to distinguish full vs empty
   }
 
+  /** @brief Clears the ring buffer, resetting it to an empty state.
+   *  @note This method is not thread-safe and should only be called when no other threads are accessing the buffer.
+   */
+  void clear()
+  {
+    m_write_index.store(0, std::memory_order_relaxed);
+    m_read_index.store(0, std::memory_order_relaxed);
+  }
+
 private:
   std::array<T, Size> m_buffer;
   alignas(64) std::atomic<size_t> m_write_index{0}; // Producer index

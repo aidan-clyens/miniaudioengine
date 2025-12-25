@@ -3,12 +3,17 @@
 #include <thread>
 #include <vector>
 
-#include "double_buffer.h"
+#include "doublebuffer.h"
 #include "logger.h"
 
 using namespace MinimalAudioEngine;
 
-TEST(RealTime_DoubleBuffer_Test, CreateDoubleBuffer)
+class DoubleBufferTest : public ::testing::Test
+{
+
+};
+
+TEST(DoubleBufferTest, CreateDoubleBuffer)
 {
   DoubleBuffer<int> double_buffer(8);
 
@@ -20,7 +25,7 @@ TEST(RealTime_DoubleBuffer_Test, CreateDoubleBuffer)
   EXPECT_FALSE(double_buffer.is_read_ready()) << "Read buffer should not be ready initially";
 }
 
-TEST(RealTime_DoubleBuffer_Test, ProducerConsumerWriteRead)
+TEST(DoubleBufferTest, ProducerConsumerWriteRead)
 {
   const int capacity = 4;
   DoubleBuffer<int> double_buffer(capacity);
@@ -47,7 +52,7 @@ TEST(RealTime_DoubleBuffer_Test, ProducerConsumerWriteRead)
   EXPECT_FALSE(double_buffer.is_read_ready()) << "Read buffer should not be ready after being read";
 }
 
-TEST(RealTime_DoubleBuffer_Test, MultiplePublishReadCycles)
+TEST(DoubleBufferTest, MultiplePublishReadCycles)
 {
   const int capacity = 4;
   DoubleBuffer<int> double_buffer(capacity);
@@ -75,7 +80,7 @@ TEST(RealTime_DoubleBuffer_Test, MultiplePublishReadCycles)
   }
 }
 
-TEST(RealTime_DoubleBuffer_Test, ReadWithoutPublish)
+TEST(DoubleBufferTest, ReadWithoutPublish)
 {
   const int capacity = 4;
   DoubleBuffer<int> double_buffer(capacity);

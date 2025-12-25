@@ -9,6 +9,8 @@ add_executable(minimal-audio-engine-unit-tests
   test_devicemanager_unit.cpp
   test_messagequeue_unit.cpp
   test_subject_observer_unit.cpp
+  test_lockfree_ringbuffer_unit.cpp
+  test_doublebuffer_unit.cpp
 )
 
 target_link_libraries(minimal-audio-engine-unit-tests PRIVATE
