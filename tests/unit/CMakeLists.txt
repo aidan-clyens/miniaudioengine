@@ -7,6 +7,7 @@ add_executable(minimal-audio-engine-unit-tests
   test_track_unit.cpp
   test_trackaudiodataplane_unit.cpp
   test_devicemanager_unit.cpp
+  test_messagequeue_unit.cpp
 )
 
 target_link_libraries(minimal-audio-engine-unit-tests PRIVATE
@@ -20,3 +21,4 @@ target_link_libraries(minimal-audio-engine-unit-tests PRIVATE
 )
 
 add_test(NAME minimal-audio-engine-unit-tests COMMAND minimal-audio-engine-unit-tests)
+set_tests_properties(minimal-audio-engine-unit-tests PROPERTIES TIMEOUT 60)
