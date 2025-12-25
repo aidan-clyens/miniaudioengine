@@ -8,6 +8,7 @@ add_executable(minimal-audio-engine-unit-tests
   test_trackaudiodataplane_unit.cpp
   test_devicemanager_unit.cpp
   test_messagequeue_unit.cpp
+  test_subject_observer_unit.cpp
 )
 
 target_link_libraries(minimal-audio-engine-unit-tests PRIVATE
