@@ -7,6 +7,7 @@ target_sources(dataplane-audio
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
       include/trackaudiodataplane.h
+      include/audiobatchproducer.h
       include/audiocallbackhandler.h
       include/audioprocessor.h
       include/oscillator.h
