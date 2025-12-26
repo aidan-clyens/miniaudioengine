@@ -90,17 +90,19 @@ public:
     if (m_console_output_enabled)
     {
       (*p_out_stream) << "[" << timestamp_stream.str() << "] "
-                   << "[" << log_level_to_string(level) << "] "
-                   << "[Thread: " << get_thread_name() << "] "
-                   << message_stream.str() << "\n";
+        << "[" << log_level_to_string(level) << "] ";
+      if (get_thread_name() != "unnamed")
+        (*p_out_stream) << "[Thread: " << get_thread_name() << "] ";
+      (*p_out_stream) << message_stream.str() << "\n";
     }
 
     if (p_file_out_stream)
     {
       (*p_file_out_stream) << "[" << timestamp_stream.str() << "] "
-                      << "[" << log_level_to_string(level) << "] "
-                      << "[Thread: " << get_thread_name() << "] "
-                      << message_stream.str() << "\n";
+                      << "[" << log_level_to_string(level) << "] ";
+      if (get_thread_name() != "unnamed")
+        (*p_file_out_stream) << "[Thread: " << get_thread_name() << "] ";
+      (*p_file_out_stream) << message_stream.str() << "\n";
     }
   }
 
