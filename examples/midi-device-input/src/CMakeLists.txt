@@ -8,7 +8,6 @@ target_link_libraries(
   framework
   trackmanager
   devicemanager
-  coreengine
   cli
 )
 

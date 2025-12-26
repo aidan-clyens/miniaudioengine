@@ -9,7 +9,6 @@
 #include <cli.h>
 #include <devicemanager.h>
 #include <trackmanager.h>
-#include <coreengine.h>
 #include <midicontroller.h>
 #include <audioprocessor.h>
 
@@ -100,10 +99,6 @@ int main(int argc, char* argv[])
 
   cli.parse_command_line_arguments(argc, argv);
 
-  // Setup coreengine
-  MinimalAudioEngine::CoreEngine engine;
-  engine.start_thread();
-
   LOG_INFO("MIDI Device Input Example started.");
 
   // Setup signal handler for graceful shutdown
@@ -168,8 +163,6 @@ int main(int argc, char* argv[])
     // Here would be the MIDI device input handling logic
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
-
-  engine.stop_thread();
 
   return 0;
 }
