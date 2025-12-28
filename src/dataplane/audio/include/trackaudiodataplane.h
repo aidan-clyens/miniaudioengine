@@ -20,10 +20,10 @@
 namespace MinimalAudioEngine
 {
 
-/** @struct WavFileReadStatistics
+/** @struct AudioOutputStatistics
  *  @brief Statistics related to reading WAV files.
  */
-struct WavFileReadStatistics
+struct AudioOutputStatistics
 {
   sf_count_t total_frames_read = 0;
   double total_read_time_ms = 0.0;
@@ -33,24 +33,26 @@ struct WavFileReadStatistics
   double max_batch_time_ms = 0.0;
   double min_batch_time_ms = 0.0;
   double throughput_frames_per_second = 0.0;
-  size_t buffer_underrun_count = 0;
+  size_t underrun_count = 0;
+  size_t overrun_count = 0;
 
-  WavFileReadStatistics() = default;
-  WavFileReadStatistics(const WavFileReadStatistics&) = default;
-  WavFileReadStatistics& operator=(const WavFileReadStatistics&) = default;
-  virtual ~WavFileReadStatistics() = default;
+  AudioOutputStatistics() = default;
+  AudioOutputStatistics(const AudioOutputStatistics&) = default;
+  AudioOutputStatistics& operator=(const AudioOutputStatistics&) = default;
+  virtual ~AudioOutputStatistics() = default;
 
   std::string to_string() const
   {
-    return "WavFileReadStatistics(TotalFramesRead=" + std::to_string(total_frames_read) +
-           ", TotalReadTimeMs=" + std::to_string(total_read_time_ms) +
-           ", BatchSizeFrames=" + std::to_string(batch_size_frames) +
-           ", TotalBatches=" + std::to_string(total_batches) +
-           ", AverageBatchTimeMs=" + std::to_string(average_batch_time_ms) +
-           ", MaxBatchTimeMs=" + std::to_string(max_batch_time_ms) +
-           ", MinBatchTimeMs=" + std::to_string(min_batch_time_ms) +
-           ", ThroughputFramesPerSecond=" + std::to_string(throughput_frames_per_second) +
-           ", BufferUnderrunCount=" + std::to_string(buffer_underrun_count) + ")";
+    return "AudioOutputStatistics(\n  Total Frames Read = " + std::to_string(total_frames_read) +
+           "\n  Total Read Time = " + std::to_string(total_read_time_ms) + " ms" +
+           "\n  Batch Size Frames = " + std::to_string(batch_size_frames) +
+           "\n  Total Batches = " + std::to_string(total_batches) +
+           "\n  Average Batch Time = " + std::to_string(average_batch_time_ms) + " ms" +
+           "\n  Max Batch Time = " + std::to_string(max_batch_time_ms) + " ms" +
+           "\n  Min Batch Time = " + std::to_string(min_batch_time_ms) + " ms" +
+           "\n  Throughput = " + std::to_string(throughput_frames_per_second) + " Hz" +
+           "\n  Underrun Count = " + std::to_string(underrun_count) + " frames" +
+           "\n  Overrun Count = " + std::to_string(overrun_count) + " frames)";
   }
 };
 
@@ -63,7 +65,7 @@ public:
   using LockfreeRingBuffer = MinimalAudioEngine::LockfreeRingBuffer<float, BUFFER_FRAMES>;
   using LockfreeRingBufferPtr = std::shared_ptr<LockfreeRingBuffer>;
 
-  using ReadWavFileCompleteCallback = std::function<void(const WavFileReadStatistics&)>;
+  using ReadWavFileCompleteCallback = std::function<void(const AudioOutputStatistics&)>;
 
   TrackAudioDataPlane() : 
     p_output_buffer(std::make_shared<LockfreeRingBuffer>())
@@ -130,11 +132,19 @@ public:
   }
 
   /** @brief Get WAV file read statistics.
-   *  @return WavFileReadStatistics structure containing read statistics.
+   *  @return AudioOutputStatistics structure containing read statistics.
    */
-  WavFileReadStatistics get_wav_file_read_statistics() const
+  AudioOutputStatistics get_wav_file_read_statistics() const
   {
     return m_wav_file_read_stats;
+  }
+
+  /** @brief Get audio output statistics.
+   *  @return AudioOutputStatistics structure containing output statistics.
+   */
+  AudioOutputStatistics get_audio_output_statistics() const
+  {
+    return m_audio_output_stats;
   }
 
   /** @brief Get the output lock-free ring buffer.
@@ -154,7 +164,8 @@ private:
   LockfreeRingBufferPtr p_output_buffer;
   std::jthread m_producer_thread;
 
-  WavFileReadStatistics m_wav_file_read_stats;
+  AudioOutputStatistics m_wav_file_read_stats;
+  AudioOutputStatistics m_audio_output_stats;
 
   std::atomic<bool> m_stop_command{false};
 

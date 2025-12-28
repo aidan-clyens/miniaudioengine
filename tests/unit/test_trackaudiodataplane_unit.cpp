@@ -43,7 +43,7 @@ TEST_F(TrackAudioDataPlaneTest, ReadWavFile)
 
   std::atomic<bool> read_complete = false;
 
-  track_audio_dataplane()->read_wav_file(wav_file.value(), [&read_complete, &wav_file](const WavFileReadStatistics& stats) {
+  track_audio_dataplane()->read_wav_file(wav_file.value(), [&read_complete, &wav_file](const AudioOutputStatistics& stats) {
     read_complete.store(true);
 
     LOG_INFO("WAV file read completed: ", wav_file.value()->to_string());

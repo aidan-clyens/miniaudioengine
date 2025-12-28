@@ -63,7 +63,7 @@ bool AudioStreamController::start_stream()
   };
 
   unsigned int sample_rate = m_audio_output_device->preferred_sample_rate;
-  unsigned int buffer_frames = 2048; // Larger buffer reduces glitches (~46ms at 44.1kHz)
+  unsigned int buffer_frames = 4096;
 
   if (!m_callback_context)
   {

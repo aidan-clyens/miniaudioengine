@@ -230,5 +230,5 @@ TEST_F(TrackTest, PlayWavFileInput)
 
   // Get statistics
   auto stats = test_track->get_statistics();
-  LOG_INFO("Stopped playing: ", stats.to_string());
+  LOG_INFO("Stopped playing:\n", stats.to_string());
 }
