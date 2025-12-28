@@ -48,18 +48,6 @@ public:
     return true;
   }
 
-  bool try_push(const T* items, size_t count)
-  {
-    for (size_t i = 0; i < count; ++i)
-    {
-      if (!try_push(items[i]))
-      {
-        return false;
-      }
-    }
-    return true;
-  }
-
   /** @brief Attempts to pop an item from the ring buffer.
    *  @return true if an item was successfully popped, false if the buffer is empty.
    *  @param item Reference to store the popped item.
@@ -82,18 +70,6 @@ public:
     item = m_buffer[current_read];
     size_t next_read = (current_read + 1) % Size;
     m_read_index.store(next_read, std::memory_order_release);
-    return true;
-  }
-
-  bool try_pop(const T* items, size_t count)
-  {
-    for (size_t i = 0; i < count; ++i)
-    {
-      if (!try_pop(const_cast<T&>(items[i])))
-      {
-        return false;
-      }
-    }
     return true;
   }
 

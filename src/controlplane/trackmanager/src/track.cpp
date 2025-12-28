@@ -36,10 +36,12 @@ void Track::add_audio_input(const AudioIOVariant& input)
   if (std::holds_alternative<AudioDevice>(input))
   {
     LOG_INFO("Track: Added audio input device: ", std::get<AudioDevice>(input).to_string());
+    p_audio_dataplane->set_input_channels(std::get<AudioDevice>(input).input_channels);
   }
   else if (std::holds_alternative<WavFilePtr>(input))
   {
     LOG_INFO("Track: Added audio input file: ", std::get<WavFilePtr>(input)->to_string());
+    p_audio_dataplane->set_input_channels(std::get<WavFilePtr>(input)->get_channels());
   }
 }
 
@@ -156,14 +158,28 @@ MidiIOVariant Track::get_midi_output() const
 void Track::play()
 {
   LOG_INFO("Track: Play...");
-  m_is_playing = true;
-  AudioStreamController::instance().start_stream();
+
+  // If audio input is a WAV file, start producer thread BEFORE starting audio stream
+  if (std::holds_alternative<WavFilePtr>(m_audio_input))
+  {
+    MinimalAudioEngine::WavFilePtr wav_file = std::get<MinimalAudioEngine::WavFilePtr>(m_audio_input);
+    p_audio_dataplane->read_wav_file(wav_file); // Start asynchronous read into dataplane buffer
+    
+    // Wait for initial buffering (fill buffer to ~25% before starting playback)
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
+
+  if (!AudioStreamController::instance().start_stream())
+  {
+    return;
+  }
 }
 
 void Track::stop()
 {
   LOG_INFO("Track: Stop...");
-  m_is_playing = false;
+  // Clear dataplane buffers and stop any data processing threads
+  p_audio_dataplane->stop();
   AudioStreamController::instance().stop_stream();
 }
 
@@ -315,13 +331,6 @@ void Track::get_next_audio_frame(float *output_buffer, unsigned int frames, unsi
       }
     }
   }
-
-  // Audio processing nodes
-  for (auto node_ptr : m_audio_processing_nodes)
-  {
-    LOG_INFO("Track: Processing audio frame with processing node: ", node_ptr->to_string());
-    node_ptr->get_next_audio_frame(output_buffer, frames, channels, sample_rate);
-  }
 }
 
 std::string Track::to_string() const
@@ -341,8 +350,6 @@ std::string Track::to_string() const
   std::string midi_output_str = std::holds_alternative<std::nullopt_t>(midi_output) ? "None" :
                                 std::holds_alternative<MinimalAudioEngine::MidiDevice>(midi_output) ? std::get<MinimalAudioEngine::MidiDevice>(midi_output).to_string() :
                                 std::get<MinimalAudioEngine::MidiFilePtr>(midi_output)->to_string();
-
-  // TODO - Include audio processing nodes in the string representation
 
   return "Track(AudioInput=" + audio_input_str +
          ", MidiInput=" + midi_input_str +

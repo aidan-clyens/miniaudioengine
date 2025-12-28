@@ -2,6 +2,7 @@
 #include <iostream>
 #include <memory>
 
+#include "trackmanager.h"
 #include "devicemanager.h"
 #include "track.h"
 #include "audiostreamcontroller.h"
@@ -20,7 +21,9 @@ protected:
 
   void SetUp() override
   {
-    test_track = std::make_shared<Track>();
+    TrackManager::instance().clear_tracks();
+    TrackManager::instance().add_track();
+    test_track = TrackManager::instance().get_track(0);
   }
 };
 
@@ -196,4 +199,36 @@ TEST_F(TrackTest, RemoveMidiOutput)
 
   // Verify the track no longer has a MIDI output
   EXPECT_FALSE(test_track->has_midi_output()) << "Track should not have MIDI output after removal";
+}
+
+TEST_F(TrackTest, PlayWavFileInput)
+{
+  // Add audio output
+  auto output_device = MinimalAudioEngine::DeviceManager::instance().get_default_audio_output_device();
+  EXPECT_TRUE(output_device.has_value()) << "No audio output device found for testing";
+
+  AudioStreamController::instance().set_output_device(output_device.value());
+
+  // Open WAV file and add as audio input
+  auto file = MinimalAudioEngine::FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);  
+  EXPECT_TRUE(file.has_value()) << "Failed to read WAV file for testing";
+  
+  test_track->add_audio_input(file.value());
+  EXPECT_TRUE(test_track->has_audio_input()) << "Track should have audio input after adding WAV file";
+  LOG_INFO("Playing WAV file: ", file.value()->to_string());
+
+  // Start playback
+  test_track->play(); // Non-blocking call
+  EXPECT_TRUE(test_track->is_playing()) << "Track should be playing after play() is called";
+
+  // Wait
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+
+  LOG_INFO("Stopping playback after 5 seconds.");
+  test_track->stop(); // Blocking call
+  EXPECT_FALSE(test_track->is_playing()) << "Track should not be playing after stop() is called";
+
+  // Get statistics
+  auto stats = test_track->get_statistics();
+  LOG_INFO("Stopped playing: ", stats.to_string());
 }

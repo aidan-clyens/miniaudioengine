@@ -8,6 +8,8 @@ using namespace MinimalAudioEngine;
 int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                           double stream_time, RtAudioStreamStatus status, void *user_data) noexcept
 {
+  set_thread_name("RtAudioCallback");
+
   AudioCallbackContext* context = static_cast<AudioCallbackContext*>(user_data);
   if (!context)
   {

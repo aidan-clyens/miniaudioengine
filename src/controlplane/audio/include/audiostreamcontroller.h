@@ -41,8 +41,8 @@ public:
   std::vector<RtAudio::DeviceInfo> get_audio_devices();
   void set_output_device(const AudioDevice& device);
 
-  void start_stream();
-  void stop_stream();
+  bool start_stream();
+  bool stop_stream();
 
   eAudioState get_stream_state() const
   {

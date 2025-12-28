@@ -22,6 +22,31 @@ friend class FileManager;
 public:
   virtual ~WavFile() = default;
 
+  unsigned int get_total_frames() const
+  {
+    return (unsigned int)m_sfinfo.frames;
+  }
+
+  unsigned int get_bits_per_sample() const
+  {
+    int format = m_sfinfo.format & SF_FORMAT_SUBMASK;
+    switch (format)
+    {
+      case SF_FORMAT_PCM_16:
+        return 16;
+      case SF_FORMAT_PCM_24:
+        return 24;
+      case SF_FORMAT_PCM_32:
+        return 32;
+      case SF_FORMAT_FLOAT:
+        return 32;
+      case SF_FORMAT_DOUBLE:
+        return 64;
+      default:
+        return 0; // Unknown or unsupported format
+    }
+  }
+
   unsigned int get_sample_rate() const
   {
     return (unsigned int)m_sfinfo.samplerate;
@@ -30,6 +55,11 @@ public:
   unsigned int get_channels() const
   {
     return (unsigned int)m_sfinfo.channels;
+  }
+
+  double get_duration_seconds() const
+  {
+    return static_cast<double>(get_total_frames()) / static_cast<double>(get_sample_rate());
   }
 
   unsigned int get_format() const
@@ -57,8 +87,11 @@ public:
   std::string to_string() const override
   {
     return "WavFile(Path=" + m_filepath.string() +
+           ", TotalFrames=" + std::to_string(get_total_frames()) +
+           ", DurationSeconds=" + std::to_string(get_duration_seconds()) +
            ", Format=" + get_format_string() +
            ", SampleRate=" + std::to_string(get_sample_rate()) +
+           ", BitsPerSample=" + std::to_string(get_bits_per_sample()) +
            ", Channels=" + std::to_string(get_channels()) + ")";
   }
 

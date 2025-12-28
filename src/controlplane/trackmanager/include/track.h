@@ -14,8 +14,8 @@
 #include "midiengine.h"
 #include "filemanager.h"
 #include "devicemanager.h"
+#include "audiostreamcontroller.h"
 #include "audiodevice.h"
-#include "audioprocessor.h"
 #include "trackaudiodataplane.h"
 
 namespace MinimalAudioEngine
@@ -25,7 +25,6 @@ namespace MinimalAudioEngine
 struct AudioMessage;
 class WavFile;
 class MidiFile;
-class IAudioProcessor;
 
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
@@ -46,13 +45,25 @@ enum class eTrackEvent
 
 typedef std::function<void(eTrackEvent)> TrackEventCallback;
 
+/** @struct TrackStatistics
+ *  @brief Statistics related to Track operations.
+ */
+struct TrackStatistics
+{
+  WavFileReadStatistics wav_file_read_stats;
+
+  std::string to_string() const
+  {
+    return "TrackStatistics(" + wav_file_read_stats.to_string() + ")";
+  }
+};
+
 /** @class Track
  *  @brief The Track can one handle audio or MIDI input and output.
  *  It implements the Observer pattern to receive MIDI and audio messages.
  */
 class Track : public Observer<MidiMessage>, 
           public Observer<AudioMessage>,
-          public IAudioProcessor,
           public std::enable_shared_from_this<Track>
 {
 public:
@@ -121,18 +132,6 @@ public:
    */
   MidiIOVariant get_midi_output() const;
 
-  // Audio Processing
-  void add_audio_processor(const std::shared_ptr<IAudioProcessor> node)
-  {
-    LOG_INFO("Adding audio processor to track: ", node->to_string());
-    m_audio_processing_nodes.push_back(node);
-  }
-
-  std::vector<std::shared_ptr<IAudioProcessor>> get_audio_processors() const
-  {
-    return m_audio_processing_nodes;
-  }
-
   // Playback control
   /** @brief Start playback of the track. */
   void play();
@@ -145,7 +144,14 @@ public:
    */
   bool is_playing() const
   {
-    return m_is_playing;
+    return AudioStreamController::instance().get_stream_state() == eAudioState::Playing;
+  }
+  
+  TrackStatistics get_statistics() const
+  {
+    TrackStatistics stats;
+    stats.wav_file_read_stats = p_audio_dataplane->get_wav_file_read_statistics();
+    return stats;
   }
 
   /** @brief Set a callback function for track events.
@@ -157,6 +163,7 @@ public:
   }
 
   // MIDI Callbacks
+
   /** @brief Set a callback function for MIDI note on events.
    *  @param callback The callback function to set e.g. `void note_on_func(const MinimalAudioEngine::MidiNoteMessage& message)`.
    */
@@ -181,12 +188,12 @@ public:
   }
 
   // Observer interface
-  void update(const MidiMessage& message) override; // TODO - Make private
-  void update(const AudioMessage& message) override; // TODO - Make private
+  void update(const MidiMessage& message) override; // TODO - Remove
+  void update(const AudioMessage& message) override; // TODO - Remove
 
-  void handle_midi_message(const MidiMessage& message); // TODO - Make private
+  void handle_midi_message(const MidiMessage& message); // TODO - Remove
 
-  void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate) override; // TODO - Make private
+  void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate); // TODO - Remove
 
   TrackAudioDataPlanePtr get_audio_dataplane() const
   {
@@ -203,13 +210,9 @@ private:
 
   TrackEventCallback m_event_callback;
 
-  bool m_is_playing{false};
-
   AudioIOVariant m_audio_input;
   MidiIOVariant m_midi_input;
   MidiIOVariant m_midi_output;
-
-  std::vector<std::shared_ptr<IAudioProcessor>> m_audio_processing_nodes;
 
   MidiNoteOnCallbackFunc m_note_on_callback;
   MidiNoteOffCallbackFunc m_note_off_callback;
