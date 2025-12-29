@@ -9,7 +9,7 @@ Cross-platform C++20 audio processing engine designed for embedded and desktop e
 The project is transitioning to a strict 3-plane architecture with clear separation:
 
 ```
-Layer 4: cli (application interface - CLI11 + replxx)
+Layer 4: cli (application interface - basic CLI implementation)
          ↓
 Layer 3: controlplane (synchronous control operations)
          ├── audio (AudioStreamController - device management)
@@ -17,11 +17,11 @@ Layer 3: controlplane (synchronous control operations)
          ├── devicemanager (hardware enumeration)
          └── filemanager (disk I/O - libsndfile wrapper)
          ↓
-Layer 2: processingplane (planned - background worker threads)
+Layer 2: processingplane (NOT YET IMPLEMENTED - planned for background worker threads)
          ↓
 Layer 1: dataplane (lock-free real-time components)
-         ├── audio (TrackAudioDataPlane, audio callbacks)
-         └── midi (MidiEngine, MIDI callbacks, types)
+         ├── audio (TrackAudioDataPlane, AudioCallbackHandler)
+         └── midi (MidiEngine - legacy threading, miditypes, midicontroller)
          ↓
 Layer 0: framework (lock-free primitives, logging, utilities)
 ```
@@ -29,7 +29,7 @@ Layer 0: framework (lock-free primitives, logging, utilities)
 **Key principles**:
 - **Control Plane**: Synchronous operations from main thread, locks allowed, infrequent calls
 - **Data Plane**: Real-time callbacks (RtAudio/RtMidi), lock-free only, < 1ms execution
-- **Processing Plane**: Background worker threads for CPU-intensive DSP (planned)
+- **Processing Plane**: Background worker threads for CPU-intensive DSP (NOT YET IMPLEMENTED)
 - Each layer is a static library; dependencies flow upward only
 - Lower layers NEVER depend on upper layers
 
@@ -83,15 +83,31 @@ Framework provides generic Observer/Subject implementation:
   ```
   src/
   ├── framework/           (Layer 0 - base primitives)
+  │   └── include/
+  │       ├── engine.h               (Legacy threading pattern - IEngine<T>)
+  │       ├── messagequeue.h         (Thread-safe message queue)
+  │       ├── lockfree_ringbuffer.h  (Lock-free SPSC queue)
+  │       ├── doublebuffer.h         (Atomic double-buffer)
+  │       ├── realtime_assert.h      (RT safety stubs - not yet implemented)
+  │       ├── logger.h               (Thread-safe logging)
+  │       ├── observer.h/subject.h   (Observer pattern)
+  │       └── input.h                (Input handling utilities)
   ├── dataplane/          (Layer 1 - real-time components)
-  │   ├── audio/          (TrackAudioDataPlane, audio processors)
-  │   └── midi/           (MidiEngine, MIDI types)
+  │   ├── audio/
+  │   │   ├── trackaudiodataplane.h  (Per-track audio rendering)
+  │   │   └── audiocallbackhandler.h (RtAudio callback wrapper)
+  │   └── midi/
+  │       ├── midiengine.h           (Legacy IEngine pattern - needs refactor)
+  │       ├── miditypes.h            (MIDI message types)
+  │       └── midicontroller.h       (MIDI CC definitions)
   ├── controlplane/       (Layer 3 - synchronous control)
-  │   ├── audio/          (AudioStreamController)
+  │   ├── audio/          (AudioStreamController - refactored)
   │   ├── trackmanager/   (Track, TrackManager)
   │   ├── devicemanager/  (Device enumeration)
-  │   └── filemanager/    (WAV file I/O)
-  └── cli/                (Layer 4 - application)
+  │   └── filemanager/    (WAV/MIDI file I/O)
+  └── cli/                (Layer 4 - basic CLI implementation)
+      ├── include/cli.h
+      └── src/cli.cpp
   ```
 
 ### Key Dependencies (vcpkg.json)
@@ -136,12 +152,27 @@ cmake --build build
 Use `LOG_INFO()`, `LOG_ERROR()`, `LOG_WARNING()` macros from [framework/include/logger.h](../src/framework/include/logger.h). Thread-safe by design.
 
 ### Testing
-- GTest framework in `tests/unit/`
-- Tests use singletons: `TrackManager::instance()`, `DeviceManager::instance()`
-- Clear state with `.clear_tracks()` before tests
-- Test files named `test_<component>_unit.cpp`
+- **Unit Tests** (`tests/unit/`):
+  - GTest framework
+  - Tests use singletons: `TrackManager::instance()`, `DeviceManager::instance()`
+  - Clear state with `.clear_tracks()` before tests
+  - Test files named `test_<component>_unit.cpp`
+  - Components tested: AudioStreamController, DeviceManager, FileManager, TrackManager, Track, TrackAudioDataPlane, LockfreeRingBuffer, DoubleBuffer, MessageQueue, Observer/Subject
+- **Profiling Tests** (`tests/profiling/`):
+  - `test_lockfree_ringbuffer_profiling.cpp`: Single producer/consumer throughput at various sample rates
+  - `test_track_wav_file_profiling.cpp`: WAV file playback performance
+  - Python analysis scripts for results visualization
+- **Integration Tests** (`tests/integration/`): Directory exists but not yet populated
 
 ## Common Tasks
+
+### Working with the CLI
+The CLI component provides basic command-line argument parsing:
+- **Files:** `cli/include/cli.h`, `cli/src/cli.cpp`
+- **Usage:** Define `Command` structs with argument names, short names, descriptions, and action callbacks
+- **Features:** Help text generation, version display
+- **Examples:** See `examples/wav-audio-player/src/main.cpp` and `examples/midi-device-input/src/main.cpp`
+- **Note:** Basic implementation - not a full interactive shell (despite vcpkg dependency on replxx)
 
 ### Working with Control Plane Components
 Control plane components (AudioStreamController, TrackManager, DeviceManager, FileManager) are synchronous singletons:
@@ -201,28 +232,73 @@ When working in the data plane:
 ## Refactor Status
 
 ### Completed Components
-- ✅ **Framework**: Lock-free primitives (`LockfreeRingBuffer`), logging, utilities
-- ✅ **Data Plane Audio**: `TrackAudioDataPlane`, audio callback handler
-- ✅ **Data Plane MIDI**: MIDI types, `MidiEngine` (still uses old threading)
-- ✅ **Control Plane Audio**: `AudioStreamController` (refactored from AudioEngine)
-- ✅ **Control Plane Managers**: `TrackManager`, `DeviceManager`, `FileManager`
-- ✅ **Track**: Supports both device and file input, owns data plane instances
+- ✅ **Framework**: 
+  - Lock-free primitives: `LockfreeRingBuffer<T, Size>` (SPSC queue), `DoubleBuffer<T>` (atomic swap)
+  - Logging: `Logger` singleton with thread-safe file/console output
+  - Threading: `IEngine<T>` template (legacy pattern for workers)
+  - Observer pattern: `Subject<T>` / `Observer<T>` (non-real-time use)
+  - Message passing: `MessageQueue<T>` (lock-based, blocking pop)
+- ✅ **Data Plane Audio**: 
+  - `TrackAudioDataPlane`: Per-track audio rendering, WAV file playback
+  - `AudioCallbackHandler`: Pure RtAudio callback function with context struct
+- ✅ **Data Plane MIDI**: 
+  - `MidiEngine`: MIDI port management (legacy `IEngine<T>` pattern)
+  - MIDI types: `MidiMessage`, `MidiNoteMessage`, `MidiControlMessage`
+  - `midicontroller.h`: Enum definitions for MIDI CC numbers (Novation Launchkey)
+- ✅ **Control Plane Audio**: 
+  - `AudioStreamController`: Synchronous audio device management (refactored from AudioEngine)
+- ✅ **Control Plane Managers**: 
+  - `TrackManager`: Track lifecycle management
+  - `DeviceManager`: Audio/MIDI device enumeration
+  - `FileManager`: WAV/MIDI file I/O (libsndfile wrapper)
+- ✅ **Track**: 
+  - Supports both device and file input (audio and MIDI)
+  - Owns `TrackAudioDataPlane` instance
+  - Implements Observer pattern (legacy - to be removed)
+  - Play/stop control, event callbacks
+- ✅ **CLI**: Basic command-line interface implementation
+- ✅ **Examples**: 
+  - `wav-audio-player`: WAV file playback example
+  - `midi-device-input`: MIDI device input example
+- ✅ **Tests**: 
+  - Unit tests: All major components
+  - Profiling tests: `LockfreeRingBuffer`, Track WAV playback
 
 ### In Progress / TODO
-- ⚠️ **Processing Plane**: Not yet implemented (planned for background DSP workers)
-- ⚠️ **CLI**: Under development - no main executable yet
+- ⚠️ **Processing Plane**: NOT IMPLEMENTED - planned for background DSP workers
+- ⚠️ **RealtimeAssert**: Header exists with stub macros - implementation pending
 - ⚠️ **MidiEngine Refactor**: Currently in dataplane but still uses legacy `IEngine<T>` pattern with dedicated thread and `MessageQueue`. Needs refactoring to either:
   - Control plane: `MidiPortController` (synchronous, like AudioStreamController)
-  - Data plane: Lock-free callback handler (like TrackAudioDataPlane)
+  - Data plane: Lock-free callback handler (like AudioCallbackHandler)
+- ⚠️ **Track Refactor**: Still uses `Observer` pattern and mutex - should be control-plane only
+- ⚠️ **CLI Application**: Basic implementation exists but not yet a full application
 
 See [ARCHITECTURE_REFACTOR_GUIDE.md](../ARCHITECTURE_REFACTOR_GUIDE.md) for detailed migration plan.
 
 ## Critical Files to Understand
-- [framework/include/engine.h](../src/framework/include/engine.h) - Legacy threading model (being phased out)
-- [framework/include/messagequeue.h](../src/framework/include/messagequeue.h) - Inter-thread communication (legacy)
-- [framework/include/lockfree_ringbuffer.h](../src/framework/include/lockfree_ringbuffer.h) - Lock-free SPSC queue (new pattern)
+
+### Framework (Layer 0)
+- [framework/include/engine.h](../src/framework/include/engine.h) - Legacy threading model (`IEngine<T>` template)
+- [framework/include/messagequeue.h](../src/framework/include/messagequeue.h) - Thread-safe message queue
+- [framework/include/lockfree_ringbuffer.h](../src/framework/include/lockfree_ringbuffer.h) - Lock-free SPSC queue
+- [framework/include/doublebuffer.h](../src/framework/include/doublebuffer.h) - Atomic double-buffer for producer/consumer
+- [framework/include/realtime_assert.h](../src/framework/include/realtime_assert.h) - RT safety macros (stubs)
+- [framework/include/logger.h](../src/framework/include/logger.h) - Thread-safe logging
+
+### Data Plane (Layer 1)
+- [dataplane/audio/include/trackaudiodataplane.h](../src/dataplane/audio/include/trackaudiodataplane.h) - Per-track audio rendering
+- [dataplane/audio/include/audiocallbackhandler.h](../src/dataplane/audio/include/audiocallbackhandler.h) - RtAudio callback wrapper
+- [dataplane/midi/include/midiengine.h](../src/dataplane/midi/include/midiengine.h) - MIDI engine (legacy pattern, needs refactor)
+- [dataplane/midi/include/miditypes.h](../src/dataplane/midi/include/miditypes.h) - MIDI message types
+- [dataplane/midi/include/midicontroller.h](../src/dataplane/midi/include/midicontroller.h) - MIDI CC definitions
+
+### Control Plane (Layer 3)
 - [controlplane/audio/include/audiostreamcontroller.h](../src/controlplane/audio/include/audiostreamcontroller.h) - Audio device control (refactored)
 - [controlplane/trackmanager/include/track.h](../src/controlplane/trackmanager/include/track.h) - Track management
-- [dataplane/audio/include/trackaudiodataplane.h](../src/dataplane/audio/include/trackaudiodataplane.h) - Real-time audio rendering
-- [dataplane/midi/include/midiengine.h](../src/dataplane/midi/include/midiengine.h) - MIDI engine (legacy pattern, needs refactor)
-- [src/CMakeLists.txt](../src/CMakeLists.txt) - Component dependency graph
+- [controlplane/trackmanager/include/trackmanager.h](../src/controlplane/trackmanager/include/trackmanager.h) - Track collection manager
+- [controlplane/devicemanager/include/devicemanager.h](../src/controlplane/devicemanager/include/devicemanager.h) - Device enumeration
+- [controlplane/filemanager/include/filemanager.h](../src/controlplane/filemanager/include/filemanager.h) - File I/O
+
+### Build System
+- [src/CMakeLists.txt](../src/CMakeLists.txt) - Top-level component dependency graph
+- [vcpkg.json](../vcpkg.json) - Dependency manifest
