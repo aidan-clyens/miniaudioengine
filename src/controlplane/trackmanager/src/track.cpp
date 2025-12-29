@@ -163,10 +163,7 @@ void Track::play()
   if (std::holds_alternative<WavFilePtr>(m_audio_input))
   {
     MinimalAudioEngine::WavFilePtr wav_file = std::get<MinimalAudioEngine::WavFilePtr>(m_audio_input);
-    p_audio_dataplane->read_wav_file(wav_file); // Start asynchronous read into dataplane buffer
-    
-    // Wait for initial buffering (fill buffer to ~25% before starting playback)
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    p_audio_dataplane->read_wav_file(wav_file); // Preload WAV file data
   }
 
   if (!AudioStreamController::instance().start_stream())

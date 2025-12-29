@@ -112,31 +112,15 @@ public:
   void process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
                      double stream_time, RtAudioStreamStatus status) noexcept;
 
-  // Called from control plane to read WAV file data into the buffer
-  void read_wav_file(const WavFilePtr& wav_file, ReadWavFileCompleteCallback callback = nullptr);
+  // Called from control plane to preload WAV file data
+  void read_wav_file(const WavFilePtr& wav_file);
 
   /** @brief Stop audio processing and clear buffers. */
   void stop()
   {
-    // Clear buffers and stop any processing threads
-    if (m_producer_thread.joinable())
-    {
-      m_stop_command.store(true, std::memory_order_release);
-      m_producer_thread.join();
-  
-      p_output_buffer->clear();
-      p_output_buffer->clear();
-  
-      m_stop_command.store(false, std::memory_order_release);
-    }
-  }
-
-  /** @brief Get WAV file read statistics.
-   *  @return AudioOutputStatistics structure containing read statistics.
-   */
-  AudioOutputStatistics get_wav_file_read_statistics() const
-  {
-    return m_wav_file_read_stats;
+    m_stop_command.store(true, std::memory_order_release);
+    p_output_buffer->clear();
+    m_preloaded_frames_buffer.clear();
   }
 
   /** @brief Get audio output statistics.
@@ -162,15 +146,18 @@ public:
 
 private:
   LockfreeRingBufferPtr p_output_buffer;
-  std::jthread m_producer_thread;
+  std::vector<float> m_preloaded_frames_buffer;
 
-  AudioOutputStatistics m_wav_file_read_stats;
   AudioOutputStatistics m_audio_output_stats;
 
   std::atomic<bool> m_stop_command{false};
+  std::atomic<unsigned int> m_read_position{0};
 
   unsigned int m_input_channels{0};
   unsigned int m_output_channels{0};
+
+private:
+  void update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time);
 };
 
 typedef std::shared_ptr<TrackAudioDataPlane> TrackAudioDataPlanePtr;

@@ -84,6 +84,11 @@ public:
 
   sf_count_t read_frames(std::vector<float>& buffer, sf_count_t frames_to_read);
 
+  void seek(sf_count_t frame_offset)
+  {
+    sf_seek(m_sndfile.get(), frame_offset, SEEK_SET);
+  }
+
   std::string to_string() const override
   {
     return "WavFile(Path=" + m_filepath.string() +

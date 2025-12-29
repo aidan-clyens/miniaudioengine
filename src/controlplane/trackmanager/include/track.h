@@ -50,13 +50,11 @@ typedef std::function<void(eTrackEvent)> TrackEventCallback;
  */
 struct TrackStatistics
 {
-  AudioOutputStatistics wav_file_read_stats;
   AudioOutputStatistics audio_output_stats;
 
   std::string to_string() const
   {
-    return "TrackStatistics(\nWAV File Read = "+ wav_file_read_stats.to_string() + 
-           "\nAudio Output = " + audio_output_stats.to_string() + "\n)";
+    return "TrackStatistics(\nAudio Output = " + audio_output_stats.to_string() + "\n)";
   }
 };
 
@@ -152,7 +150,6 @@ public:
   TrackStatistics get_statistics() const
   {
     TrackStatistics stats;
-    stats.wav_file_read_stats = p_audio_dataplane->get_wav_file_read_statistics();
     stats.audio_output_stats = p_audio_dataplane->get_audio_output_statistics();
     return stats;
   }
