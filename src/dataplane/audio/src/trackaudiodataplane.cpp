@@ -55,11 +55,21 @@ void TrackAudioDataPlane::process_audio(void *output_buffer, void *input_buffer,
   update_audio_output_statistics(n_frames, batch_time_ms, stream_time);
 }
 
-void TrackAudioDataPlane::read_wav_file(const WavFilePtr& wav_file)
+/** @brief Preload WAV file data into the audio data plane.
+ *  @param wav_file Shared pointer to the WavFile to preload.
+ */
+void TrackAudioDataPlane::preload_wav_file(const WavFilePtr& wav_file)
 {
   if (!wav_file)
   {
     LOG_ERROR("TrackAudioDataPlane: Invalid WAV file: ", wav_file->to_string());
+    return;
+  }
+
+  // Only preload if track is not running
+  if (is_running())
+  {
+    LOG_WARNING("TrackAudioDataPlane: Cannot preload WAV file while track is running.");
     return;
   }
 

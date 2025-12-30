@@ -157,11 +157,18 @@ void Track::play()
 {
   LOG_INFO("Track: Play...");
 
+  // If already playing, do nothing
+  if (is_playing())
+  {
+    LOG_WARNING("Track: Already playing.");
+    return;
+  }
+
   // If audio input is a WAV file, start producer thread BEFORE starting audio stream
   if (std::holds_alternative<WavFilePtr>(m_audio_input))
   {
     WavFilePtr wav_file = std::get<WavFilePtr>(m_audio_input);
-    p_audio_dataplane->read_wav_file(wav_file); // Preload WAV file data
+    p_audio_dataplane->preload_wav_file(wav_file); // Preload WAV file data
   }
 
   // If MIDI input is a MIDI device, ensure the port is open
@@ -177,21 +184,22 @@ void Track::play()
   }
 }
 
+/** @brief Stops playback of the track.
+ */
 void Track::stop()
 {
   LOG_INFO("Track: Stop...");
+
+  // If not playing, do nothing
+  if (!is_playing())
+  {
+    LOG_WARNING("Track: Not currently playing.");
+    return;
+  }
+
   // Clear dataplane buffers and stop any data processing threads
   p_audio_dataplane->stop();
   AudioStreamController::instance().stop_stream();
-}
-
-/** @brief Updates the track with a new MIDI message.
- *  This function is called by the MidiEngine when a new MIDI message is received.
- *  @param message The MIDI message to process.
- */
-void Track::update(const MidiMessage& message)
-{
-  handle_midi_message(message);
 }
 
 /** @brief Handles a MIDI message.

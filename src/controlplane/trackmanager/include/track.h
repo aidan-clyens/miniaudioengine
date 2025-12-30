@@ -10,7 +10,6 @@
 #include <string>
 #include <functional>
 
-#include "observer.h"
 #include "filemanager.h"
 #include "devicemanager.h"
 #include "audiostreamcontroller.h"
@@ -61,10 +60,8 @@ struct TrackStatistics
 
 /** @class Track
  *  @brief The Track can one handle audio or MIDI input and output.
- *  It implements the Observer pattern to receive MIDI and audio messages.
  */
-class Track : public Observer<MidiMessage>, 
-              public std::enable_shared_from_this<Track>
+class Track : public std::enable_shared_from_this<Track>
 {
 public:
   Track():
@@ -187,9 +184,6 @@ public:
   {
     m_control_change_callback = callback;
   }
-
-  // Observer interface
-  void update(const MidiMessage& message) override; // TODO - Remove
 
   void handle_midi_message(const MidiMessage& message); // TODO - Remove
 

@@ -1,12 +1,8 @@
 #ifndef __TRACK_AUDIO_DATA_PLANE_H__
 #define __TRACK_AUDIO_DATA_PLANE_H__
 
-#include "lockfree_ringbuffer.h"
-#include "dataplane.h"
-
 #include <string>
 #include <memory>
-#include <thread>
 #include <functional>
 #include <algorithm>
 #include <vector>
@@ -15,8 +11,6 @@
 
 #include "wavfile.h"
 #include "logger.h"
-
-#define BUFFER_FRAMES 8192
 
 namespace MinimalAudioEngine
 {
@@ -58,9 +52,10 @@ struct AudioOutputStatistics
 };
 
 /** @class TrackAudioDataPlane
- *  @brief Data plane for handling audio data for a Track. Implements IDataPlane.
+ *  @brief Data plane for handling audio data for a Track. The Data plane is only a callback
+ *  target for RtAudio and is not a producer/consumer of audio data itself.
  */
-class TrackAudioDataPlane : public IDataPlane<float, BUFFER_FRAMES>
+class TrackAudioDataPlane
 {
 public:
   virtual ~TrackAudioDataPlane()
@@ -100,18 +95,42 @@ public:
     return m_output_channels;
   }
 
-  // Called from RtAudio callback
+  /** @brief Check if the track is currently running.
+   *  @return True if running, false if stopped.
+   */
+  bool is_running() const
+  {
+    return !m_stop_command.load(std::memory_order_acquire);
+  }
+
+  /** @brief Process audio data. This is called from the RtAudio callback function.
+   *  @param output_buffer Pointer to the output buffer.
+   *  @param input_buffer Pointer to the input buffer.
+   *  @param n_frames Number of frames to process.
+   *  @param stream_time Current stream time in seconds.
+   *  @param status Stream status flags.
+   */
   void process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
                      double stream_time, RtAudioStreamStatus status) noexcept;
+  
+  /** @brief Preload WAV file data into the audio data plane. Called from the Track control plane before playback.
+   *  @param wav_file Shared pointer to the WavFile to preload.
+   */
+  void preload_wav_file(const WavFilePtr& wav_file);
 
-  // Called from control plane to preload WAV file data
-  void read_wav_file(const WavFilePtr& wav_file);
+  /** @brief Start audio processing.
+   */
+  void start()
+  {
+    m_stop_command.store(false, std::memory_order_release);
+    m_read_position.store(0, std::memory_order_release);
+  }
 
-  /** @brief Stop audio processing and clear buffers. */
+  /** @brief Stop audio processing and clear buffers.
+   */
   void stop()
   {
     m_stop_command.store(true, std::memory_order_release);
-    p_output_buffer->clear();
     m_preloaded_frames_buffer.clear();
   }
 
@@ -133,7 +152,7 @@ private:
 
   AudioOutputStatistics m_audio_output_stats;
 
-  std::atomic<bool> m_stop_command{false};
+  std::atomic<bool> m_stop_command{true};
   std::atomic<unsigned int> m_read_position{0};
 
   unsigned int m_input_channels{0};
