@@ -16,6 +16,7 @@
 #include "audiostreamcontroller.h"
 #include "audiodevice.h"
 #include "trackaudiodataplane.h"
+#include "trackmididataplane.h"
 #include "miditypes.h"
 
 namespace MinimalAudioEngine
@@ -63,15 +64,15 @@ struct TrackStatistics
  *  It implements the Observer pattern to receive MIDI and audio messages.
  */
 class Track : public Observer<MidiMessage>, 
-          public Observer<AudioMessage>,
-          public std::enable_shared_from_this<Track>
+              public std::enable_shared_from_this<Track>
 {
 public:
   Track():
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt),
-    p_audio_dataplane(std::make_shared<TrackAudioDataPlane>())
+    p_audio_dataplane(std::make_shared<TrackAudioDataPlane>()),
+    p_midi_dataplane(std::make_shared<TrackMidiDataPlane>())
   {}
 
   ~Track() = default;
@@ -189,15 +190,17 @@ public:
 
   // Observer interface
   void update(const MidiMessage& message) override; // TODO - Remove
-  void update(const AudioMessage& message) override; // TODO - Remove
 
   void handle_midi_message(const MidiMessage& message); // TODO - Remove
-
-  void get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate); // TODO - Remove
 
   TrackAudioDataPlanePtr get_audio_dataplane() const
   {
     return p_audio_dataplane;
+  }
+
+  TrackMidiDataPlanePtr get_midi_dataplane() const
+  {
+    return p_midi_dataplane;
   }
 
   std::string to_string() const;
@@ -207,6 +210,7 @@ private:
   std::mutex m_queue_mutex; // TODO - Remove?
 
   TrackAudioDataPlanePtr p_audio_dataplane;
+  TrackMidiDataPlanePtr p_midi_dataplane;
 
   TrackEventCallback m_event_callback;
 

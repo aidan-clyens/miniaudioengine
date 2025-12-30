@@ -4,18 +4,22 @@
 #include <memory>
 #include <vector>
 
-// #include <rtaudio/RtAudio.h>
-
 namespace MinimalAudioEngine
 {
 
-// typedef std::shared_ptr<class TrackAudioDataPlane> TrackAudioDataplanePtr;
+typedef std::shared_ptr<class TrackMidiDataPlane> TrackMidiDataplanePtr;
 
+/** @struct MidiCallbackContext
+ *  @brief Context structure passed to the MIDI callback function.
+ */
 struct MidiCallbackContext
 {
-  // std::vector<TrackAudioDataplanePtr> active_tracks;
+  std::vector<TrackMidiDataplanePtr> active_tracks;
 };
 
+/** @class MidiCallbackHandler
+ *  @brief Handles RtMidi callback functions.
+ */
 class MidiCallbackHandler
 {
 public:

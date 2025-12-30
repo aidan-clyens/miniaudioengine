@@ -151,6 +151,8 @@ MidiIOVariant Track::get_midi_output() const
   return m_midi_output;
 }
 
+/** @brief Starts playback of the track.
+ */
 void Track::play()
 {
   LOG_INFO("Track: Play...");
@@ -158,8 +160,15 @@ void Track::play()
   // If audio input is a WAV file, start producer thread BEFORE starting audio stream
   if (std::holds_alternative<WavFilePtr>(m_audio_input))
   {
-    MinimalAudioEngine::WavFilePtr wav_file = std::get<MinimalAudioEngine::WavFilePtr>(m_audio_input);
+    WavFilePtr wav_file = std::get<WavFilePtr>(m_audio_input);
     p_audio_dataplane->read_wav_file(wav_file); // Preload WAV file data
+  }
+
+  // If MIDI input is a MIDI device, ensure the port is open
+  if (std::holds_alternative<MidiDevice>(m_midi_input))
+  {
+    MidiDevice midi_device = std::get<MidiDevice>(m_midi_input);
+    MidiPortController::instance().open_input_port(midi_device.id);
   }
 
   if (!AudioStreamController::instance().start_stream())
@@ -183,22 +192,6 @@ void Track::stop()
 void Track::update(const MidiMessage& message)
 {
   handle_midi_message(message);
-}
-
-/** @brief Updates the track with a new audio message.
- *  This function is called by the AudioEngine when a new audio message is received.
- *  @param message The audio message to process.
- */
-void Track::update(const AudioMessage &message)
-{
-  // if (message.command == eAudioEngineCommand::StoppedPlayback)
-  // {
-  //   LOG_INFO("Track: Received AudioEngine Stop notification.");
-  //   if (m_event_callback)
-  //   {
-  //     m_event_callback(eTrackEvent::PlaybackFinished);
-  //   }
-  // }
 }
 
 /** @brief Handles a MIDI message.
@@ -236,93 +229,6 @@ void Track::handle_midi_message(const MidiMessage& message)
     default:
       LOG_INFO("Track: Unknown MIDI Message Type - ", message.type_name);
       break;
-  }
-}
-
-/** @brief Fill the audio output buffer with the next available data
- *  @param output_buffer Pointer to the output buffer where audio data will be written.
- *  @param frames Number of frames to fill in the output buffer.
- *  @param channels Number of output audio channels.
- *  @param sample_rate Sample rate of the audio data.
- */
-void Track::get_next_audio_frame(float *output_buffer, unsigned int frames, unsigned int channels, unsigned int sample_rate)
-{
-  LOG_INFO("Track: get_next_audio_frame with ", frames, " frames.", 
-           " Channels: ", channels, 
-           " Sample Rate: ", sample_rate);
-
-  if (output_buffer == nullptr)
-  {
-    LOG_ERROR("Track: Null output buffer in get_next_audio_frame");
-    return;
-  }
-
-  if (frames == 0)
-  {
-    LOG_ERROR("Track: Zero frames requested in get_next_audio_frame");
-    return;
-  }
-
-  if (channels == 0)
-  {
-    LOG_ERROR("Track: Zero channels requested in get_next_audio_frame");
-    return;
-  }
-
-  if (sample_rate == 0)
-  {
-    LOG_ERROR("Track: Zero sample rate requested in get_next_audio_frame");
-    return;
-  }
-
-  // if (!has_audio_input())
-  // {
-  //   // No audio input configured, fill with silence
-  //   LOG_INFO("Track: No audio input configured, filling output buffer with silence.");
-  //   std::fill(output_buffer, output_buffer + frames * channels, 0.0f);
-  //   return;
-  // }
-
-  // If audio input is a WAV file, read data from it
-  if (std::holds_alternative<MinimalAudioEngine::WavFilePtr>(m_audio_input))
-  {
-    MinimalAudioEngine::WavFilePtr wav_file = std::get<MinimalAudioEngine::WavFilePtr>(m_audio_input);
-    LOG_INFO("Track: Reading next audio frame from WAV file: ", wav_file->to_string());
-
-    unsigned int file_channels = wav_file->get_channels();
-    unsigned int samples_to_read = frames * file_channels;
-
-    std::vector<float> file_buffer(samples_to_read, 0.0f);
-    sf_count_t read_frames = wav_file->read_frames(file_buffer, frames);
-
-    if (read_frames != frames)
-    {
-      LOG_INFO("Track: Reached end of WAV file or read less frames than requested. Stopping playback.");
-      // Fill remaining buffer with silence
-      for (unsigned int i = read_frames * channels; i < frames * channels; ++i)
-      {
-        output_buffer[i] = 0.0f;
-      }
-
-      // Stop playback if end of file reached
-      stop();
-    }
-
-    // Add data to output buffer, handling channel mismatch
-    for (unsigned int i = 0; i < static_cast<unsigned int>(read_frames); ++i)
-    {
-      for (unsigned int ch = 0; ch < channels; ++ch)
-      {
-        if (ch < file_channels)
-        {
-          output_buffer[i * channels + ch] = file_buffer[i * file_channels + ch];
-        }
-        else
-        {
-          output_buffer[i * channels + ch] = 0.0f; // Fill extra channels with silence
-        }
-      }
-    }
   }
 }
 

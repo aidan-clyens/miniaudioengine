@@ -13,6 +13,7 @@ target_sources(dataplane-midi
 target_sources(dataplane-midi
   PRIVATE
   src/midicallbackhandler.cpp
+  src/trackmididataplane.cpp
 )
 
 target_include_directories(dataplane-midi

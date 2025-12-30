@@ -25,4 +25,5 @@ target_link_libraries(controlplane-midi
     framework
     rtmidi
     dataplane-midi
+    trackmanager
 )

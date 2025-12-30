@@ -27,6 +27,7 @@ public:
   TrackPtr get_track(size_t index);
   std::vector<TrackPtr> get_tracks() const;
   std::vector<TrackAudioDataPlanePtr> get_track_audio_dataplanes(); // TODO - Make private and accessible by AudioCallbackHandler only
+  std::vector<TrackMidiDataPlanePtr> get_track_midi_dataplanes(); // TODO - Make private and accessible by MidiCallbackHandler only
 
   void clear_tracks();
 

@@ -71,6 +71,23 @@ std::vector<TrackAudioDataPlanePtr> TrackManager::get_track_audio_dataplanes()
   return dataplanes;
 }
 
+/** @brief Get all TrackMidiDataPlanes from the TrackManager.
+ *  @return A vector of shared pointers to all TrackMidiDataPlanes.
+ */
+std::vector<TrackMidiDataPlanePtr> TrackManager::get_track_midi_dataplanes()
+{
+  std::vector<TrackMidiDataPlanePtr> dataplanes;
+  for (const auto &track : m_tracks)
+  {
+    auto dataplane = track->get_midi_dataplane();
+    if (dataplane)
+    {
+      dataplanes.push_back(dataplane);
+    }
+  }
+  return dataplanes;
+}
+
 /** @brief Clear all tracks from the TrackManager.
  *  This function removes all tracks from the internal vector, effectively resetting the TrackManager.
  */

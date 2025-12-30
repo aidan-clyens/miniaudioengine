@@ -14,6 +14,7 @@ target_sources(framework
       include/engine.h
       include/logger.h
       include/input.h
+      include/dataplane.h
 )
 
 target_sources(framework PRIVATE 

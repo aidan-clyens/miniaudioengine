@@ -1,5 +1,6 @@
 #include "midicallbackhandler.h"
 
+#include "trackmididataplane.h"
 #include "miditypes.h"
 #include "logger.h"
 
@@ -53,8 +54,11 @@ void MidiCallbackHandler::midi_callback(double deltatime, std::vector<unsigned c
       midi_message.type_name = "Unknown MIDI Message";
     }
 
-    // TODO - Update active tracks in context and forward message to them
-    // midi_engine->receive_midi_message(midi_message);
+    // Update active tracks in context and forward message to them
+    for (const auto &track_dp : context->active_tracks)
+    {
+      track_dp->process_midi_message(midi_message);
+    }
   }
   catch (const std::exception &e)
   {

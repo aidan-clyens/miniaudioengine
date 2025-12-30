@@ -2,6 +2,7 @@
 #define __TRACK_AUDIO_DATA_PLANE_H__
 
 #include "lockfree_ringbuffer.h"
+#include "dataplane.h"
 
 #include <string>
 #include <memory>
@@ -57,20 +58,11 @@ struct AudioOutputStatistics
 };
 
 /** @class TrackAudioDataPlane
- *  @brief Data plane for handling audio data for a Track.
+ *  @brief Data plane for handling audio data for a Track. Implements IDataPlane.
  */
-class TrackAudioDataPlane
+class TrackAudioDataPlane : public IDataPlane<float, BUFFER_FRAMES>
 {
 public:
-  using LockfreeRingBuffer = MinimalAudioEngine::LockfreeRingBuffer<float, BUFFER_FRAMES>;
-  using LockfreeRingBufferPtr = std::shared_ptr<LockfreeRingBuffer>;
-
-  using ReadWavFileCompleteCallback = std::function<void(const AudioOutputStatistics&)>;
-
-  TrackAudioDataPlane() : 
-    p_output_buffer(std::make_shared<LockfreeRingBuffer>())
-  {}
-
   virtual ~TrackAudioDataPlane()
   {
     stop();
@@ -131,21 +123,12 @@ public:
     return m_audio_output_stats;
   }
 
-  /** @brief Get the output lock-free ring buffer.
-   *  @return Shared pointer to the output LockfreeRingBuffer.
-   */
-  LockfreeRingBufferPtr get_output_buffer() const
-  {
-    return p_output_buffer;
-  }
-
   std::string to_string() const
   {
     return "TrackAudioDataPlane";
   }
 
 private:
-  LockfreeRingBufferPtr p_output_buffer;
   std::vector<float> m_preloaded_frames_buffer;
 
   AudioOutputStatistics m_audio_output_stats;

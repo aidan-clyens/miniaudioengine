@@ -1,5 +1,6 @@
 #include "midiportcontroller.h"
 
+#include "trackmanager.h"
 #include "logger.h"
 
 using namespace MinimalAudioEngine;
@@ -66,6 +67,9 @@ void MidiPortController::open_input_port(unsigned int port_number)
   }
 
   // Set the callback function to handle incoming MIDI messages
+  m_callback_context->active_tracks.clear();
+  m_callback_context->active_tracks = TrackManager::instance().get_track_midi_dataplanes();
+
   m_rtmidi_in.setCallback(&MidiCallbackHandler::midi_callback, m_callback_context.get());
   m_rtmidi_in.ignoreTypes(false, true, true);
 
