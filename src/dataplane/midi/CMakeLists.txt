@@ -6,14 +6,13 @@ target_sources(dataplane-midi
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
-      include/miditypes.h
-      include/midiengine.h
       include/midicontroller.h
+      include/midicallbackhandler.h
 )
 
 target_sources(dataplane-midi
   PRIVATE
-  src/midiengine.cpp
+  src/midicallbackhandler.cpp
 )
 
 target_include_directories(dataplane-midi
@@ -24,4 +23,5 @@ target_include_directories(dataplane-midi
 target_link_libraries(dataplane-midi PUBLIC
   rtmidi
   framework
+  controlplane-midi
 )

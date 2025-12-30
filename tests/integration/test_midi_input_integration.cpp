@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "midiengine.h"
 #include "devicemanager.h"
 #include "trackmanager.h"
 #include "filemanager.h"
@@ -9,15 +8,10 @@
 #include "logger.h"
 
 using namespace MinimalAudioEngine;
-using namespace MinimalAudioEngine;
-using namespace MinimalAudioEngine;
 
 TEST(MidiInputIntegrationTest, MidiInput)
 {
   set_thread_name("Main");
-
-  // Start the MIDI engine
-  MidiEngine::instance().start_thread();
 
   // Add a track
   ASSERT_EQ(TrackManager::instance().get_track_count(), 0);
@@ -40,7 +34,4 @@ TEST(MidiInputIntegrationTest, MidiInput)
   LOG_INFO("MIDI file loaded: ", midi_file_ptr->get_filepath());
 
   track->add_midi_input(midi_file_ptr);
-
-  // Stop the MIDI engine
-  MidiEngine::instance().stop_thread();
 }

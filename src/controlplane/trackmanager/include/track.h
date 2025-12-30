@@ -11,12 +11,12 @@
 #include <functional>
 
 #include "observer.h"
-#include "midiengine.h"
 #include "filemanager.h"
 #include "devicemanager.h"
 #include "audiostreamcontroller.h"
 #include "audiodevice.h"
 #include "trackaudiodataplane.h"
+#include "miditypes.h"
 
 namespace MinimalAudioEngine
 {

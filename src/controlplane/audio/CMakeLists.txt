@@ -22,6 +22,7 @@ target_link_libraries(controlplane-audio
   PUBLIC
     rtaudio
     devicemanager
+    trackmanager
 )
 
 set_target_properties(controlplane-audio PROPERTIES LINKER_LANGUAGE CXX)

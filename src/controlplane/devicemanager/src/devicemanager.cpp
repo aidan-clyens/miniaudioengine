@@ -1,6 +1,6 @@
 #include "devicemanager.h"
 #include "audiostreamcontroller.h"
-#include "midiengine.h"
+#include "midiportcontroller.h"
 
 using namespace MinimalAudioEngine;
 
@@ -45,7 +45,7 @@ AudioDevice DeviceManager::get_audio_device(const unsigned int id) const
 std::vector<MidiDevice> DeviceManager::get_midi_devices() const
 {
   std::vector<MidiDevice> devices;
-  auto midi_devices = MinimalAudioEngine::MidiEngine::instance().get_ports();
+  auto midi_devices = MidiPortController::instance().get_ports();
 
   for (const auto &port : midi_devices)
   {

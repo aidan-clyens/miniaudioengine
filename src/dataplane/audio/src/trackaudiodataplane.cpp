@@ -69,14 +69,15 @@ void TrackAudioDataPlane::read_wav_file(const WavFilePtr& wav_file)
   m_read_position.store(0, std::memory_order_release);
 
   // Read entire WAV file into preloaded buffer
-  sf_count_t total_frames = wav_file->get_total_frames() * wav_file->get_channels(); // Expect interleaved samples
-  m_preloaded_frames_buffer.resize(total_frames);
-  sf_count_t frames_read = wav_file->read_frames(m_preloaded_frames_buffer, total_frames);
+  sf_count_t total_frames = wav_file->get_total_frames(); // Expect interleaved samples
+  sf_count_t total_samples = total_frames * wav_file->get_channels();
+  m_preloaded_frames_buffer.resize(total_samples, 0.0f);
+  sf_count_t frames_read = wav_file->read_frames(m_preloaded_frames_buffer, total_samples);
 
-  if (frames_read != total_frames)
+  if (frames_read != total_samples)
   {
     LOG_WARNING("TrackAudioDataPlane: Read fewer frames than expected from WAV file: ",
-                frames_read, " / ", total_frames);
+                frames_read, " / ", total_samples);
   }
 }
 

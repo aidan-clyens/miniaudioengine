@@ -3,6 +3,8 @@
 #include "wavfile.h"
 #include "midifile.h"
 #include "audiostreamcontroller.h"
+#include "midiportcontroller.h"
+#include "logger.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -57,14 +59,11 @@ void Track::add_midi_input(const MidiIOVariant& input)
 
   m_midi_input = input;
 
-  // TODO - Move to dataplane
   if (std::holds_alternative<MidiDevice>(input))
   {
-    MinimalAudioEngine::MidiEngine::instance().open_input_port(std::get<MidiDevice>(input).id);
-    MinimalAudioEngine::MidiEngine::instance().attach(shared_from_this());
+    LOG_INFO("Track: Added MIDI input: ", std::get<MidiDevice>(input).to_string());
+    MidiPortController::instance().open_input_port(std::get<MidiDevice>(input).id);
   }
-
-  LOG_INFO("Track: Added MIDI input: ", std::get<MidiDevice>(input).to_string());
 }
 
 /** @brief Adds a MIDI output to the track.
@@ -94,10 +93,7 @@ void Track::remove_audio_input()
 void Track::remove_midi_input()
 {
   m_midi_input = std::nullopt;
-
-  // TODO - Move to dataplane
-  MinimalAudioEngine::MidiEngine::instance().close_input_port();
-  MinimalAudioEngine::MidiEngine::instance().detach(shared_from_this());
+  MidiPortController::instance().close_input_port();
 }
 
 /** @brief Removes the MIDI output from the track.

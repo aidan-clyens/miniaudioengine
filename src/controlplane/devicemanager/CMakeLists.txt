@@ -25,6 +25,8 @@ target_link_libraries(devicemanager
   PUBLIC
     dataplane-audio
     dataplane-midi
+    controlplane-audio
+    controlplane-midi
 )
 
 set_target_properties(devicemanager PROPERTIES LINKER_LANGUAGE CXX)

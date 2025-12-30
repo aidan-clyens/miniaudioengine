@@ -2,6 +2,7 @@ enable_testing()
 
 add_executable(minimal-audio-engine-unit-tests
   test_audiostreamcontroller_unit.cpp
+  test_midiportcontroller_unit.cpp
   test_filemanager_unit.cpp
   test_trackmanager_unit.cpp
   test_track_unit.cpp
