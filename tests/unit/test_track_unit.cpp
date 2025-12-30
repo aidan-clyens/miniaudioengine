@@ -230,5 +230,44 @@ TEST_F(TrackTest, PlayWavFileInput)
 
   // Get statistics
   auto stats = test_track->get_statistics();
+  EXPECT_NE(stats.audio_output_stats.total_frames_read, 0) << "Total frames processed should be non-negative";
+  LOG_INFO("Stopped playing:\n", stats.to_string());
+}
+
+TEST_F(TrackTest, PlayMidiDeviceInput)
+{
+  // This test requires a physical MIDI input device connected.
+  // It will open the device, start playback, and log incoming MIDI messages for 10 seconds.
+
+  // Add MIDI input device
+  auto midi_input_device = MinimalAudioEngine::DeviceManager::instance().get_default_midi_input_device();
+  EXPECT_TRUE(midi_input_device.has_value()) << "No MIDI input device found for testing";
+
+  test_track->add_midi_input(midi_input_device.value());
+  EXPECT_TRUE(test_track->has_midi_input()) << "Track should have MIDI input after adding device";
+  LOG_INFO("Using MIDI input device: ", midi_input_device->to_string());
+
+  // // Set up a callback to log incoming MIDI messages
+  // test_track->p_midi_dataplane->set_midi_input_callback([](const std::vector<uint8_t>& message) {
+  //   std::string msg_str;
+  //   for (auto byte : message)
+  //     msg_str += " " + std::to_string(byte);
+  //   LOG_INFO("Received MIDI message:", msg_str);
+  // });
+
+  // Start playback
+  test_track->play(); // Non-blocking call
+  EXPECT_TRUE(test_track->is_playing()) << "Track should be playing after play() is called";
+
+  LOG_INFO("Listening for MIDI messages for 5 seconds...");
+  std::this_thread::sleep_for(std::chrono::seconds(5));
+
+  LOG_INFO("Stopping playback after 5 seconds.");
+  test_track->stop(); // Blocking call
+  EXPECT_FALSE(test_track->is_playing()) << "Track should not be playing after stop() is called";
+
+  // Get statistics
+  auto stats = test_track->get_statistics();
+  EXPECT_NE(stats.midi_input_stats.total_messages_processed, 0) << "Total messages processed should be non-negative";
   LOG_INFO("Stopped playing:\n", stats.to_string());
 }

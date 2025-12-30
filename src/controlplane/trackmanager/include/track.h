@@ -51,10 +51,11 @@ typedef std::function<void(eTrackEvent)> TrackEventCallback;
 struct TrackStatistics
 {
   AudioOutputStatistics audio_output_stats;
+  MidiInputStatistics midi_input_stats;
 
   std::string to_string() const
   {
-    return "TrackStatistics(\nAudio Output = " + audio_output_stats.to_string() + "\n)";
+    return "TrackStatistics(\nAudio Output = " + audio_output_stats.to_string() + "\nMIDI Input = " + midi_input_stats.to_string() + "\n)";
   }
 };
 
@@ -149,6 +150,7 @@ public:
   {
     TrackStatistics stats;
     stats.audio_output_stats = p_audio_dataplane->get_audio_output_statistics();
+    stats.midi_input_stats = p_midi_dataplane->get_statistics();
     return stats;
   }
 
