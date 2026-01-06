@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "trackmididataplane.h"
+#include "mididataplane.h"
 #include "miditypes.h"
 #include "logger.h"
 
@@ -17,7 +17,7 @@ public:
 
   void SetUp() override
   {
-    track_midi_data_plane = std::make_shared<TrackMidiDataPlane>();
+    track_midi_data_plane = std::make_shared<MidiDataPlane>();
   }
 
   void TearDown() override
@@ -28,17 +28,17 @@ public:
 
 TEST_F(TrackMidiDataPlaneTest, Setup)
 {
-  EXPECT_NE(track_midi_data_plane, nullptr) << "TrackMidiDataPlane should be initialized.";
-  EXPECT_FALSE(track_midi_data_plane->is_running()) << "TrackMidiDataPlane should be stopped initially.";
+  EXPECT_NE(track_midi_data_plane, nullptr) << "MidiDataPlane should be initialized.";
+  EXPECT_FALSE(track_midi_data_plane->is_running()) << "MidiDataPlane should be stopped initially.";
 }
 
 TEST_F(TrackMidiDataPlaneTest, StartStop)
 {
   track_midi_data_plane->start();
-  EXPECT_TRUE(track_midi_data_plane->is_running()) << "TrackMidiDataPlane should be running after start().";
+  EXPECT_TRUE(track_midi_data_plane->is_running()) << "MidiDataPlane should be running after start().";
 
   track_midi_data_plane->stop();
-  EXPECT_FALSE(track_midi_data_plane->is_running()) << "TrackMidiDataPlane should be stopped after stop().";
+  EXPECT_FALSE(track_midi_data_plane->is_running()) << "MidiDataPlane should be stopped after stop().";
 }
 
 TEST_F(TrackMidiDataPlaneTest, ProcessMidiMessageAndStatistics)
@@ -54,7 +54,7 @@ TEST_F(TrackMidiDataPlaneTest, ProcessMidiMessageAndStatistics)
 
   // Start the data plane
   track_midi_data_plane->start();
-  EXPECT_TRUE(track_midi_data_plane->is_running()) << "TrackMidiDataPlane should be running after start().";
+  EXPECT_TRUE(track_midi_data_plane->is_running()) << "MidiDataPlane should be running after start().";
 
   // Get MIDI input statistics
   MidiInputStatistics stats = track_midi_data_plane->get_statistics();
@@ -80,7 +80,7 @@ TEST_F(TrackMidiDataPlaneTest, DoNotProcessMidiMessageWhenStopped)
 
   // Ensure the data plane is stopped
   track_midi_data_plane->stop();
-  EXPECT_FALSE(track_midi_data_plane->is_running()) << "TrackMidiDataPlane should be stopped.";
+  EXPECT_FALSE(track_midi_data_plane->is_running()) << "MidiDataPlane should be stopped.";
 
   // Get MIDI input statistics
   MidiInputStatistics stats = track_midi_data_plane->get_statistics();

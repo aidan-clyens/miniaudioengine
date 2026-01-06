@@ -6,7 +6,7 @@
 namespace MinimalAudioEngine::Data
 {
 
-typedef std::shared_ptr<class TrackAudioDataPlane> TrackAudioDataplanePtr;
+typedef std::shared_ptr<class AudioDataPlane> TrackAudioDataplanePtr;
 
 struct AudioCallbackContext
 {

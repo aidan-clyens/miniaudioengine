@@ -32,11 +32,11 @@ struct MidiInputStatistics
   }
 };
 
-/** @class TrackMidiDataPlane
+/** @class MidiDataPlane
  *  @brief Data plane for handling MIDI messages for a track. The Data plane is only a callback
  *  target for RtMidi and is not a producer/consumer of MIDI messages itself.
  */
-class TrackMidiDataPlane
+class MidiDataPlane
 {
 public:
   /** @brief Process an incoming MIDI message. Called from the RtMidi callback function.
@@ -83,7 +83,7 @@ private:
   void update_midi_input_statistics(const Control::MidiMessage& midi_message); 
 };
 
-typedef std::shared_ptr<TrackMidiDataPlane> TrackMidiDataPlanePtr;
+typedef std::shared_ptr<MidiDataPlane> TrackMidiDataPlanePtr;
 
 } // namespace MinimalAudioEngine::Data
 

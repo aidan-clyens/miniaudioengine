@@ -7,7 +7,7 @@
 namespace MinimalAudioEngine::Data
 {
 
-typedef std::shared_ptr<class TrackMidiDataPlane> TrackMidiDataplanePtr;
+typedef std::shared_ptr<class MidiDataPlane> TrackMidiDataplanePtr;
 
 /** @struct MidiCallbackContext
  *  @brief Context structure passed to the MIDI callback function.

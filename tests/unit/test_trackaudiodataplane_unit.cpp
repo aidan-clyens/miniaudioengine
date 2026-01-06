@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "trackaudiodataplane.h"
+#include "audiodataplane.h"
 #include "filemanager.h"
 #include "wavfile.h"
 #include "logger.h"
@@ -17,7 +17,7 @@ class TrackAudioDataPlaneTest : public ::testing::Test
 protected:
   void SetUp() override
   {
-    p_track_audio_dataplane = std::make_shared<TrackAudioDataPlane>();
+    p_track_audio_dataplane = std::make_shared<AudioDataPlane>();
   }
 
   void TearDown() override
@@ -38,11 +38,11 @@ private:
  */
 TEST_F(TrackAudioDataPlaneTest, Setup)
 {
-  EXPECT_NE(track_audio_dataplane(), nullptr) << "TrackAudioDataPlane should not be null after creation";
+  EXPECT_NE(track_audio_dataplane(), nullptr) << "AudioDataPlane should not be null after creation";
   EXPECT_FALSE(track_audio_dataplane()->get_input_channels() > 0) << "Input channels should be 0 by default";
   EXPECT_FALSE(track_audio_dataplane()->get_output_channels() > 0) << "Output channels should be 0 by default";
-  EXPECT_FALSE(track_audio_dataplane()->is_running()) << "TrackAudioDataPlane should not be running by default";
-  LOG_INFO("Created TrackAudioDataPlane: ", track_audio_dataplane()->to_string());
+  EXPECT_FALSE(track_audio_dataplane()->is_running()) << "AudioDataPlane should not be running by default";
+  LOG_INFO("Created AudioDataPlane: ", track_audio_dataplane()->to_string());
 }
 
 TEST_F(TrackAudioDataPlaneTest, SetChannels)
@@ -53,13 +53,13 @@ TEST_F(TrackAudioDataPlaneTest, SetChannels)
   EXPECT_EQ(track_audio_dataplane()->get_input_channels(), 1) << "Input channels should be set to 1";
   EXPECT_EQ(track_audio_dataplane()->get_output_channels(), 2) << "Output channels should be set to 2";
 
-  LOG_INFO("TrackAudioDataPlane channels set: Input=", track_audio_dataplane()->get_input_channels(),
+  LOG_INFO("AudioDataPlane channels set: Input=", track_audio_dataplane()->get_input_channels(),
            ", Output=", track_audio_dataplane()->get_output_channels());
 }
 
 TEST_F(TrackAudioDataPlaneTest, PreloadWavFile)
 {
-  EXPECT_FALSE(track_audio_dataplane()->is_running()) << "TrackAudioDataPlane should not be running before preloading WAV file";
+  EXPECT_FALSE(track_audio_dataplane()->is_running()) << "AudioDataPlane should not be running before preloading WAV file";
 
   auto wav_file = FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);
   ASSERT_TRUE(wav_file.has_value()) << "Failed to read WAV file from path: " << TEST_WAV_FILE_PATH;
@@ -67,16 +67,16 @@ TEST_F(TrackAudioDataPlaneTest, PreloadWavFile)
 
   track_audio_dataplane()->preload_wav_file(wav_file.value());
 
-  LOG_INFO("Completed reading WAV file in TrackAudioDataPlane.");
+  LOG_INFO("Completed reading WAV file in AudioDataPlane.");
 }
 
 TEST_F(TrackAudioDataPlaneTest, StartStopProcessing)
 {
   track_audio_dataplane()->start();
-  EXPECT_TRUE(track_audio_dataplane()->is_running()) << "TrackAudioDataPlane should be running after start()";
+  EXPECT_TRUE(track_audio_dataplane()->is_running()) << "AudioDataPlane should be running after start()";
 
   track_audio_dataplane()->stop();
-  EXPECT_FALSE(track_audio_dataplane()->is_running()) << "TrackAudioDataPlane should not be running after stop()";
+  EXPECT_FALSE(track_audio_dataplane()->is_running()) << "AudioDataPlane should not be running after stop()";
 }
 
 TEST_F(TrackAudioDataPlaneTest, ProcessAudioAndStatistics)
@@ -87,7 +87,7 @@ TEST_F(TrackAudioDataPlaneTest, ProcessAudioAndStatistics)
   LOG_INFO("Initial AudioOutputStatistics: ", stats.to_string());
 
   track_audio_dataplane()->start();
-  EXPECT_TRUE(track_audio_dataplane()->is_running()) << "TrackAudioDataPlane should be running after start()";
+  EXPECT_TRUE(track_audio_dataplane()->is_running()) << "AudioDataPlane should be running after start()";
 
   // Process a dummy audio buffer
   const unsigned int n_frames = 512;
@@ -105,7 +105,7 @@ TEST_F(TrackAudioDataPlaneTest, ProcessAudioAndStatistics)
 TEST_F(TrackAudioDataPlaneTest, DoNotProcessAudioWhenStopped)
 {
   track_audio_dataplane()->stop();
-  EXPECT_FALSE(track_audio_dataplane()->is_running()) << "TrackAudioDataPlane should not be running after stop()";
+  EXPECT_FALSE(track_audio_dataplane()->is_running()) << "AudioDataPlane should not be running after stop()";
 
   auto stats = track_audio_dataplane()->get_audio_output_statistics();
   EXPECT_EQ(stats.total_frames_read, 0) << "Total frames read should be 0 initially";

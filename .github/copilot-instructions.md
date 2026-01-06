@@ -94,7 +94,7 @@ Framework provides generic Observer/Subject implementation:
   │       └── input.h                (Input handling utilities)
   ├── dataplane/          (Layer 1 - real-time components)
   │   ├── audio/
-  │   │   ├── trackaudiodataplane.h  (Per-track audio rendering)
+  │   │   ├── audiodataplane.h  (Per-track audio rendering)
   │   │   └── audiocallbackhandler.h (RtAudio callback wrapper)
   │   └── midi/
   │       ├── midiengine.h           (Legacy IEngine pattern - needs refactor)
@@ -286,7 +286,7 @@ See [ARCHITECTURE_REFACTOR_GUIDE.md](../ARCHITECTURE_REFACTOR_GUIDE.md) for deta
 - [framework/include/logger.h](../src/framework/include/logger.h) - Thread-safe logging
 
 ### Data Plane (Layer 1)
-- [dataplane/audio/include/trackaudiodataplane.h](../src/dataplane/audio/include/trackaudiodataplane.h) - Per-track audio rendering
+- [dataplane/audio/include/audiodataplane.h](../src/dataplane/audio/include/audiodataplane.h) - Per-track audio rendering
 - [dataplane/audio/include/audiocallbackhandler.h](../src/dataplane/audio/include/audiocallbackhandler.h) - RtAudio callback wrapper
 - [dataplane/midi/include/midiengine.h](../src/dataplane/midi/include/midiengine.h) - MIDI engine (legacy pattern, needs refactor)
 - [dataplane/midi/include/miditypes.h](../src/dataplane/midi/include/miditypes.h) - MIDI message types

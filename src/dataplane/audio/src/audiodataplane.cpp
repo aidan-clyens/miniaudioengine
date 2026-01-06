@@ -1,10 +1,10 @@
-#include "trackaudiodataplane.h"
+#include "audiodataplane.h"
 
 using namespace MinimalAudioEngine::Data;
 using namespace MinimalAudioEngine::Control;
 using namespace MinimalAudioEngine::Core;
 
-void TrackAudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
+void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
                                         double stream_time, RtAudioStreamStatus status) noexcept
 {
   if (input_buffer != nullptr)
@@ -60,22 +60,22 @@ void TrackAudioDataPlane::process_audio(void *output_buffer, void *input_buffer,
 /** @brief Preload WAV file data into the audio data plane.
  *  @param wav_file Shared pointer to the WavFile to preload.
  */
-void TrackAudioDataPlane::preload_wav_file(const WavFilePtr& wav_file)
+void AudioDataPlane::preload_wav_file(const WavFilePtr& wav_file)
 {
   if (!wav_file)
   {
-    LOG_ERROR("TrackAudioDataPlane: Invalid WAV file: ", wav_file->to_string());
+    LOG_ERROR("AudioDataPlane: Invalid WAV file: ", wav_file->to_string());
     return;
   }
 
   // Only preload if track is not running
   if (is_running())
   {
-    LOG_WARNING("TrackAudioDataPlane: Cannot preload WAV file while track is running.");
+    LOG_WARNING("AudioDataPlane: Cannot preload WAV file while track is running.");
     return;
   }
 
-  LOG_INFO("TrackAudioDataPlane: Preloading WAV file: ", wav_file->to_string());
+  LOG_INFO("AudioDataPlane: Preloading WAV file: ", wav_file->to_string());
 
   wav_file->seek(0);
   m_read_position.store(0, std::memory_order_release);
@@ -88,12 +88,12 @@ void TrackAudioDataPlane::preload_wav_file(const WavFilePtr& wav_file)
 
   if (frames_read != total_samples)
   {
-    LOG_WARNING("TrackAudioDataPlane: Read fewer frames than expected from WAV file: ",
+    LOG_WARNING("AudioDataPlane: Read fewer frames than expected from WAV file: ",
                 frames_read, " / ", total_samples);
   }
 }
 
-void TrackAudioDataPlane::update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time)
+void AudioDataPlane::update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time)
 {
   // Update statistics
   m_audio_output_stats.total_frames_read += n_frames;

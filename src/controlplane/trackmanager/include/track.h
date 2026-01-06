@@ -14,8 +14,8 @@
 #include "devicemanager.h"
 #include "audiostreamcontroller.h"
 #include "audiodevice.h"
-#include "trackaudiodataplane.h"
-#include "trackmididataplane.h"
+#include "audiodataplane.h"
+#include "mididataplane.h"
 #include "miditypes.h"
 
 namespace MinimalAudioEngine::Control
@@ -69,8 +69,8 @@ public:
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt),
-    p_audio_dataplane(std::make_shared<Data::TrackAudioDataPlane>()),
-    p_midi_dataplane(std::make_shared<Data::TrackMidiDataPlane>())
+    p_audio_dataplane(std::make_shared<Data::AudioDataPlane>()),
+    p_midi_dataplane(std::make_shared<Data::MidiDataPlane>())
   {}
 
   ~Track() = default;

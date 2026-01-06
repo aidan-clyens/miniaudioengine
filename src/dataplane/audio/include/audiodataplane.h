@@ -51,14 +51,14 @@ struct AudioOutputStatistics
   }
 };
 
-/** @class TrackAudioDataPlane
+/** @class AudioDataPlane
  *  @brief Data plane for handling audio data for a Track. The Data plane is only a callback
  *  target for RtAudio and is not a producer/consumer of audio data itself.
  */
-class TrackAudioDataPlane
+class AudioDataPlane
 {
 public:
-  virtual ~TrackAudioDataPlane()
+  virtual ~AudioDataPlane()
   {
     stop();
   }
@@ -144,7 +144,7 @@ public:
 
   std::string to_string() const
   {
-    return "TrackAudioDataPlane";
+    return "AudioDataPlane";
   }
 
 private:
@@ -162,7 +162,7 @@ private:
   void update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time);
 };
 
-typedef std::shared_ptr<TrackAudioDataPlane> TrackAudioDataPlanePtr;
+typedef std::shared_ptr<AudioDataPlane> TrackAudioDataPlanePtr;
 
 } // namespace MinimalAudioEngine::Data
 
