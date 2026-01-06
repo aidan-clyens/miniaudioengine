@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 /** @class AudioDevice
@@ -61,6 +61,6 @@ public:
   }
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Control
 
 #endif // __AUDIO_DEVICE_H__

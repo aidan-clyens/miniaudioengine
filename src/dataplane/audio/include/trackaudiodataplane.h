@@ -12,7 +12,7 @@
 #include "wavfile.h"
 #include "logger.h"
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Data
 {
 
 /** @struct AudioOutputStatistics
@@ -116,7 +116,7 @@ public:
   /** @brief Preload WAV file data into the audio data plane. Called from the Track control plane before playback.
    *  @param wav_file Shared pointer to the WavFile to preload.
    */
-  void preload_wav_file(const WavFilePtr& wav_file);
+  void preload_wav_file(const Control::WavFilePtr& wav_file);
 
   /** @brief Start audio processing.
    */
@@ -164,6 +164,6 @@ private:
 
 typedef std::shared_ptr<TrackAudioDataPlane> TrackAudioDataPlanePtr;
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Data
 
 #endif // __TRACK_AUDIO_DATA_PLANE_H__

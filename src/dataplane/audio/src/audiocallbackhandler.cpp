@@ -3,7 +3,8 @@
 #include "trackaudiodataplane.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Data;
+using namespace MinimalAudioEngine::Core;
 
 int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                           double stream_time, RtAudioStreamStatus status, void *user_data) noexcept

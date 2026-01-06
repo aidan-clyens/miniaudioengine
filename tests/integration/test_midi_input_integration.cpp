@@ -8,6 +8,8 @@
 #include "logger.h"
 
 using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Core;
 
 TEST(MidiInputIntegrationTest, MidiInput)
 {

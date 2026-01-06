@@ -13,6 +13,8 @@
 #define TEST_WAV_FILE_PATH "C:\\Projects\\minimal-audio-engine\\examples\\wav-audio-player\\samples\\test2.wav"
 
 using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Data;
 
 class TrackWavFileProfilingTest : public ::testing::Test
 {

@@ -11,18 +11,18 @@
 #include <iomanip>
 
 #define LOG_INFO(...) \
-  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Info, __VA_ARGS__)
+  MinimalAudioEngine::Core::Logger::instance().log(MinimalAudioEngine::Core::eLogLevel::Info, __VA_ARGS__)
 
 #define LOG_WARNING(...) \
-  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Warning, __VA_ARGS__)
+  MinimalAudioEngine::Core::Logger::instance().log(MinimalAudioEngine::Core::eLogLevel::Warning, __VA_ARGS__)
 
 #define LOG_ERROR(...) \
-  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Error, __VA_ARGS__)
+  MinimalAudioEngine::Core::Logger::instance().log(MinimalAudioEngine::Core::eLogLevel::Error, __VA_ARGS__)
 
 #define LOG_DEBUG(...) \
-  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Debug, __VA_ARGS__)
+  MinimalAudioEngine::Core::Logger::instance().log(MinimalAudioEngine::Core::eLogLevel::Debug, __VA_ARGS__)
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Core
 {
 
 enum class eLogLevel
@@ -136,6 +136,6 @@ private:
   }
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Core
 
 #endif // __LOGGER_H__

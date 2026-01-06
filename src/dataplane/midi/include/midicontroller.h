@@ -7,7 +7,7 @@
 #include <string_view>
 #include <ostream>
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Data
 {
 
 /** @enum eMidiController
@@ -61,7 +61,7 @@ enum class eMidiControllerValues : int
 };
 
 typedef std::function<void(int value)> MidiControllerActionFunc;
-typedef std::map<MinimalAudioEngine::eMidiController, MidiControllerActionFunc> MidiControllerActionMap;
+typedef std::map<eMidiController, MidiControllerActionFunc> MidiControllerActionMap;
 
 /** @enum eMidiNoteValues
  *  @brief MIDI note values
@@ -363,6 +363,6 @@ inline std::ostream& operator<<(std::ostream& os, const eMidiNoteValues& note_va
   return os;
 }
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Data
 
 #endif // __MIDI_CONTROLLER_H__

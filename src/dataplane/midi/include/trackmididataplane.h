@@ -5,11 +5,14 @@
 #include <atomic>
 #include <string>
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
-
 // Forward declaration
 struct MidiMessage;
+}
+
+namespace MinimalAudioEngine::Data
+{
 
 /** @struct MidiInputStatistics
  *  @brief Statistics related to MIDI input processing.
@@ -39,7 +42,7 @@ public:
   /** @brief Process an incoming MIDI message. Called from the RtMidi callback function.
    *  @param midi_message The MIDI message to process.
    */  
-  void process_midi_message(const MidiMessage& midi_message);
+  void process_midi_message(const Control::MidiMessage& midi_message);
 
   /** @brief Check if the track is currently running.
    *  @return True if running, false if stopped.
@@ -77,11 +80,11 @@ private:
   std::atomic<bool> m_stop_command{true};
 
 private:
-  void update_midi_input_statistics(const MidiMessage& midi_message); 
+  void update_midi_input_statistics(const Control::MidiMessage& midi_message); 
 };
 
 typedef std::shared_ptr<TrackMidiDataPlane> TrackMidiDataPlanePtr;
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Data
 
 #endif // __TRACK_MIDI_DATA_PLANE_H__

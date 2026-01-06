@@ -18,7 +18,7 @@
 #include "trackmididataplane.h"
 #include "miditypes.h"
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 // Forward declarations
@@ -50,8 +50,8 @@ typedef std::function<void(eTrackEvent)> TrackEventCallback;
  */
 struct TrackStatistics
 {
-  AudioOutputStatistics audio_output_stats;
-  MidiInputStatistics midi_input_stats;
+  Data::AudioOutputStatistics audio_output_stats;
+  Data::MidiInputStatistics midi_input_stats;
 
   std::string to_string() const
   {
@@ -69,8 +69,8 @@ public:
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt),
-    p_audio_dataplane(std::make_shared<TrackAudioDataPlane>()),
-    p_midi_dataplane(std::make_shared<TrackMidiDataPlane>())
+    p_audio_dataplane(std::make_shared<Data::TrackAudioDataPlane>()),
+    p_midi_dataplane(std::make_shared<Data::TrackMidiDataPlane>())
   {}
 
   ~Track() = default;
@@ -189,12 +189,12 @@ public:
 
   void handle_midi_message(const MidiMessage& message); // TODO - Remove
 
-  TrackAudioDataPlanePtr get_audio_dataplane() const
+  Data::TrackAudioDataPlanePtr get_audio_dataplane() const
   {
     return p_audio_dataplane;
   }
 
-  TrackMidiDataPlanePtr get_midi_dataplane() const
+  Data::TrackMidiDataPlanePtr get_midi_dataplane() const
   {
     return p_midi_dataplane;
   }
@@ -205,8 +205,8 @@ private:
   std::queue<MidiMessage> m_message_queue; // TODO - Remove?
   std::mutex m_queue_mutex; // TODO - Remove?
 
-  TrackAudioDataPlanePtr p_audio_dataplane;
-  TrackMidiDataPlanePtr p_midi_dataplane;
+  Data::TrackAudioDataPlanePtr p_audio_dataplane;
+  Data::TrackMidiDataPlanePtr p_midi_dataplane;
 
   TrackEventCallback m_event_callback;
 
@@ -219,6 +219,6 @@ private:
   MidiControlCallbackFunc m_control_change_callback;
 };
 
-}  // namespace MinimalAudioEngine
+}  // namespace MinimalAudioEngine::Control
 
 #endif  // __TRACK_H__

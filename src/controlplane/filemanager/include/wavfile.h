@@ -9,7 +9,7 @@
 
 #include "filemanager.h"
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 /** @class AudioFile
@@ -107,6 +107,6 @@ private:
   std::shared_ptr<SNDFILE> m_sndfile;
 };
 
-}  // namespace MinimalAudioEngine
+}  // namespace MinimalAudioEngine::Control
 
 #endif  // __WAV_FILE_H__

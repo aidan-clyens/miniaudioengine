@@ -1,6 +1,8 @@
 #include "trackaudiodataplane.h"
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Data;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Core;
 
 void TrackAudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
                                         double stream_time, RtAudioStreamStatus status) noexcept

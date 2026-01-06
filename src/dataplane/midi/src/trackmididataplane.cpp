@@ -3,7 +3,9 @@
 #include "miditypes.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Data;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Core;
 
 void TrackMidiDataPlane::process_midi_message(const MidiMessage &midi_message)
 {

@@ -15,7 +15,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Data;
 
 /** @brief Adds an audio input to the track.
  *  @param input The audio input device or file.
@@ -215,21 +216,21 @@ void Track::handle_midi_message(const MidiMessage& message)
   // Process the MIDI message here
   switch (message.type)
   {
-    case MinimalAudioEngine::eMidiMessageType::NoteOn:
+    case eMidiMessageType::NoteOn:
     {
       MidiNoteMessage note_on_msg = static_cast<const MidiNoteMessage&>(message);
       LOG_INFO("Track: Note On - ", note_on_msg.to_string());
       m_note_on_callback(note_on_msg, shared_from_this());
       break;
     }
-    case MinimalAudioEngine::eMidiMessageType::NoteOff:
+    case eMidiMessageType::NoteOff:
     {
       MidiNoteMessage note_off_msg = static_cast<const MidiNoteMessage&>(message);
       LOG_INFO("Track: Note Off - ", note_off_msg.to_string());
       m_note_off_callback(note_off_msg, shared_from_this());
       break;
     }
-    case MinimalAudioEngine::eMidiMessageType::ControlChange:
+    case eMidiMessageType::ControlChange:
     {
       MidiControlMessage control_change_msg = static_cast<const MidiControlMessage&>(message);
       LOG_INFO("Track: Control Change - ", control_change_msg.to_string());
@@ -249,16 +250,16 @@ std::string Track::to_string() const
   MidiIOVariant midi_output = get_midi_output();
 
   std::string audio_input_str = std::holds_alternative<std::nullopt_t>(audio_input) ? "None" :
-                                std::holds_alternative<MinimalAudioEngine::AudioDevice>(audio_input) ? std::get<MinimalAudioEngine::AudioDevice>(audio_input).to_string() :
-                                std::get<MinimalAudioEngine::WavFilePtr>(audio_input)->to_string();
+                                std::holds_alternative<AudioDevice>(audio_input) ? std::get<AudioDevice>(audio_input).to_string() :
+                                std::get<WavFilePtr>(audio_input)->to_string();
 
   std::string midi_input_str = std::holds_alternative<std::nullopt_t>(midi_input) ? "None" :
-                               std::holds_alternative<MinimalAudioEngine::MidiDevice>(midi_input) ? std::get<MinimalAudioEngine::MidiDevice>(midi_input).to_string() :
-                               std::get<MinimalAudioEngine::MidiFilePtr>(midi_input)->to_string();
+                               std::holds_alternative<MidiDevice>(midi_input) ? std::get<MidiDevice>(midi_input).to_string() :
+                               std::get<MidiFilePtr>(midi_input)->to_string();
 
   std::string midi_output_str = std::holds_alternative<std::nullopt_t>(midi_output) ? "None" :
-                                std::holds_alternative<MinimalAudioEngine::MidiDevice>(midi_output) ? std::get<MinimalAudioEngine::MidiDevice>(midi_output).to_string() :
-                                std::get<MinimalAudioEngine::MidiFilePtr>(midi_output)->to_string();
+                                std::holds_alternative<MidiDevice>(midi_output) ? std::get<MidiDevice>(midi_output).to_string() :
+                                std::get<MidiFilePtr>(midi_output)->to_string();
 
   return "Track(AudioInput=" + audio_input_str +
          ", MidiInput=" + midi_input_str +

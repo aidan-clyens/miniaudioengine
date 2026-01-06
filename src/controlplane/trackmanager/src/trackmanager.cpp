@@ -2,7 +2,8 @@
 
 #include "audiostreamcontroller.h"
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Data;
 
 /** @brief Add a Track to the TrackManager.
  *  @return The index of the newly added track.

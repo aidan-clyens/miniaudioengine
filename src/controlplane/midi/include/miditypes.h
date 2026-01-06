@@ -6,7 +6,7 @@
 #include <array>
 #include <iostream>
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 /** @enum eMidiMessageType

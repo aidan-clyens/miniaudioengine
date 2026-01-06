@@ -8,7 +8,7 @@
 
 #include "observer.h"
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Core
 {
 
 /** @class Subject

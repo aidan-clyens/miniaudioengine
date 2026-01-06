@@ -7,6 +7,8 @@
 #include "logger.h"
 
 using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Data;
 
 class TrackMidiDataPlaneTest : public ::testing::Test
 { 

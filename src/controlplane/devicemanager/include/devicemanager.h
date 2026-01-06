@@ -10,7 +10,7 @@
 #include "audiodevice.h"
 #include "mididevice.h"
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 /** @class DeviceManager
@@ -78,6 +78,6 @@ private:
   DeviceManager& operator=(const DeviceManager&) = delete;
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Control
 
 #endif  // __DEVICE_MANAGER_H__

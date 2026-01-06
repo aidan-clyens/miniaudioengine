@@ -7,7 +7,7 @@
 
 #include "logger.h"
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Core
 {
 
 /** @class LockfreeRingBuffer
@@ -117,6 +117,6 @@ private:
   alignas(64) std::atomic<size_t> m_read_index{0}; // Consumer index
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Core
 
 #endif // __LOCKFREE_RINGBUFFER_H__

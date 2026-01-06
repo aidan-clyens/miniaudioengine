@@ -5,7 +5,7 @@
 #include "subject.h" // for Subject
 #include "observer.h" // for Observer
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Core;
 
 /** @class SubjectObserverTest
  *  @brief SubjectObserverTest fixture for Subject and Observer unit tests.

@@ -6,7 +6,7 @@
 
 #include <rtmidi/RtMidi.h>
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 class MidiPortController
@@ -35,16 +35,16 @@ public:
   void close_input_port();
 
 private:
-  MidiPortController() : m_callback_context(std::make_shared<MidiCallbackContext>()) {}
+  MidiPortController() : m_callback_context(std::make_shared<Data::MidiCallbackContext>()) {}
   virtual ~MidiPortController()
   {
     close_input_port();
   }
 
   RtMidiIn m_rtmidi_in;
-  std::shared_ptr<MidiCallbackContext> m_callback_context;
+  std::shared_ptr<Data::MidiCallbackContext> m_callback_context;
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Control
 
 #endif // __MIDI_PORT_CONTROLLER_H__

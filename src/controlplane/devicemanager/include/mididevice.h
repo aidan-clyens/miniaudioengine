@@ -3,7 +3,7 @@
 
 #include "device.h"
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 /** @class MidiDevice
@@ -45,6 +45,6 @@ public:
 
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Control
 
 #endif // __MIDI_DEVICE_H__

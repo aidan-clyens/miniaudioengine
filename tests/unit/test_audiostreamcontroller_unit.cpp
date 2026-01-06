@@ -5,7 +5,7 @@
 #include "audiostreamcontroller.h"
 #include "audiodevice.h"
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
 
 /** @brief Set Output Device
  */

@@ -10,7 +10,7 @@
 #include "lockfree_ringbuffer.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Core;
 
 static std::vector<int> generate_int_sample_data(size_t num_samples)
 {

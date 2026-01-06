@@ -11,7 +11,7 @@
 #include "messagequeue.h"
 #include "logger.h"
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Core
 {
 
 /** @class IEngine
@@ -93,6 +93,6 @@ private:
   std::mutex m_mutex;
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Core
 
 #endif  // ___ENGINE_H_

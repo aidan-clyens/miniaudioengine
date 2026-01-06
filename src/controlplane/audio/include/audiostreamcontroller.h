@@ -9,7 +9,7 @@
 #include <vector>
 #include <memory>
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 /** @enum eAudioState
@@ -50,16 +50,16 @@ public:
   }
 
 private:
-  AudioStreamController(): m_callback_context(std::make_shared<AudioCallbackContext>()) {}
+  AudioStreamController(): m_callback_context(std::make_shared<Data::AudioCallbackContext>()) {}
   virtual ~AudioStreamController() = default;
 
   RtAudio m_rtaudio;
   std::optional<AudioDevice> m_audio_output_device;
-  std::shared_ptr<AudioCallbackContext> m_callback_context;
+  std::shared_ptr<Data::AudioCallbackContext> m_callback_context;
 
   eAudioState m_stream_state{eAudioState::Idle};
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Control
 
 #endif // __AUDIO_STREAM_CONTROLLER_H__

@@ -12,7 +12,8 @@
 
 #define TEST_WAV_FILE_PATH "C:\\Projects\\minimal-audio-engine\\samples\\test.wav"
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Data;
 
 class TrackTest : public ::testing::Test
 {
@@ -43,7 +44,7 @@ TEST_F(TrackTest, Setup)
 TEST_F(TrackTest, AddAudioInputDevice)
 {
   // Find a valid audio input device
-  auto device = MinimalAudioEngine::DeviceManager::instance().get_default_audio_input_device();
+  auto device = DeviceManager::instance().get_default_audio_input_device();
   EXPECT_TRUE(device.has_value()) << "No audio input device found for testing";
   LOG_INFO("Adding audio input device: " + device->to_string());
 
@@ -53,14 +54,14 @@ TEST_F(TrackTest, AddAudioInputDevice)
 
   // Verify the track has an audio input
   EXPECT_TRUE(test_track->has_audio_input());
-  EXPECT_EQ(std::get<MinimalAudioEngine::AudioDevice>(test_track->get_audio_input()), device.value());
+  EXPECT_EQ(std::get<AudioDevice>(test_track->get_audio_input()), device.value());
 }
 
 /** @brief Track - Remove Audio Input Device
  */
 TEST_F(TrackTest, RemoveAudioInputDevice)
 {
-  test_track->add_audio_input(MinimalAudioEngine::DeviceManager::instance().get_default_audio_input_device().value());
+  test_track->add_audio_input(DeviceManager::instance().get_default_audio_input_device().value());
 
   // Verify the track has an audio input
   EXPECT_TRUE(test_track->has_audio_input()) << "Track should have audio input before removal";
@@ -78,7 +79,7 @@ TEST_F(TrackTest, RemoveAudioInputDevice)
 TEST_F(TrackTest, AddAudioInputFile)
 {
   // Find a valid audio input device
-  auto file = MinimalAudioEngine::FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);
+  auto file = FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);
   EXPECT_TRUE(file.has_value()) << "Failed to read WAV file for testing";
   LOG_INFO("Adding audio input file: ", file.value()->to_string());
 
@@ -88,14 +89,14 @@ TEST_F(TrackTest, AddAudioInputFile)
 
   // Verify the track has an audio input
   EXPECT_TRUE(test_track->has_audio_input());
-  EXPECT_EQ(std::get<MinimalAudioEngine::WavFilePtr>(test_track->get_audio_input()), file.value());
+  EXPECT_EQ(std::get<WavFilePtr>(test_track->get_audio_input()), file.value());
 }
 
 /** @brief Track - Remove Audio Input File
  */
 TEST_F(TrackTest, RemoveAudioInputFile)
 {
-  test_track->add_audio_input(MinimalAudioEngine::FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH).value());
+  test_track->add_audio_input(FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH).value());
 
   // Verify the track has an audio input
   EXPECT_TRUE(test_track->has_audio_input()) << "Track should have audio input before removal";
@@ -113,7 +114,7 @@ TEST_F(TrackTest, RemoveAudioInputFile)
 TEST_F(TrackTest, AddAudioInput_InvalidDevice)
 {
   // Get an output device to trigger invalid input
-  auto output_device = MinimalAudioEngine::DeviceManager::instance().get_default_audio_output_device();
+  auto output_device = DeviceManager::instance().get_default_audio_output_device();
   try
   {
     test_track->add_audio_input(output_device.value());
@@ -137,7 +138,7 @@ TEST_F(TrackTest, AddAudioInput_InvalidDevice)
 TEST_F(TrackTest, AddMidiInputDevice)
 {
   // Find a valid MIDI input device
-  std::optional<MinimalAudioEngine::MidiDevice> device = MinimalAudioEngine::DeviceManager::instance().get_default_midi_input_device();
+  std::optional<MidiDevice> device = DeviceManager::instance().get_default_midi_input_device();
   EXPECT_TRUE(device.has_value()) << "No MIDI input device found for testing";
   LOG_INFO("Adding MIDI input device: " + device->to_string());
 
@@ -147,14 +148,14 @@ TEST_F(TrackTest, AddMidiInputDevice)
 
   // Verify the track has a MIDI input
   EXPECT_TRUE(test_track->has_midi_input());
-  EXPECT_EQ(std::get<MinimalAudioEngine::MidiDevice>(test_track->get_midi_input()), device.value());
+  EXPECT_EQ(std::get<MidiDevice>(test_track->get_midi_input()), device.value());
 }
 
 /** @brief Track - Remove MIDI Input Device
  */
 TEST_F(TrackTest, RemoveMidiInputDevice)
 {
-  test_track->add_midi_input(MinimalAudioEngine::DeviceManager::instance().get_default_midi_input_device().value());
+  test_track->add_midi_input(DeviceManager::instance().get_default_midi_input_device().value());
 
   // Verify the track has a MIDI input
   EXPECT_TRUE(test_track->has_midi_input()) << "Track should have MIDI input before removal";
@@ -171,7 +172,7 @@ TEST_F(TrackTest, RemoveMidiInputDevice)
  */
 TEST_F(TrackTest, AddMidiOutput) {
   // Find a valid MIDI output device
-  std::optional<MinimalAudioEngine::MidiDevice> device = MinimalAudioEngine::DeviceManager::instance().get_default_midi_output_device();
+  std::optional<MidiDevice> device = DeviceManager::instance().get_default_midi_output_device();
   EXPECT_TRUE(device.has_value()) << "No MIDI output device found for testing";
   LOG_INFO("Adding MIDI output device: " + device->to_string());
 
@@ -181,14 +182,14 @@ TEST_F(TrackTest, AddMidiOutput) {
 
   // Verify the track has a MIDI output
   EXPECT_TRUE(test_track->has_midi_output());
-  EXPECT_EQ(std::get<MinimalAudioEngine::MidiDevice>(test_track->get_midi_output()), device.value());
+  EXPECT_EQ(std::get<MidiDevice>(test_track->get_midi_output()), device.value());
 }
 
 /** @brief Track - Remove MIDI Output 
  */
 TEST_F(TrackTest, RemoveMidiOutput)
 {
-  test_track->add_midi_output(MinimalAudioEngine::DeviceManager::instance().get_default_midi_output_device().value());
+  test_track->add_midi_output(DeviceManager::instance().get_default_midi_output_device().value());
 
   // Verify the track has a MIDI output
   EXPECT_TRUE(test_track->has_midi_output()) << "Track should have MIDI output before removal";
@@ -204,13 +205,13 @@ TEST_F(TrackTest, RemoveMidiOutput)
 TEST_F(TrackTest, PlayWavFileInput)
 {
   // Add audio output
-  auto output_device = MinimalAudioEngine::DeviceManager::instance().get_default_audio_output_device();
+  auto output_device = DeviceManager::instance().get_default_audio_output_device();
   EXPECT_TRUE(output_device.has_value()) << "No audio output device found for testing";
 
   AudioStreamController::instance().set_output_device(output_device.value());
 
   // Open WAV file and add as audio input
-  auto file = MinimalAudioEngine::FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);  
+  auto file = FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);  
   EXPECT_TRUE(file.has_value()) << "Failed to read WAV file for testing";
   
   test_track->add_audio_input(file.value());
@@ -240,7 +241,7 @@ TEST_F(TrackTest, PlayMidiDeviceInput)
   // It will open the device, start playback, and log incoming MIDI messages for 10 seconds.
 
   // Add MIDI input device
-  auto midi_input_device = MinimalAudioEngine::DeviceManager::instance().get_default_midi_input_device();
+  auto midi_input_device = DeviceManager::instance().get_default_midi_input_device();
   EXPECT_TRUE(midi_input_device.has_value()) << "No MIDI input device found for testing";
 
   test_track->add_midi_input(midi_input_device.value());

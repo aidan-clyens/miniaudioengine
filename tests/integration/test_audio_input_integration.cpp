@@ -10,7 +10,9 @@
 #include "devicemanager.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
+using namespace MinimalAudioEngine::Data;
+using namespace MinimalAudioEngine::Core;
 
 // Configure test setup and teardown
 class AudioInputIntegrationTest : public ::testing::Test

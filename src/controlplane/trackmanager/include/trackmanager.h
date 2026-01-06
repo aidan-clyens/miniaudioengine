@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Control
 {
 
 /** @class TrackManager
@@ -26,8 +26,8 @@ public:
   void remove_track(size_t index);
   TrackPtr get_track(size_t index);
   std::vector<TrackPtr> get_tracks() const;
-  std::vector<TrackAudioDataPlanePtr> get_track_audio_dataplanes(); // TODO - Make private and accessible by AudioCallbackHandler only
-  std::vector<TrackMidiDataPlanePtr> get_track_midi_dataplanes(); // TODO - Make private and accessible by MidiCallbackHandler only
+  std::vector<Data::TrackAudioDataPlanePtr> get_track_audio_dataplanes(); // TODO - Make private and accessible by AudioCallbackHandler only
+  std::vector<Data::TrackMidiDataPlanePtr> get_track_midi_dataplanes(); // TODO - Make private and accessible by MidiCallbackHandler only
 
   void clear_tracks();
 
@@ -40,6 +40,6 @@ private:
   std::vector<TrackPtr> m_tracks;
 };
 
-}  // namespace MinimalAudioEngine
+}  // namespace MinimalAudioEngine::Control
 
 #endif  // __TRACK_MANAGER_H_

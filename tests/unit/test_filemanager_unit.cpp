@@ -8,6 +8,7 @@
 #include "logger.h"
 
 using namespace MinimalAudioEngine;
+using namespace MinimalAudioEngine::Control;
 
 static const std::filesystem::path PROJECT_ROOT_PATH("../../../../");
 
