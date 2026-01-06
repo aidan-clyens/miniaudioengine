@@ -6,6 +6,7 @@
 #include <optional>
 #include <stdexcept>
 
+#include "manager.h"
 #include "device.h"
 #include "audiodevice.h"
 #include "mididevice.h"
@@ -17,7 +18,7 @@ namespace MinimalAudioEngine::Control
  *  @brief This class manages the system's audio and MIDI I/O devices.
  *  It is implemented as a singleton to provide a global point of access.
  */
-class DeviceManager
+class DeviceManager : public Core::IManager
 {
 public:
   static DeviceManager& instance()

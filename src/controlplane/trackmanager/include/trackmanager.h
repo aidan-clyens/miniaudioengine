@@ -1,6 +1,7 @@
 #ifndef __TRACK_MANAGER_H_
 #define __TRACK_MANAGER_H_
 
+#include "manager.h"
 #include "track.h"
 #include "audiostreamcontroller.h"
 
@@ -13,7 +14,7 @@ namespace MinimalAudioEngine::Control
 /** @class TrackManager
  *  @brief The TrackManager class is responsible for managing tracks in the application.
  */
-class TrackManager
+class TrackManager : public Core::IManager
 {
 public:
   static TrackManager& instance()

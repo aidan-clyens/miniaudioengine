@@ -1,6 +1,7 @@
 #ifndef __FILE_SYSTEM_H__
 #define __FILE_SYSTEM_H__
 
+#include "manager.h"
 #include "input.h"
 
 #include <filesystem>
@@ -66,7 +67,7 @@ enum class PathType
 /** @class FileManager
  *  @brief Singleton class for managing file system operations.
  */
-class FileManager
+class FileManager : public Core::IManager
 {
 public:
   static FileManager& instance()

@@ -14,6 +14,8 @@ target_sources(framework
       include/engine.h
       include/logger.h
       include/input.h
+      include/controller.h
+      include/manager.h
 )
 
 target_sources(framework PRIVATE 
