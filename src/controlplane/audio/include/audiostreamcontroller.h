@@ -1,6 +1,7 @@
 #ifndef __AUDIO_STREAM_CONTROLLER_H__
 #define __AUDIO_STREAM_CONTROLLER_H__
 
+#include "controller.h"
 #include "audiocallbackhandler.h"
 #include "audiodevice.h"
 
@@ -29,7 +30,7 @@ enum class eAudioState
  *  adjust parameters such as volume, sample rate, and buffer size. 
  *  @note This class is part of the control plane. Operations are synchronous and called from the main thread.
  */
-class AudioStreamController
+class AudioStreamController : public Core::IController
 {
 public:
   static AudioStreamController& instance()
