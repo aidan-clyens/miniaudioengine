@@ -275,7 +275,7 @@ public:
 
   std::string to_string() const;
 
-private:
+protected:
   // Hierarchy
   std::weak_ptr<Track> m_parent;
   std::vector<TrackPtr> m_children;

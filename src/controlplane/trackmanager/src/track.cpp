@@ -262,21 +262,24 @@ void Track::play()
   // If audio input is a WAV file, start producer thread BEFORE starting audio stream
   if (std::holds_alternative<WavFilePtr>(m_audio_input))
   {
-    p_audio_dataplane->start();
+    LOG_DEBUG("Track: Preloading WAV file data into AudioDataPlane ", std::get<WavFilePtr>(m_audio_input)->to_string());
     WavFilePtr wav_file = std::get<WavFilePtr>(m_audio_input);
     p_audio_dataplane->preload_wav_file(wav_file); // Preload WAV file data
+    p_audio_dataplane->start();
   }
 
   // If MIDI input is a MIDI device, ensure the port is open
   if (std::holds_alternative<MidiDevice>(m_midi_input))
   {
-    p_midi_dataplane->start();
+    LOG_DEBUG("Track: Opening MIDI input port ", std::get<MidiDevice>(m_midi_input).to_string());
     MidiDevice midi_device = std::get<MidiDevice>(m_midi_input);
     m_midi_controller.open_input_port(midi_device.id);
+    p_midi_dataplane->start();
   }
 
   if (!m_audio_controller.start_stream())
   {
+    LOG_ERROR("Track: Failed to start audio stream.");
     return;
   }
 }

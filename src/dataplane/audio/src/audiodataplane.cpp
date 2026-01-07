@@ -18,8 +18,8 @@ void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsi
 
   float *out = static_cast<float *>(output_buffer);
 
-  // Check stop command once at start
-  if (m_stop_command.load(std::memory_order_acquire))
+  // Check if stopped once before processing buffer
+  if (!is_running())
   {
     std::fill_n(out, n_frames * m_output_channels, 0.0f);
     return;
@@ -92,10 +92,10 @@ void AudioDataPlane::preload_wav_file(const WavFilePtr& wav_file)
   m_preloaded_frames_buffer.resize(total_samples, 0.0f);
   sf_count_t frames_read = wav_file->read_frames(m_preloaded_frames_buffer, total_samples);
 
-  if (frames_read != total_samples)
+  if (frames_read != total_frames)
   {
     LOG_WARNING("AudioDataPlane: Read fewer frames than expected from WAV file: ",
-                frames_read, " / ", total_samples);
+                frames_read, " / ", total_frames);
   }
 }
 

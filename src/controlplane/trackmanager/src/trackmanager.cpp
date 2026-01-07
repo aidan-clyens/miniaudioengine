@@ -162,8 +162,8 @@ void TrackManager::clear_tracks()
  */
 void TrackManager::set_audio_output_device(const AudioDevice& device)
 {
-  m_main_track->set_audio_output_device(device);
   LOG_INFO("TrackManager: Set audio output device: ", device.to_string());
+  m_main_track->set_audio_output_device(device);
 }
 
 // ============================================================================
