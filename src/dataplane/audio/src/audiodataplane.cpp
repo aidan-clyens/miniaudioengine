@@ -27,6 +27,9 @@ void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsi
 
   auto batch_start_time = std::chrono::high_resolution_clock::now();
 
+  // Prepare output buffer for this track
+  prepare_output_buffer(n_frames);
+
   // Fill output buffer from preloaded frames buffer
   unsigned int read_pos = m_read_position.load(std::memory_order_acquire);
   for (unsigned int i = 0; i < n_frames; ++i)
@@ -36,10 +39,13 @@ void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsi
       unsigned int buffer_index = (read_pos + i) * m_output_channels + ch;
       if (buffer_index < m_preloaded_frames_buffer.size())
       {
-        out[i * m_output_channels + ch] = m_preloaded_frames_buffer[buffer_index];
+        float sample = m_preloaded_frames_buffer[buffer_index];
+        m_output_buffer[i * m_output_channels + ch] = sample; // Write to virtual output
+        out[i * m_output_channels + ch] = sample; // Write to hardware output
       }
       else
       {
+        m_output_buffer[i * m_output_channels + ch] = 0.0f;
         out[i * m_output_channels + ch] = 0.0f; // Fill with silence if out of preloaded data
       }
     }
@@ -119,4 +125,50 @@ void AudioDataPlane::update_audio_output_statistics(unsigned int n_frames, doubl
 
   // Update average throughput (cumulative moving average)
   m_audio_output_stats.throughput_frames_per_second = current_throughput;
+}
+
+// ============================================================================
+// Mixing and Routing for Hierarchy
+// ============================================================================
+
+/** @brief Prepare output buffer for mixing (called before processing children).
+ *  @param n_frames Number of frames to prepare.
+ */
+void AudioDataPlane::prepare_output_buffer(unsigned int n_frames)
+{
+  size_t buffer_size = n_frames * m_output_channels;
+  if (m_output_buffer.size() != buffer_size)
+  {
+    m_output_buffer.resize(buffer_size, 0.0f);
+  }
+  
+  // Clear output buffer before mixing
+  std::fill(m_output_buffer.begin(), m_output_buffer.end(), 0.0f);
+}
+
+/** @brief Mix child track output into this track's output buffer.
+ *  @param child_dataplane The child track's dataplane to read from.
+ *  @param child_gain Gain to apply to child output.
+ *  @param n_frames Number of frames to mix.
+ *  @note This is called in the parent track's audio callback (data plane).
+ */
+void AudioDataPlane::mix_child_output(const AudioDataPlane& child_dataplane,
+                                      float child_gain,
+                                      unsigned int n_frames) noexcept
+{
+  const auto& child_buffer = child_dataplane.get_output_buffer();
+  
+  // Ensure output buffer is allocated
+  size_t expected_size = n_frames * m_output_channels;
+  if (m_output_buffer.size() < expected_size)
+  {
+    return; // Skip mixing if buffer size mismatch
+  }
+
+  // Mix child output into parent's output buffer with gain
+  size_t mix_samples = std::min(child_buffer.size(), expected_size);
+  for (size_t i = 0; i < mix_samples; ++i)
+  {
+    m_output_buffer[i] += child_buffer[i] * child_gain;
+  }
 }

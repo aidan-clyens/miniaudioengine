@@ -17,6 +17,101 @@
 using namespace MinimalAudioEngine::Control;
 using namespace MinimalAudioEngine::Data;
 
+// ============================================================================
+// Hierarchy Management
+// ============================================================================
+
+/** @brief Add a child track to this track.
+ *  @param child The child track to add.
+ *  @throws std::runtime_error if the child already has a parent or if adding would create a cycle.
+ */
+void Track::add_child_track(TrackPtr child)
+{
+  if (!child)
+  {
+    throw std::runtime_error("Cannot add null child track.");
+  }
+
+  if (child->has_parent())
+  {
+    throw std::runtime_error("Child track already has a parent. Remove from parent first.");
+  }
+
+  // Prevent adding self as child
+  if (child.get() == this)
+  {
+    throw std::runtime_error("Cannot add track as its own child.");
+  }
+
+  // Prevent cycles: check if this track is a descendant of child
+  TrackPtr current = shared_from_this();
+  while (current)
+  {
+    if (current == child)
+    {
+      throw std::runtime_error("Cannot add child: would create a cycle in hierarchy.");
+    }
+    current = current->get_parent();
+  }
+
+  std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
+  m_children.push_back(child);
+  child->m_parent = shared_from_this();
+
+  LOG_INFO("Track: Added child track. Total children: ", m_children.size());
+}
+
+/** @brief Remove a child track from this track.
+ *  @param child The child track to remove.
+ */
+void Track::remove_child_track(TrackPtr child)
+{
+  if (!child)
+  {
+    return;
+  }
+
+  std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
+  auto it = std::find(m_children.begin(), m_children.end(), child);
+  if (it != m_children.end())
+  {
+    child->m_parent.reset();
+    m_children.erase(it);
+    LOG_INFO("Track: Removed child track. Total children: ", m_children.size());
+  }
+}
+
+/** @brief Remove this track from its parent.
+ */
+void Track::remove_from_parent()
+{
+  TrackPtr parent = get_parent();
+  if (parent)
+  {
+    parent->remove_child_track(shared_from_this());
+  }
+}
+
+/** @brief Get the parent track.
+ *  @return Shared pointer to parent track, or nullptr if no parent.
+ */
+TrackPtr Track::get_parent() const
+{
+  return m_parent.lock();
+}
+
+/** @brief Check if this track has a parent.
+ *  @return True if track has a parent.
+ */
+bool Track::has_parent() const
+{
+  return !m_parent.expired();
+}
+
+// ============================================================================
+// Audio/MIDI Input/Output
+// ============================================================================
+
 /** @brief Adds an audio input to the track.
  *  @param input The audio input device or file.
  */

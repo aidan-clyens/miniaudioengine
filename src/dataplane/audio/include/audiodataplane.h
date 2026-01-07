@@ -142,6 +142,28 @@ public:
     return m_audio_output_stats;
   }
 
+  // Mixing and routing for hierarchy
+
+  /** @brief Mix child track output into this track's output buffer.
+   *  @param child_dataplane The child track's dataplane to read from.
+   *  @param child_gain Gain to apply to child output.
+   *  @param n_frames Number of frames to mix.
+   *  @note This is called in the parent track's audio callback (data plane).
+   */
+  void mix_child_output(const AudioDataPlane& child_dataplane,
+                        float child_gain,
+                        unsigned int n_frames) noexcept;
+
+  /** @brief Get the output buffer for parent to read.
+   *  @return Const reference to output buffer.
+   */
+  const std::vector<float>& get_output_buffer() const { return m_output_buffer; }
+
+  /** @brief Prepare output buffer for mixing (called before processing children).
+   *  @param n_frames Number of frames to prepare.
+   */
+  void prepare_output_buffer(unsigned int n_frames);
+
   std::string to_string() const
   {
     return "AudioDataPlane";
@@ -149,6 +171,8 @@ public:
 
 private:
   std::vector<float> m_preloaded_frames_buffer;
+  std::vector<float> m_output_buffer;  // Virtual output for routing to parent
+  std::vector<float> m_mix_buffer;     // Temporary buffer for mixing operations
 
   AudioOutputStatistics m_audio_output_stats;
 
