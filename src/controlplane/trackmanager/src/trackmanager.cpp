@@ -1,7 +1,5 @@
 #include "trackmanager.h"
 
-#include "audiostreamcontroller.h"
-
 using namespace MinimalAudioEngine::Control;
 using namespace MinimalAudioEngine::Data;
 
@@ -12,7 +10,7 @@ using namespace MinimalAudioEngine::Data;
 TrackManager::TrackManager()
 {
   // Create MainTrack (root of hierarchy) with hardware output
-  m_main_track = std::make_shared<Track>(true); // is_main_track = true
+  m_main_track = std::make_shared<MainTrack>(); // is_main_track = true
   LOG_INFO("TrackManager: Created MainTrack (root of hierarchy)");
 }
 
@@ -153,6 +151,19 @@ void TrackManager::clear_tracks()
   }
   
   LOG_INFO("TrackManager: All tracks cleared. Total tracks after clear: ", get_track_count());
+}
+
+// ============================================================================
+// Audio Output Device Management
+// ============================================================================
+
+/** @brief Set the audio output device for the main track.
+ *  @param device The audio output device to use.
+ */
+void TrackManager::set_audio_output_device(const AudioDevice& device)
+{
+  m_main_track->set_audio_output_device(device);
+  LOG_INFO("TrackManager: Set audio output device: ", device.to_string());
 }
 
 // ============================================================================

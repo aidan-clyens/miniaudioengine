@@ -11,12 +11,35 @@
 namespace MinimalAudioEngine::Control
 {
 
+/** @class MainTrack
+ *  @brief The MainTrack is the root of the track hierarchy and manages the audio output device.
+ */
+class MainTrack : public Track
+{
+public:
+  MainTrack() : Track(true) {} // is_main_track = true
+  ~MainTrack() = default;
+
+  /** @brief Set the audio output device for the MainTrack.
+   *  @param device The audio output device to use.
+   */
+  void set_audio_output_device(const AudioDevice& device)
+  {
+    m_audio_output_device = device;
+  }
+
+private:
+  AudioDevice m_audio_output_device;
+};
+
 /** @class TrackManager
  *  @brief The TrackManager manages a hierarchical tree of tracks with MainTrack as root.
  *  All tracks route their output to their parent, forming a mixing tree.
  */
 class TrackManager : public Core::IManager
 {
+using MainTrackPtr = std::shared_ptr<MainTrack>;
+
 public:
   static TrackManager& instance()
   {
@@ -83,10 +106,18 @@ public:
    */
   void clear_tracks();
 
+  // Audio output device management
+
+  /** @brief Set the audio output device for the main track.
+   *  @param device The audio output device to use.
+   */
+  void set_audio_output_device(const AudioDevice& device);
+
   // Legacy compatibility methods
 
   /** @brief Add a track as child of MainTrack (legacy compatibility).
    *  @return Index of the track in MainTrack's children (for backward compatibility).
+   *  @deprecated Use create_child_track() instead.
    */
   size_t add_track();
 
@@ -94,11 +125,13 @@ public:
    *  @param index The index in MainTrack's children.
    *  @return Shared pointer to the track.
    *  @throws std::out_of_range if index is invalid.
+   *  @deprecated Use get_all_tracks() and navigate hierarchy instead.
    */
   TrackPtr get_track(size_t index);
 
   /** @brief Get all immediate children of MainTrack (legacy compatibility).
    *  @return Vector of track pointers.
+   *  @deprecated Use get_main_track()->get_children() instead.
    */
   std::vector<TrackPtr> get_tracks() const;
 
@@ -106,7 +139,7 @@ private:
   TrackManager();
   virtual ~TrackManager() = default;
 
-  TrackPtr m_main_track; // Root of track tree (owns hardware audio output)
+  MainTrackPtr m_main_track; // Root of track tree (owns hardware audio output)
   mutable std::mutex m_manager_mutex;
 
   // Helper methods
