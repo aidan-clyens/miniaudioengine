@@ -88,7 +88,17 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 
 # Install library targets and header files
-install(TARGETS coreengine audioengine midiengine trackmanager filemanager devicemanager framework cli
+install(
+    TARGETS
+        controlplane-audio
+        controlplane-midi
+        dataplane-audio
+        dataplane-midi
+        trackmanager
+        filemanager
+        devicemanager
+        framework
+        cli
     EXPORT minimal-audio-engine-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

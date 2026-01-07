@@ -7,11 +7,13 @@
 #include <atomic>
 #include <optional>
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Core
 {
 
 /** @class MessageQueue
  *  @brief A thread-safe message queue for passing messages between threads.
+ *  @tparam T The type of messages to be stored in the queue.
+ *  @note This structure is thread-safe and blocks on pop() if the queue is empty.
  */
 template <typename T>
 class MessageQueue
@@ -88,6 +90,16 @@ public:
     m_condition.notify_all();
   }
 
+  /** @brief Clear the queue.
+   *  This function removes all messages from the queue.
+   */
+  void clear()
+  {
+    std::lock_guard<std::mutex> lock(m_mutex);
+    std::queue<T> empty_queue;
+    std::swap(m_queue, empty_queue);
+  }
+
 private:
   std::queue<T> m_queue;
   mutable std::mutex m_mutex;
@@ -95,6 +107,6 @@ private:
   std::atomic<bool> m_stopped;
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Core
 
 #endif  // __MESSAGE_QUEUE_H_

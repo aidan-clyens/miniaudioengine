@@ -11,18 +11,18 @@
 #include <iomanip>
 
 #define LOG_INFO(...) \
-  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Info, __VA_ARGS__)
+  MinimalAudioEngine::Core::Logger::instance().log(MinimalAudioEngine::Core::eLogLevel::Info, __VA_ARGS__)
 
 #define LOG_WARNING(...) \
-  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Warning, __VA_ARGS__)
+  MinimalAudioEngine::Core::Logger::instance().log(MinimalAudioEngine::Core::eLogLevel::Warning, __VA_ARGS__)
 
 #define LOG_ERROR(...) \
-  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Error, __VA_ARGS__)
+  MinimalAudioEngine::Core::Logger::instance().log(MinimalAudioEngine::Core::eLogLevel::Error, __VA_ARGS__)
 
 #define LOG_DEBUG(...) \
-  MinimalAudioEngine::Logger::instance().log(MinimalAudioEngine::eLogLevel::Debug, __VA_ARGS__)
+  MinimalAudioEngine::Core::Logger::instance().log(MinimalAudioEngine::Core::eLogLevel::Debug, __VA_ARGS__)
 
-namespace MinimalAudioEngine
+namespace MinimalAudioEngine::Core
 {
 
 enum class eLogLevel
@@ -90,17 +90,19 @@ public:
     if (m_console_output_enabled)
     {
       (*p_out_stream) << "[" << timestamp_stream.str() << "] "
-                   << "[" << log_level_to_string(level) << "] "
-                   << "[Thread: " << get_thread_name() << "] "
-                   << message_stream.str() << "\n";
+        << "[" << log_level_to_string(level) << "] ";
+      if (get_thread_name() != "unnamed")
+        (*p_out_stream) << "[Thread: " << get_thread_name() << "] ";
+      (*p_out_stream) << message_stream.str() << "\n";
     }
 
     if (p_file_out_stream)
     {
       (*p_file_out_stream) << "[" << timestamp_stream.str() << "] "
-                      << "[" << log_level_to_string(level) << "] "
-                      << "[Thread: " << get_thread_name() << "] "
-                      << message_stream.str() << "\n";
+                      << "[" << log_level_to_string(level) << "] ";
+      if (get_thread_name() != "unnamed")
+        (*p_file_out_stream) << "[Thread: " << get_thread_name() << "] ";
+      (*p_file_out_stream) << message_stream.str() << "\n";
     }
   }
 
@@ -134,6 +136,6 @@ private:
   }
 };
 
-} // namespace MinimalAudioEngine
+} // namespace MinimalAudioEngine::Core
 
 #endif // __LOGGER_H__

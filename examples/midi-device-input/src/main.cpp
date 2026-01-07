@@ -9,9 +9,7 @@
 #include <cli.h>
 #include <devicemanager.h>
 #include <trackmanager.h>
-#include <coreengine.h>
-#include <midicontroller.h>
-#include <audioprocessor.h>
+#include <midicontroltypes.h>
 
 #ifndef PROGRAM_NAME
 #define PROGRAM_NAME "midi-device-input"
@@ -42,7 +40,7 @@ static MinimalAudioEngine::CommandList commands = {
     "List available MIDI input devices",
     [](const char *arg){
       LOG_INFO("Listing available MIDI input devices...");
-      auto midi_devices = MinimalAudioEngine::DeviceManager::instance().get_midi_devices();
+      auto midi_devices = MinimalAudioEngine::Control::DeviceManager::instance().get_midi_devices();
       for (const auto& device : midi_devices)
       {
         std::cout << device.to_string() << std::endl;
@@ -61,7 +59,7 @@ static MinimalAudioEngine::CommandList commands = {
         return;
       }
       unsigned int device_id = std::stoi(arg);
-      auto midi_device = MinimalAudioEngine::DeviceManager::instance().get_midi_device(device_id);
+      auto midi_device = MinimalAudioEngine::Control::DeviceManager::instance().get_midi_device(device_id);
       if (midi_device.id != device_id)
       {
         LOG_ERROR("MIDI input device with ID " + std::to_string(device_id) + " not found.");
@@ -77,7 +75,7 @@ static MinimalAudioEngine::CommandList commands = {
     "-vb",
     "Enable verbose logging output",
     [](const char *arg){
-      MinimalAudioEngine::Logger::instance().enable_console_output(true);
+      MinimalAudioEngine::Core::Logger::instance().enable_console_output(true);
       LOG_INFO("Verbose logging enabled.");
     }
   )
@@ -87,8 +85,8 @@ static MinimalAudioEngine::CommandList commands = {
 int main(int argc, char* argv[])
 {
   // Setup logger
-  MinimalAudioEngine::Logger::instance().set_log_file("midi_device_input.log");
-  MinimalAudioEngine::Logger::instance().enable_console_output(false);
+  MinimalAudioEngine::Core::Logger::instance().set_log_file("midi_device_input.log");
+  MinimalAudioEngine::Core::Logger::instance().enable_console_output(false);
 
   // Setup CLI
   MinimalAudioEngine::CLI cli(
@@ -100,10 +98,6 @@ int main(int argc, char* argv[])
 
   cli.parse_command_line_arguments(argc, argv);
 
-  // Setup coreengine
-  MinimalAudioEngine::CoreEngine engine;
-  engine.start_thread();
-
   LOG_INFO("MIDI Device Input Example started.");
 
   // Setup signal handler for graceful shutdown
@@ -113,8 +107,8 @@ int main(int argc, char* argv[])
   });
 
   // Add one track
-  size_t track_id = MinimalAudioEngine::TrackManager::instance().add_track();
-  auto track = MinimalAudioEngine::TrackManager::instance().get_track(track_id);
+  size_t track_id = MinimalAudioEngine::Control::TrackManager::instance().add_track();
+  auto track = MinimalAudioEngine::Control::TrackManager::instance().get_track(track_id);
   if (!track)
   {
     LOG_ERROR("Failed to create track.");
@@ -123,12 +117,12 @@ int main(int argc, char* argv[])
 
   // Set default MIDI input device if none specified
   auto midi_input_device = (midi_input_device_id.has_value()) ?
-    MinimalAudioEngine::DeviceManager::instance().get_midi_device(midi_input_device_id.value()) :
-    MinimalAudioEngine::DeviceManager::instance().get_default_midi_input_device();
+    MinimalAudioEngine::Control::DeviceManager::instance().get_midi_device(midi_input_device_id.value()) :
+    MinimalAudioEngine::Control::DeviceManager::instance().get_default_midi_input_device();
 
   if (midi_input_device.has_value())
   {
-    track->add_midi_device_input(midi_input_device.value());
+    track->add_midi_input(midi_input_device.value());
     std::cout << "Using MIDI input device: " << midi_input_device->to_string() << std::endl;
   }
   else 
@@ -138,26 +132,26 @@ int main(int argc, char* argv[])
   }
 
   // Set MIDI message callback functions
-  track->set_midi_note_on_callback([](const MinimalAudioEngine::MidiNoteMessage &message, MinimalAudioEngine::TrackPtr _track)
+  track->set_midi_note_on_callback([](const MinimalAudioEngine::Control::MidiNoteMessage &message, MinimalAudioEngine::Control::TrackPtr _track)
   {
-    MinimalAudioEngine::eMidiNoteValues note_value = static_cast<MinimalAudioEngine::eMidiNoteValues>(message.note_number());
+    MinimalAudioEngine::Data::eMidiNoteValues note_value = static_cast<MinimalAudioEngine::Data::eMidiNoteValues>(message.note_number());
     std::cout << "MIDI Note Off: " << note_value << std::endl; 
   });
 
-  track->set_midi_note_off_callback([](const MinimalAudioEngine::MidiNoteMessage& message, MinimalAudioEngine::TrackPtr _track) {
-    MinimalAudioEngine::eMidiNoteValues note_value = static_cast<MinimalAudioEngine::eMidiNoteValues>(message.note_number());
+  track->set_midi_note_off_callback([](const MinimalAudioEngine::Control::MidiNoteMessage& message, MinimalAudioEngine::Control::TrackPtr _track) {
+    MinimalAudioEngine::Data::eMidiNoteValues note_value = static_cast<MinimalAudioEngine::Data::eMidiNoteValues>(message.note_number());
     std::cout << "MIDI Note Off: " << note_value << std::endl;
   });
 
-  track->set_midi_control_change_callback([](const MinimalAudioEngine::MidiControlMessage& message, MinimalAudioEngine::TrackPtr _track) {
-    if (message.controller_value() == static_cast<int>(MinimalAudioEngine::eMidiControllerValues::Released))
+  track->set_midi_control_change_callback([](const MinimalAudioEngine::Control::MidiControlMessage& message, MinimalAudioEngine::Control::TrackPtr _track) {
+    if (message.controller_value() == static_cast<int>(MinimalAudioEngine::Data::eMidiControllerValues::Released))
     {
       // Ignore released events
       return;
     }
 
-    MinimalAudioEngine::eMidiController controller_number = static_cast<MinimalAudioEngine::eMidiController>(message.controller_number());
-    MinimalAudioEngine::eMidiControllerValues controller_value = static_cast<MinimalAudioEngine::eMidiControllerValues>(message.controller_value());
+    MinimalAudioEngine::Data::eMidiController controller_number = static_cast<MinimalAudioEngine::Data::eMidiController>(message.controller_number());
+    MinimalAudioEngine::Data::eMidiControllerValues controller_value = static_cast<MinimalAudioEngine::Data::eMidiControllerValues>(message.controller_value());
 
     std::cout << "MIDI Control Change: " << controller_number << " Value=" << controller_value << std::endl;
   });
@@ -168,8 +162,6 @@ int main(int argc, char* argv[])
     // Here would be the MIDI device input handling logic
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
-
-  engine.stop_thread();
 
   return 0;
 }

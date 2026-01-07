@@ -1,0 +1,5 @@
+add_subdirectory(devicemanager)
+add_subdirectory(filemanager)
+add_subdirectory(trackmanager)
+add_subdirectory(audio)
+add_subdirectory(midi)

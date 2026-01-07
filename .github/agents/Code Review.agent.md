@@ -26,7 +26,7 @@ This agent performs comprehensive code reviews for the Minimal Audio Engine proj
 
 ### Architecture Compliance
 - **Module Boundaries**: Verify code respects the layered architecture (Application → Core Audio Engine → Platform Abstraction → Hardware)
-- **Component Isolation**: Ensure proper separation between audioengine, midiengine, trackmanager, devicemanager, and filemanager modules
+- **Component Isolation**: Ensure proper separation between audio control (audiostreamcontroller), MIDI control (midiportcontroller), trackmanager, devicemanager, and filemanager modules
 - **Dependency Management**: Check that dependencies are properly declared in CMakeLists.txt and vcpkg.json
 
 ### Cross-Platform Considerations
