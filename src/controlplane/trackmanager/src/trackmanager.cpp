@@ -206,11 +206,23 @@ void TrackManager::collect_all_tracks_recursive(TrackPtr track, std::vector<Trac
     return;
   }
 
-  out.push_back(track);
-  
-  for (const auto& child : track->get_children())
+  // Iterative depth-first traversal using a stack
+  std::vector<TrackPtr> stack;
+  stack.push_back(track);
+
+  while (!stack.empty())
   {
-    collect_all_tracks_recursive(child, out);
+    TrackPtr current = stack.back();
+    stack.pop_back();
+
+    out.push_back(current);
+
+    // Add children to stack in reverse order for correct DFS order
+    const auto& children = current->get_children();
+    for (auto it = children.rbegin(); it != children.rend(); ++it)
+    {
+      stack.push_back(*it);
+    }
   }
 }
 
@@ -221,15 +233,28 @@ void TrackManager::collect_leaf_tracks_recursive(TrackPtr track, std::vector<Tra
     return;
   }
 
-  if (track->get_child_count() == 0)
+  // Iterative depth-first traversal using a stack
+  std::vector<TrackPtr> stack;
+  stack.push_back(track);
+
+  while (!stack.empty())
   {
-    out.push_back(track);
-  }
-  else
-  {
-    for (const auto& child : track->get_children())
+    TrackPtr current = stack.back();
+    stack.pop_back();
+
+    if (current->get_child_count() == 0)
     {
-      collect_leaf_tracks_recursive(child, out);
+      // This is a leaf track
+      out.push_back(current);
+    }
+    else
+    {
+      // Add children to stack for further exploration
+      const auto& children = current->get_children();
+      for (auto it = children.rbegin(); it != children.rend(); ++it)
+      {
+        stack.push_back(*it);
+      }
     }
   }
 }
@@ -242,15 +267,27 @@ void TrackManager::collect_active_dataplanes_recursive(TrackPtr track,
     return;
   }
 
-  auto dataplane = track->get_audio_dataplane();
-  if (dataplane && dataplane->is_running())
-  {
-    out.push_back(dataplane);
-  }
+  // Iterative depth-first traversal using a stack
+  std::vector<TrackPtr> stack;
+  stack.push_back(track);
 
-  for (const auto& child : track->get_children())
+  while (!stack.empty())
   {
-    collect_active_dataplanes_recursive(child, out);
+    TrackPtr current = stack.back();
+    stack.pop_back();
+
+    auto dataplane = current->get_audio_dataplane();
+    if (dataplane && dataplane->is_running())
+    {
+      out.push_back(dataplane);
+    }
+
+    // Add children to stack for further exploration
+    const auto& children = current->get_children();
+    for (auto it = children.rbegin(); it != children.rend(); ++it)
+    {
+      stack.push_back(*it);
+    }
   }
 }
 
@@ -262,14 +299,26 @@ void TrackManager::collect_active_midi_dataplanes_recursive(TrackPtr track,
     return;
   }
 
-  auto dataplane = track->get_midi_dataplane();
-  if (dataplane && dataplane->is_running())
-  {
-    out.push_back(dataplane);
-  }
+  // Iterative depth-first traversal using a stack
+  std::vector<TrackPtr> stack;
+  stack.push_back(track);
 
-  for (const auto& child : track->get_children())
+  while (!stack.empty())
   {
-    collect_active_midi_dataplanes_recursive(child, out);
+    TrackPtr current = stack.back();
+    stack.pop_back();
+
+    auto dataplane = current->get_midi_dataplane();
+    if (dataplane && dataplane->is_running())
+    {
+      out.push_back(dataplane);
+    }
+
+    // Add children to stack for further exploration
+    const auto& children = current->get_children();
+    for (auto it = children.rbegin(); it != children.rend(); ++it)
+    {
+      stack.push_back(*it);
+    }
   }
 }
