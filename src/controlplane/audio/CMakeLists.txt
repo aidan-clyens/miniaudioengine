@@ -6,6 +6,7 @@ target_sources(controlplane-audio
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
+      include/audiocontroller.h
       include/audiostreamcontroller.h
 )
 

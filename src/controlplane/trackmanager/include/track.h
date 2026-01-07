@@ -12,9 +12,12 @@
 
 #include "filemanager.h"
 #include "devicemanager.h"
+#include "audiocontroller.h"
 #include "audiostreamcontroller.h"
 #include "audiodevice.h"
 #include "audiodataplane.h"
+#include "midicontroller.h"
+#include "midiportcontroller.h"
 #include "mididataplane.h"
 #include "miditypes.h"
 
@@ -69,6 +72,8 @@ public:
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt),
+    m_audio_controller(AudioStreamController::instance()),
+    m_midi_controller(MidiPortController::instance()),
     p_audio_dataplane(std::make_shared<Data::AudioDataPlane>()),
     p_midi_dataplane(std::make_shared<Data::MidiDataPlane>())
   {}
@@ -143,7 +148,7 @@ public:
    */
   bool is_playing() const
   {
-    return AudioStreamController::instance().get_stream_state() == eAudioState::Playing;
+    return m_audio_controller.get_stream_state() == eAudioState::Playing;
   }
   
   TrackStatistics get_statistics() const
@@ -204,6 +209,9 @@ public:
 private:
   std::queue<MidiMessage> m_message_queue; // TODO - Remove?
   std::mutex m_queue_mutex; // TODO - Remove?
+
+  IAudioController &m_audio_controller;
+  IMidiController &m_midi_controller;
 
   Data::TrackAudioDataPlanePtr p_audio_dataplane;
   Data::TrackMidiDataPlanePtr p_midi_dataplane;

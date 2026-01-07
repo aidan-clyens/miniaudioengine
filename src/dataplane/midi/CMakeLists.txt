@@ -6,8 +6,9 @@ target_sources(dataplane-midi
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
-      include/midicontroller.h
+      include/midicontroltypes.h
       include/midicallbackhandler.h
+      include/mididataplane.h
 )
 
 target_sources(dataplane-midi

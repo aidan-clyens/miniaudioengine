@@ -1,5 +1,5 @@
-#ifndef __MIDI_CONTROLLER_H__
-#define __MIDI_CONTROLLER_H__
+#ifndef __MIDI_CONTROLLER_TYPES_H__
+#define __MIDI_CONTROLLER_TYPES_H__
 
 #include <functional>
 #include <map>
@@ -365,4 +365,4 @@ inline std::ostream& operator<<(std::ostream& os, const eMidiNoteValues& note_va
 
 } // namespace MinimalAudioEngine::Data
 
-#endif // __MIDI_CONTROLLER_H__
+#endif // __MIDI_CONTROLLER_TYPES_H__

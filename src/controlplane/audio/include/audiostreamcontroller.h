@@ -1,7 +1,7 @@
 #ifndef __AUDIO_STREAM_CONTROLLER_H__
 #define __AUDIO_STREAM_CONTROLLER_H__
 
-#include "controller.h"
+#include "audiocontroller.h"
 #include "audiocallbackhandler.h"
 #include "audiodevice.h"
 
@@ -13,16 +13,6 @@
 namespace MinimalAudioEngine::Control
 {
 
-/** @enum eAudioState
- *  @brief AudioEngine states
- */
-enum class eAudioState
-{
-  Idle,
-  Stopped,
-  Playing,
-};
-
 /** @class AudioStreamController
  *  @brief This class managers the device audio hardware interfaces.
  *  It is responsible for initializing, configuring, and controlling audio inputs and outputs.
@@ -30,22 +20,23 @@ enum class eAudioState
  *  adjust parameters such as volume, sample rate, and buffer size. 
  *  @note This class is part of the control plane. Operations are synchronous and called from the main thread.
  */
-class AudioStreamController : public Core::IController
+class AudioStreamController : public IAudioController
 {
 public:
-  static AudioStreamController& instance()
+  // TODO - Remove singleton pattern and use dependency injection
+  static IAudioController &instance()
   {
-    static AudioStreamController instance;
-    return instance;
+    static AudioStreamController impl;
+    return impl;
   }
 
-  std::vector<RtAudio::DeviceInfo> get_audio_devices();
-  void set_output_device(const AudioDevice& device);
+  std::vector<RtAudio::DeviceInfo> get_audio_devices() override;
+  void set_output_device(const AudioDevice& device) override;
 
-  bool start_stream();
-  bool stop_stream();
+  bool start_stream() override;
+  bool stop_stream() override;
 
-  eAudioState get_stream_state() const
+  eAudioState get_stream_state() const override
   {
     return m_stream_state;
   }

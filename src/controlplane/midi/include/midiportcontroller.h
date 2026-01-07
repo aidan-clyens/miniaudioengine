@@ -1,7 +1,7 @@
 #ifndef __MIDI_PORT_CONTROLLER_H__
 #define __MIDI_PORT_CONTROLLER_H__
 
-#include "controller.h"
+#include "midicontroller.h"
 #include "midicallbackhandler.h"
 #include "miditypes.h"
 
@@ -10,7 +10,7 @@
 namespace MinimalAudioEngine::Control
 {
 
-class MidiPortController : public Core::IController
+class MidiPortController : public IMidiController
 {
 public:
   static MidiPortController &instance()

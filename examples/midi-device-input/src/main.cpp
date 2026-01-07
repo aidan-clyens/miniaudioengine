@@ -9,7 +9,7 @@
 #include <cli.h>
 #include <devicemanager.h>
 #include <trackmanager.h>
-#include <midicontroller.h>
+#include <midicontroltypes.h>
 
 #ifndef PROGRAM_NAME
 #define PROGRAM_NAME "midi-device-input"

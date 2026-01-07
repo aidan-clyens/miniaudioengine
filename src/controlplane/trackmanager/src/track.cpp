@@ -2,7 +2,6 @@
 
 #include "wavfile.h"
 #include "midifile.h"
-#include "audiostreamcontroller.h"
 #include "midiportcontroller.h"
 #include "logger.h"
 
@@ -63,7 +62,7 @@ void Track::add_midi_input(const MidiIOVariant& input)
   if (std::holds_alternative<MidiDevice>(input))
   {
     LOG_INFO("Track: Added MIDI input: ", std::get<MidiDevice>(input).to_string());
-    MidiPortController::instance().open_input_port(std::get<MidiDevice>(input).id);
+    m_midi_controller.open_input_port(std::get<MidiDevice>(input).id);
   }
 }
 
@@ -94,7 +93,7 @@ void Track::remove_audio_input()
 void Track::remove_midi_input()
 {
   m_midi_input = std::nullopt;
-  MidiPortController::instance().close_input_port();
+  m_midi_controller.close_input_port();
 }
 
 /** @brief Removes the MIDI output from the track.
@@ -178,10 +177,10 @@ void Track::play()
   {
     p_midi_dataplane->start();
     MidiDevice midi_device = std::get<MidiDevice>(m_midi_input);
-    MidiPortController::instance().open_input_port(midi_device.id);
+    m_midi_controller.open_input_port(midi_device.id);
   }
 
-  if (!AudioStreamController::instance().start_stream())
+  if (!m_audio_controller.start_stream())
   {
     return;
   }
@@ -202,7 +201,7 @@ void Track::stop()
 
   // Clear dataplane buffers and stop any data processing threads
   p_audio_dataplane->stop();
-  AudioStreamController::instance().stop_stream();
+  m_audio_controller.stop_stream();
 }
 
 /** @brief Handles a MIDI message.

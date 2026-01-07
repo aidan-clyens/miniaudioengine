@@ -6,6 +6,7 @@ target_sources(controlplane-midi
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
+      include/midicontroller.h
       include/midiportcontroller.h
       include/miditypes.h
 )

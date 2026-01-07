@@ -99,7 +99,7 @@ Framework provides generic Observer/Subject implementation:
   │   └── midi/
   │       ├── midiengine.h           (Legacy IEngine pattern - needs refactor)
   │       ├── miditypes.h            (MIDI message types)
-  │       └── midicontroller.h       (MIDI CC definitions)
+  │       └── midicontroltypes.h       (MIDI CC definitions)
   ├── controlplane/       (Layer 3 - synchronous control)
   │   ├── audio/          (AudioStreamController - refactored)
   │   ├── trackmanager/   (Track, TrackManager)
@@ -244,7 +244,7 @@ When working in the data plane:
 - ✅ **Data Plane MIDI**: 
   - `MidiEngine`: MIDI port management (legacy `IEngine<T>` pattern)
   - MIDI types: `MidiMessage`, `MidiNoteMessage`, `MidiControlMessage`
-  - `midicontroller.h`: Enum definitions for MIDI CC numbers (Novation Launchkey)
+  - `midicontroltypes.h`: Enum definitions for MIDI CC numbers (Novation Launchkey)
 - ✅ **Control Plane Audio**: 
   - `AudioStreamController`: Synchronous audio device management (refactored from AudioEngine)
 - ✅ **Control Plane Managers**: 
@@ -290,7 +290,7 @@ See [ARCHITECTURE_REFACTOR_GUIDE.md](../ARCHITECTURE_REFACTOR_GUIDE.md) for deta
 - [dataplane/audio/include/audiocallbackhandler.h](../src/dataplane/audio/include/audiocallbackhandler.h) - RtAudio callback wrapper
 - [dataplane/midi/include/midiengine.h](../src/dataplane/midi/include/midiengine.h) - MIDI engine (legacy pattern, needs refactor)
 - [dataplane/midi/include/miditypes.h](../src/dataplane/midi/include/miditypes.h) - MIDI message types
-- [dataplane/midi/include/midicontroller.h](../src/dataplane/midi/include/midicontroller.h) - MIDI CC definitions
+- [dataplane/midi/include/midicontroltypes.h](../src/dataplane/midi/include/midicontroltypes.h) - MIDI CC definitions
 
 ### Control Plane (Layer 3)
 - [controlplane/audio/include/audiostreamcontroller.h](../src/controlplane/audio/include/audiostreamcontroller.h) - Audio device control (refactored)
