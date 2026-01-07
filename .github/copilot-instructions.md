@@ -164,6 +164,49 @@ Use `LOG_INFO()`, `LOG_ERROR()`, `LOG_WARNING()` macros from [framework/include/
   - Python analysis scripts for results visualization
 - **Integration Tests** (`tests/integration/`): Directory exists but not yet populated
 
+## AI Agent Workflow for Refactoring
+
+When the user requests a major refactoring or architectural change, follow this workflow:
+
+### 1. Analyze & Propose
+- **Understand the Request**: Carefully analyze the user's refactoring goals and constraints
+- **Design the Architecture**: Create a clear architectural diagram showing the new structure
+- **Document the Design**: Provide detailed class structures, ownership models, and design decisions
+- **Explain Benefits**: List key advantages and how the refactor aligns with project principles
+- **Ask for Confirmation**: Present the proposal and ask if the user wants you to implement it
+
+### 2. Implement Changes
+Once approved:
+- **Use Batch Edits**: Prefer `multi_replace_string_in_file` for multiple independent changes
+- **Update Headers First**: Modify class declarations in header files
+- **Update Implementation**: Modify corresponding `.cpp` implementation files
+- **Update Dependent Code**: Fix all files that depend on the changed interfaces
+- **Maintain Backward Compatibility**: Keep legacy methods when possible for smooth migration
+
+### 3. Build & Fix Compilation Errors
+- **Build the Project**: Run `cmake --build build` to compile
+- **Fix Errors Iteratively**: Address compilation errors as they appear
+- **Check All Targets**: Ensure libraries, tests, and examples compile successfully
+
+### 4. Verify with Unit Tests
+- **Run Unit Tests**: Execute `.\build\tests\unit\Debug\minimal-audio-engine-unit-tests.exe`
+- **Update Tests**: Modify tests to work with the new architecture
+- **Verify Functionality**: Ensure existing functionality still works correctly
+- **Document Test Results**: Report passing/failing tests and reasons
+
+### 5. Summarize Results
+- **List Changes**: Briefly enumerate all modified files and key changes
+- **Confirm Architecture**: State that the refactoring is complete and functional
+- **Report Test Status**: Provide final test pass/fail counts
+- **Note Migration Path**: Mention backward compatibility and migration considerations
+
+**Example Workflow** (Hierarchical Track Structure Refactor):
+1. ✅ Proposed tree-based architecture with MainTrack as root
+2. ✅ Updated Track, TrackManager, AudioDataPlane classes
+3. ✅ Built project and fixed mutex deadlock errors
+4. ✅ Ran tests: 55/66 passing (11 failures unrelated to refactor)
+5. ✅ Confirmed hierarchical routing works correctly
+
 ## Common Tasks
 
 ### Working with the CLI
