@@ -47,22 +47,15 @@ class IEngine {
 - Thread readiness signaling with timeout protection
 - Cooperative shutdown via `std::jthread` stop tokens
 
-#### Dual Inheritance Pattern
-`AudioEngine` and `MidiEngine` combine threading with observer notification:
-```cpp
-class AudioEngine : public IEngine<AudioMessage>, 
-                    public Subject<AudioMessage>
-```
-- Receives commands via `MessageQueue<AudioMessage>`
-- Broadcasts events to observers via `Subject::notify()`
-- Decouples command processing (threading) from event distribution (observer)
+**Note**: This pattern is legacy and being phased out. New control plane components (AudioStreamController, MidiPortController) use synchronous singleton pattern without dedicated threads. Data plane components (AudioCallbackHandler, MidiCallbackHandler) are pure callback functions without threads.
 
 #### Singleton Pattern
-Four core components use thread-safe singleton pattern:
-- `AudioEngine::instance()`
-- `MidiEngine::instance()`
+Core control plane components use thread-safe singleton pattern:
+- `AudioStreamController::instance()` (control plane)
+- `MidiPortController::instance()` (control plane)
 - `TrackManager::instance()`
 - `DeviceManager::instance()`
+- `FileManager::instance()`
 
 **Analysis considerations**:
 - Singletons enable global access but can hinder testability
@@ -269,14 +262,27 @@ class Subject {
 ## Key Architecture Files
 
 Review these files for architectural understanding:
-- **[framework/include/engine.h](../src/framework/include/engine.h)** - Base threading model
-- **[framework/include/messagequeue.h](../src/framework/include/messagequeue.h)** - Lock-free communication
+
+**Framework (Layer 0)**:
+- **[framework/include/engine.h](../src/framework/include/engine.h)** - Legacy threading model (`IEngine<T>` template)
+- **[framework/include/messagequeue.h](../src/framework/include/messagequeue.h)** - Thread-safe message queue
+- **[framework/include/lockfree_ringbuffer.h](../src/framework/include/lockfree_ringbuffer.h)** - Lock-free SPSC queue
+- **[framework/include/doublebuffer.h](../src/framework/include/doublebuffer.h)** - Atomic double-buffer
 - **[framework/include/observer.h](../src/framework/include/observer.h)** - Observer interface
 - **[framework/include/subject.h](../src/framework/include/subject.h)** - Event broadcasting
 - **[framework/include/input.h](../src/framework/include/input.h)** - Input abstraction
-- **[audioengine/include/audioengine.h](../src/audioengine/include/audioengine.h)** - Dual inheritance example
-- **[midiengine/include/midiengine.h](../src/midiengine/include/midiengine.h)** - Singleton MIDI engine
-- **[trackmanager/include/track.h](../src/trackmanager/include/track.h)** - Variant-based routing
+
+**Data Plane (Layer 1)**:
+- **[dataplane/audio/include/audiodataplane.h](../src/dataplane/audio/include/audiodataplane.h)** - Per-track audio rendering
+- **[dataplane/audio/include/audiocallbackhandler.h](../src/dataplane/audio/include/audiocallbackhandler.h)** - RtAudio callback wrapper
+- **[dataplane/midi/include/mididataplane.h](../src/dataplane/midi/include/mididataplane.h)** - Per-track MIDI processing
+- **[dataplane/midi/include/midicallbackhandler.h](../src/dataplane/midi/include/midicallbackhandler.h)** - RtMidi callback wrapper
+
+**Control Plane (Layer 3)**:
+- **[controlplane/audio/include/audiostreamcontroller.h](../src/controlplane/audio/include/audiostreamcontroller.h)** - Synchronous audio device control
+- **[controlplane/midi/include/midiportcontroller.h](../src/controlplane/midi/include/midiportcontroller.h)** - Synchronous MIDI port control
+- **[controlplane/trackmanager/include/track.h](../src/controlplane/trackmanager/include/track.h)** - Variant-based track routing
+- **[controlplane/trackmanager/include/trackmanager.h](../src/controlplane/trackmanager/include/trackmanager.h)** - Track collection management
 
 ## Guidance Philosophy
 

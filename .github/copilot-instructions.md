@@ -13,6 +13,7 @@ Layer 4: cli (application interface - basic CLI implementation)
          ↓
 Layer 3: controlplane (synchronous control operations)
          ├── audio (AudioStreamController - device management)
+         ├── midi (MidiPortController - MIDI port management)
          ├── trackmanager (Track lifecycle and routing)
          ├── devicemanager (hardware enumeration)
          └── filemanager (disk I/O - libsndfile wrapper)
@@ -21,7 +22,7 @@ Layer 2: processingplane (NOT YET IMPLEMENTED - planned for background worker th
          ↓
 Layer 1: dataplane (lock-free real-time components)
          ├── audio (TrackAudioDataPlane, AudioCallbackHandler)
-         └── midi (MidiEngine - legacy threading, miditypes, midicontroller)
+         └── midi (TrackMidiDataPlane, MidiCallbackHandler)
          ↓
 Layer 0: framework (lock-free primitives, logging, utilities)
 ```
@@ -47,7 +48,7 @@ Data plane components execute in real-time audio/MIDI callback threads:
 - **Lock-free only** - no mutexes, no allocations, no blocking
 - Use lock-free ring buffers for inter-thread communication
 - `TrackAudioDataPlane` renders audio in RtAudio callback thread
-- `MidiEngine` processes MIDI (still uses legacy threading pattern - to be refactored)
+- `TrackMidiDataPlane` processes MIDI in RtMidi callback thread
 - **Critical**: Must complete in < 1ms to avoid dropouts
 
 #### Framework Lock-Free Primitives
@@ -97,11 +98,12 @@ Framework provides generic Observer/Subject implementation:
   │   │   ├── audiodataplane.h  (Per-track audio rendering)
   │   │   └── audiocallbackhandler.h (RtAudio callback wrapper)
   │   └── midi/
-  │       ├── midiengine.h           (Legacy IEngine pattern - needs refactor)
-  │       ├── miditypes.h            (MIDI message types)
-  │       └── midicontroltypes.h       (MIDI CC definitions)
+  │       ├── mididataplane.h        (Per-track MIDI processing)
+  │       ├── midicallbackhandler.h  (RtMidi callback wrapper)
+  │       └── midicontroltypes.h     (MIDI CC definitions)
   ├── controlplane/       (Layer 3 - synchronous control)
-  │   ├── audio/          (AudioStreamController - refactored)
+  │   ├── audio/          (AudioStreamController - device management)
+  │   ├── midi/           (MidiPortController - port management, miditypes)
   │   ├── trackmanager/   (Track, TrackManager)
   │   ├── devicemanager/  (Device enumeration)
   │   └── filemanager/    (WAV/MIDI file I/O)
@@ -115,8 +117,6 @@ Framework provides generic Observer/Subject implementation:
 - `rtmidi`: Cross-platform MIDI I/O  
 - `libsndfile`: Audio file read/write (WAV, FLAC, etc.)
 - `gtest`: Unit testing
-- `cli11`: Command-line parsing
-- `replxx`: Interactive REPL with history
 
 ### Build Workflow
 ```bash
@@ -172,7 +172,7 @@ The CLI component provides basic command-line argument parsing:
 - **Usage:** Define `Command` structs with argument names, short names, descriptions, and action callbacks
 - **Features:** Help text generation, version display
 - **Examples:** See `examples/wav-audio-player/src/main.cpp` and `examples/midi-device-input/src/main.cpp`
-- **Note:** Basic implementation - not a full interactive shell (despite vcpkg dependency on replxx)
+- **Note:** Basic implementation without external CLI libraries
 
 ### Working with Control Plane Components
 Control plane components (AudioStreamController, TrackManager, DeviceManager, FileManager) are synchronous singletons:
@@ -242,11 +242,14 @@ When working in the data plane:
   - `TrackAudioDataPlane`: Per-track audio rendering, WAV file playback
   - `AudioCallbackHandler`: Pure RtAudio callback function with context struct
 - ✅ **Data Plane MIDI**: 
-  - `MidiEngine`: MIDI port management (legacy `IEngine<T>` pattern)
-  - MIDI types: `MidiMessage`, `MidiNoteMessage`, `MidiControlMessage`
+  - `TrackMidiDataPlane`: Per-track MIDI message processing
+  - `MidiCallbackHandler`: Pure RtMidi callback function with context struct
   - `midicontroltypes.h`: Enum definitions for MIDI CC numbers (Novation Launchkey)
 - ✅ **Control Plane Audio**: 
   - `AudioStreamController`: Synchronous audio device management (refactored from AudioEngine)
+- ✅ **Control Plane MIDI**: 
+  - `MidiPortController`: Synchronous MIDI port management (refactored from MidiEngine)
+  - MIDI types: `MidiMessage`, `MidiNoteMessage`, `MidiControlMessage`
 - ✅ **Control Plane Managers**: 
   - `TrackManager`: Track lifecycle management
   - `DeviceManager`: Audio/MIDI device enumeration
@@ -267,9 +270,6 @@ When working in the data plane:
 ### In Progress / TODO
 - ⚠️ **Processing Plane**: NOT IMPLEMENTED - planned for background DSP workers
 - ⚠️ **RealtimeAssert**: Header exists with stub macros - implementation pending
-- ⚠️ **MidiEngine Refactor**: Currently in dataplane but still uses legacy `IEngine<T>` pattern with dedicated thread and `MessageQueue`. Needs refactoring to either:
-  - Control plane: `MidiPortController` (synchronous, like AudioStreamController)
-  - Data plane: Lock-free callback handler (like AudioCallbackHandler)
 - ⚠️ **Track Refactor**: Still uses `Observer` pattern and mutex - should be control-plane only
 - ⚠️ **CLI Application**: Basic implementation exists but not yet a full application
 
@@ -288,12 +288,14 @@ See [ARCHITECTURE_REFACTOR_GUIDE.md](../ARCHITECTURE_REFACTOR_GUIDE.md) for deta
 ### Data Plane (Layer 1)
 - [dataplane/audio/include/audiodataplane.h](../src/dataplane/audio/include/audiodataplane.h) - Per-track audio rendering
 - [dataplane/audio/include/audiocallbackhandler.h](../src/dataplane/audio/include/audiocallbackhandler.h) - RtAudio callback wrapper
-- [dataplane/midi/include/midiengine.h](../src/dataplane/midi/include/midiengine.h) - MIDI engine (legacy pattern, needs refactor)
-- [dataplane/midi/include/miditypes.h](../src/dataplane/midi/include/miditypes.h) - MIDI message types
+- [dataplane/midi/include/mididataplane.h](../src/dataplane/midi/include/mididataplane.h) - Per-track MIDI processing
+- [dataplane/midi/include/midicallbackhandler.h](../src/dataplane/midi/include/midicallbackhandler.h) - RtMidi callback wrapper
 - [dataplane/midi/include/midicontroltypes.h](../src/dataplane/midi/include/midicontroltypes.h) - MIDI CC definitions
 
 ### Control Plane (Layer 3)
 - [controlplane/audio/include/audiostreamcontroller.h](../src/controlplane/audio/include/audiostreamcontroller.h) - Audio device control (refactored)
+- [controlplane/midi/include/midiportcontroller.h](../src/controlplane/midi/include/midiportcontroller.h) - MIDI port control (refactored)
+- [controlplane/midi/include/miditypes.h](../src/controlplane/midi/include/miditypes.h) - MIDI message types
 - [controlplane/trackmanager/include/track.h](../src/controlplane/trackmanager/include/track.h) - Track management
 - [controlplane/trackmanager/include/trackmanager.h](../src/controlplane/trackmanager/include/trackmanager.h) - Track collection manager
 - [controlplane/devicemanager/include/devicemanager.h](../src/controlplane/devicemanager/include/devicemanager.h) - Device enumeration
