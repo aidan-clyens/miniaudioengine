@@ -30,26 +30,31 @@ public:
     return impl;
   }
 
+  /** @brief Get Available Audio Devices
+   *  @return List of available audio devices
+   */
   std::vector<RtAudio::DeviceInfo> get_audio_devices() override;
+
+  /** @brief Set Output Audio Device
+   *  @param device Audio device to set as output
+   */
   void set_output_device(const AudioDevice& device) override;
 
+  /** @brief Start Audio Stream
+   *  @return true if the audio stream was started successfully, false otherwise
+   */
   bool start_stream() override;
+  
+  /** @brief Stop Audio Stream
+   *  @return true if the audio stream was stopped successfully, false otherwise
+   */
   bool stop_stream() override;
 
-  eAudioState get_stream_state() const override
-  {
-    return m_stream_state;
-  }
-
 private:
-  AudioStreamController(): m_callback_context(std::make_shared<Data::AudioCallbackContext>()) {}
+  AudioStreamController() = default;
   virtual ~AudioStreamController() = default;
 
   RtAudio m_rtaudio;
-  std::optional<AudioDevice> m_audio_output_device;
-  std::shared_ptr<Data::AudioCallbackContext> m_callback_context;
-
-  eAudioState m_stream_state{eAudioState::Idle};
 };
 
 } // namespace MinimalAudioEngine::Control

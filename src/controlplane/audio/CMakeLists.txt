@@ -11,6 +11,7 @@ target_sources(controlplane-audio
 )
 
 target_sources(controlplane-audio PRIVATE
+  src/audiocontroller.cpp
   src/audiostreamcontroller.cpp
 )
 

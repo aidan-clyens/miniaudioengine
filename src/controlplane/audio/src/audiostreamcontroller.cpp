@@ -45,15 +45,15 @@ void AudioStreamController::set_output_device(const AudioDevice &device)
 
 bool AudioStreamController::start_stream()
 {
-  if (m_stream_state == eAudioState::Playing)
+  // Use base class validation
+  if (!validate_start_preconditions())
   {
-    LOG_WARNING("AudioStreamController: Stream is already running. No action taken.");
     return false;
   }
 
-  if (!m_audio_output_device.has_value())
+  // Use base class track registration
+  if (!register_active_tracks())
   {
-    LOG_WARNING("AudioStreamController: No output device set. Cannot start stream.");
     return false;
   }
 
@@ -65,23 +65,6 @@ bool AudioStreamController::start_stream()
 
   unsigned int sample_rate = m_audio_output_device->preferred_sample_rate;
   unsigned int buffer_frames = 4096;
-
-  if (!m_callback_context)
-  {
-    LOG_ERROR("AudioStreamController: No AudioCallbackContext registered. Cannot start stream.");
-    throw std::runtime_error("AudioStreamController: No AudioCallbackContext registered. Cannot start stream.");
-  }
-
-  m_callback_context->active_tracks.clear();
-  m_callback_context->active_tracks = TrackManager::instance().get_track_audio_dataplanes();
-  // For each active track, set output channels in dataplane
-  for (const auto& track_dp : m_callback_context->active_tracks)
-  {
-    track_dp->set_output_channels(m_audio_output_device->output_channels);
-  }
-
-  LOG_DEBUG("AudioStreamController: Registered ", m_callback_context->active_tracks.size(), " active tracks for audio callback. (", 
-            TrackManager::instance().get_track_count(), " total tracks in TrackManager)");
 
   RtAudioErrorType rc;
   rc = m_rtaudio.openStream(&params,

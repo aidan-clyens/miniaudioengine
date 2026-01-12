@@ -25,6 +25,7 @@ target_link_libraries(minimal-audio-engine-unit-tests PRIVATE
   trackmanager
   filemanager
   devicemanager
+  test-mocks
 )
 
 add_test(NAME minimal-audio-engine-unit-tests COMMAND minimal-audio-engine-unit-tests)
