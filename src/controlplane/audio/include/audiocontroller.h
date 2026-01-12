@@ -67,7 +67,7 @@ protected:
   /** @brief Registers active tracks from TrackManager for audio callbacks.
    *  @return true if tracks were successfully registered, false if no active tracks.
    */
-  bool register_active_tracks();
+  bool register_dataplanes();
 
   // Common state shared by all implementations
   std::optional<AudioDevice> m_audio_output_device;

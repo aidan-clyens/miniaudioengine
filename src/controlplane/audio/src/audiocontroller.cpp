@@ -27,7 +27,7 @@ bool IAudioController::validate_start_preconditions() const
   return true;
 }
 
-bool IAudioController::register_active_tracks()
+bool IAudioController::register_dataplanes()
 {
   m_callback_context->active_tracks.clear();
   // TODO - Remove dependency on TrackManager singleton, use dependency injection for

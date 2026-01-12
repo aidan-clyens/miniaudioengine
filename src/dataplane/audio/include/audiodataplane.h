@@ -9,6 +9,7 @@
 
 #include <rtaudio/RtAudio.h>
 
+#include "dataplane.h"
 #include "wavfile.h"
 #include "logger.h"
 
@@ -55,52 +56,23 @@ struct AudioOutputStatistics
  *  @brief Data plane for handling audio data for a Track. The Data plane is only a callback
  *  target for RtAudio and is not a producer/consumer of audio data itself.
  */
-class AudioDataPlane
+class AudioDataPlane : public Core::IDataPlane
 {
 public:
-  virtual ~AudioDataPlane()
+  /** @brief Start audio processing.
+   */
+  void start() override
   {
-    stop();
+    Core::IDataPlane::start();
+    m_read_position.store(0, std::memory_order_release);
   }
 
-  /** @brief Set the number of input channels of the audio input.
-   *  @param channels Number of input channels.
+  /** @brief Stop audio processing and clear buffers.
    */
-  void set_input_channels(unsigned int channels)
+  void stop() override
   {
-    m_input_channels = channels;
-  }
-
-  /** @brief Set the number of output channels of the audio output.
-   *  @param channels Number of output channels.
-   */
-  void set_output_channels(unsigned int channels)
-  {
-    m_output_channels = channels;
-  }
-
-  /** @brief Get the number of input channels.
-   *  @return Number of input channels.
-   */
-  inline unsigned int get_input_channels() const
-  {
-    return m_input_channels;
-  }
-
-  /** @brief Get the number of output channels.
-   *  @return Number of output channels.
-   */
-  inline unsigned int get_output_channels() const
-  {
-    return m_output_channels;
-  }
-
-  /** @brief Check if the track is currently running.
-   *  @return True if running, false if stopped.
-   */
-  bool is_running() const
-  {
-    return !m_stop_command.load(std::memory_order_acquire);
+    Core::IDataPlane::stop();
+    m_preloaded_frames_buffer.clear();
   }
 
   /** @brief Process audio data. This is called from the RtAudio callback function.
@@ -117,22 +89,6 @@ public:
    *  @param wav_file Shared pointer to the WavFile to preload.
    */
   void preload_wav_file(const Control::WavFilePtr& wav_file);
-
-  /** @brief Start audio processing.
-   */
-  void start()
-  {
-    m_stop_command.store(false, std::memory_order_release);
-    m_read_position.store(0, std::memory_order_release);
-  }
-
-  /** @brief Stop audio processing and clear buffers.
-   */
-  void stop()
-  {
-    m_stop_command.store(true, std::memory_order_release);
-    m_preloaded_frames_buffer.clear();
-  }
 
   /** @brief Get audio output statistics.
    *  @return AudioOutputStatistics structure containing output statistics.
@@ -176,11 +132,7 @@ private:
 
   AudioOutputStatistics m_audio_output_stats;
 
-  std::atomic<bool> m_stop_command{true};
   std::atomic<unsigned int> m_read_position{0};
-
-  unsigned int m_input_channels{0};
-  unsigned int m_output_channels{0};
 
 private:
   void update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time);

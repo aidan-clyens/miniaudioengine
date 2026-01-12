@@ -52,7 +52,7 @@ bool AudioStreamController::start_stream()
   }
 
   // Use base class track registration
-  if (!register_active_tracks())
+  if (!register_dataplanes())
   {
     return false;
   }

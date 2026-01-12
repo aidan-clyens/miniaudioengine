@@ -70,7 +70,7 @@ public:
       return false;
     }
 
-    if (!register_active_tracks())
+    if (!register_dataplanes())
     {
       return false;
     }

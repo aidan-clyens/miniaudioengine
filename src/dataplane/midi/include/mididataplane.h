@@ -5,6 +5,8 @@
 #include <atomic>
 #include <string>
 
+#include "dataplane.h"
+
 namespace MinimalAudioEngine::Control
 {
 // Forward declaration
@@ -36,35 +38,13 @@ struct MidiInputStatistics
  *  @brief Data plane for handling MIDI messages for a track. The Data plane is only a callback
  *  target for RtMidi and is not a producer/consumer of MIDI messages itself.
  */
-class MidiDataPlane
+class MidiDataPlane : public Core::IDataPlane
 {
 public:
   /** @brief Process an incoming MIDI message. Called from the RtMidi callback function.
    *  @param midi_message The MIDI message to process.
    */  
   void process_midi_message(const Control::MidiMessage& midi_message);
-
-  /** @brief Check if the track is currently running.
-   *  @return True if running, false if stopped.
-   */
-  bool is_running() const
-  {
-    return !m_stop_command.load(std::memory_order_acquire);
-  }
-
-  /** @brief Start MIDI processing
-   */
-  void start()
-  {
-    m_stop_command.store(false, std::memory_order_release);
-  }
-
-  /** @brief Stop MIDI processing
-   */
-  void stop()
-  {
-    m_stop_command.store(true, std::memory_order_release);
-  }
 
   /** @brief Get MIDI input statistics.
    *  @return MidiInputStatistics structure containing input statistics.
@@ -76,8 +56,6 @@ public:
 
 private:
   MidiInputStatistics m_midi_input_stats;
-
-  std::atomic<bool> m_stop_command{true};
 
 private:
   void update_midi_input_statistics(const Control::MidiMessage& midi_message); 

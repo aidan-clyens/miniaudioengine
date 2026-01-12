@@ -16,6 +16,7 @@ target_sources(framework
       include/input.h
       include/controller.h
       include/manager.h
+      include/dataplane.h
 )
 
 target_sources(framework PRIVATE 
