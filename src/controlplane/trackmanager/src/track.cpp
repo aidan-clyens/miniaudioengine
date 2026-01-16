@@ -157,7 +157,6 @@ void Track::add_midi_input(const MidiIOVariant& input)
   if (std::holds_alternative<MidiDevice>(input))
   {
     LOG_INFO("Track: Added MIDI input: ", std::get<MidiDevice>(input).to_string());
-    m_midi_controller.open_input_port(std::get<MidiDevice>(input).id);
   }
 }
 

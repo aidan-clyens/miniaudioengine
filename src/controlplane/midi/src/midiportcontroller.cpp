@@ -56,6 +56,13 @@ void MidiPortController::open_input_port(unsigned int port_number)
     throw std::runtime_error("MIDI callback context is not initialized.");
   }
 
+  // Check if port is already open
+  if (m_rtmidi_in.isPortOpen())
+  {
+    LOG_WARNING("MIDI input port is already open. Closing existing port.");
+    close_input_port();
+  }
+
   // Set up the MIDI input port
   try
   {
