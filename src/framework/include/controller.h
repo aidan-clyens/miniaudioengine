@@ -1,7 +1,7 @@
 #ifndef __CONTROLLER_H__
 #define __CONTROLLER_H__
 
-namespace MinimalAudioEngine::Core
+namespace miniaudioengine::core
 {
 
 /** @class IController
@@ -19,6 +19,6 @@ public:
 };
 
 
-} // namespace MinimalAudioEngine::Core
+} // namespace miniaudioengine::core
 
 #endif // __CONTROLLER_H__

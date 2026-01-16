@@ -1,7 +1,7 @@
 #ifndef __DATA_PLANE_H__
 #define __DATA_PLANE_H__
 
-namespace MinimalAudioEngine::Core
+namespace miniaudioengine::core
 {
 
 /** @class IDataPlane
@@ -79,6 +79,6 @@ protected:
   unsigned int m_output_channels{0};
 };
 
-} // namespace MinimalAudioEngine::Core
+} // namespace miniaudioengine::core
 
 #endif // __DATA_PLANE_H__

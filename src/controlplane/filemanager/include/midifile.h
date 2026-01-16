@@ -3,7 +3,7 @@
 
 #include "filemanager.h"
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 
 /** @class MidiFile
@@ -17,9 +17,9 @@ public:
   virtual ~MidiFile() = default;
 
 private:
-  MidiFile(const std::filesystem::path &path): File(path, Core::eInputType::MidiFile) {}
+  MidiFile(const std::filesystem::path &path): File(path, core::eInputType::MidiFile) {}
 };
 
-} // namespace MinimalAudioEngine
+} // namespace miniaudioengine
 
 #endif // __MIDI_FILE_H__

@@ -10,7 +10,7 @@
 #include <vector>
 #include <memory>
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 
 /** @class AudioStreamController
@@ -57,6 +57,6 @@ private:
   RtAudio m_rtaudio;
 };
 
-} // namespace MinimalAudioEngine::Control
+} // namespace miniaudioengine::control
 
 #endif // __AUDIO_STREAM_CONTROLLER_H__

@@ -3,8 +3,8 @@
 #include "trackmanager.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::data;
 
 std::vector<RtAudio::DeviceInfo> AudioStreamController::get_audio_devices()
 {

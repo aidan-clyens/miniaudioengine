@@ -3,7 +3,7 @@
 #include <iostream>
 #include <cstring>
 
-using namespace MinimalAudioEngine;
+using namespace miniaudioengine;
 
 void CLI::parse_command_line_arguments(int argc, char *argv[])
 {

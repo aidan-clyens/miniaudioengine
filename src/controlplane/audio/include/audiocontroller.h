@@ -11,7 +11,7 @@
 #include <memory>
 #include <rtaudio/RtAudio.h>
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 
 /** @enum eAudioState
@@ -30,7 +30,7 @@ enum class eAudioState
  *  for all audio-related controllers. Concrete implementations handle
  *  hardware-specific operations.
  */
-class IAudioController : public Core::IController
+class IAudioController : public core::IController
 {
 public:
   virtual ~IAudioController() = default;
@@ -51,13 +51,13 @@ public:
     return m_stream_state;
   }
 
-  virtual std::shared_ptr<Data::AudioCallbackContext> get_callback_context() const
+  virtual std::shared_ptr<data::AudioCallbackContext> get_callback_context() const
   {
     return m_callback_context;
   }
 
 protected:
-  IAudioController() : m_callback_context(std::make_shared<Data::AudioCallbackContext>()) {}
+  IAudioController() : m_callback_context(std::make_shared<data::AudioCallbackContext>()) {}
 
   /** @brief Validates preconditions before starting the audio stream.
    *  @return true if all preconditions are met, false otherwise.
@@ -71,10 +71,10 @@ protected:
 
   // Common state shared by all implementations
   std::optional<AudioDevice> m_audio_output_device;
-  std::shared_ptr<Data::AudioCallbackContext> m_callback_context;
+  std::shared_ptr<data::AudioCallbackContext> m_callback_context;
   eAudioState m_stream_state{eAudioState::Idle};
 };
 
-} // namespace MinimalAudioEngine::Control
+} // namespace miniaudioengine::control
 
 #endif // __AUDIO_CONTROLLER_H__

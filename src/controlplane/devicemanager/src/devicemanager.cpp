@@ -2,7 +2,7 @@
 #include "audiostreamcontroller.h"
 #include "midiportcontroller.h"
 
-using namespace MinimalAudioEngine::Control;
+using namespace miniaudioengine::control;
 
 std::vector<AudioDevice> DeviceManager::get_audio_devices() const
 {

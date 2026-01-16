@@ -7,13 +7,13 @@
 
 #include "dataplane.h"
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 // Forward declaration
 struct MidiMessage;
 }
 
-namespace MinimalAudioEngine::Data
+namespace miniaudioengine::data
 {
 
 /** @struct MidiInputStatistics
@@ -38,13 +38,13 @@ struct MidiInputStatistics
  *  @brief Data plane for handling MIDI messages for a track. The Data plane is only a callback
  *  target for RtMidi and is not a producer/consumer of MIDI messages itself.
  */
-class MidiDataPlane : public Core::IDataPlane
+class MidiDataPlane : public core::IDataPlane
 {
 public:
   /** @brief Process an incoming MIDI message. Called from the RtMidi callback function.
    *  @param midi_message The MIDI message to process.
    */  
-  void process_midi_message(const Control::MidiMessage& midi_message);
+  void process_midi_message(const control::MidiMessage& midi_message);
 
   /** @brief Get MIDI input statistics.
    *  @return MidiInputStatistics structure containing input statistics.
@@ -58,11 +58,11 @@ private:
   MidiInputStatistics m_midi_input_stats;
 
 private:
-  void update_midi_input_statistics(const Control::MidiMessage& midi_message); 
+  void update_midi_input_statistics(const control::MidiMessage& midi_message); 
 };
 
 typedef std::shared_ptr<MidiDataPlane> TrackMidiDataPlanePtr;
 
-} // namespace MinimalAudioEngine::Data
+} // namespace miniaudioengine::data
 
 #endif // __TRACK_MIDI_DATA_PLANE_H__

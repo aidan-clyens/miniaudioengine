@@ -1,7 +1,7 @@
 #ifndef __INPUT_H__
 #define __INPUT_H__
 
-namespace MinimalAudioEngine::Core
+namespace miniaudioengine::core
 {
 
 /** @enum eInputType
@@ -28,6 +28,6 @@ private:
   eInputType m_input_type = eInputType::None;
 };
 
-} // namespace MinimalAudioEngine
+} // namespace miniaudioengine
 
 #endif // __INPUT_H__

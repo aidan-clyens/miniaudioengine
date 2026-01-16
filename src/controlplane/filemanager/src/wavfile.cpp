@@ -1,13 +1,13 @@
 #include "wavfile.h"
 
-using namespace MinimalAudioEngine::Control;
+using namespace miniaudioengine::control;
 
 /** @brief Constructs an AudioFile object and opens the specified WAV file.
  *  @param path The path to the WAV file to open.
  *  @throws std::runtime_error if the file cannot be opened.
  */
 WavFile::WavFile(const std::filesystem::path &path):
-  File(path, Core::eInputType::AudioFile)
+  File(path, core::eInputType::AudioFile)
 {
   m_sndfile = std::shared_ptr<SNDFILE>(
       sf_open(path.string().c_str(), SFM_READ, &m_sfinfo),

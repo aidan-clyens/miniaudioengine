@@ -1,7 +1,7 @@
 #ifndef __MANAGER_H__
 #define __MANAGER_H__
 
-namespace MinimalAudioEngine::Core
+namespace miniaudioengine::core
 {
 
 /** @class Manager
@@ -17,6 +17,6 @@ public:
   // Common manager functionality can be added here
 };
 
-} // namespace MinimalAudioEngine::Core
+} // namespace miniaudioengine::core
 
 #endif // __MANAGER_H__

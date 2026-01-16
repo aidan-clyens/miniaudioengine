@@ -3,7 +3,7 @@
 
 #include "trackmanager.h"
 
-using namespace MinimalAudioEngine::Control;
+using namespace miniaudioengine::control;
 
 
 /** @brief Track Manager - Add a Track 

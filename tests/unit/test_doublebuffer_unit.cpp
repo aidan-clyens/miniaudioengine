@@ -6,7 +6,7 @@
 #include "doublebuffer.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine::Core;
+using namespace miniaudioengine::core;
 
 class DoubleBufferTest : public ::testing::Test
 {

@@ -5,7 +5,7 @@
 #include <functional>
 #include <vector>
 
-namespace MinimalAudioEngine
+namespace miniaudioengine
 {
 
 /** @struct Command 
@@ -68,6 +68,6 @@ private:
 };
 
 
-} // namespace MinimalAudioEngine
+} // namespace miniaudioengine
 
 #endif // __CLI_H__

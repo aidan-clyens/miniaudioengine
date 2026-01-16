@@ -4,7 +4,7 @@
 #include <vector>
 #include <atomic>
 
-namespace MinimalAudioEngine::Core
+namespace miniaudioengine::core
 {
 
 /** @class DoubleBuffer
@@ -61,6 +61,6 @@ private:
   std::atomic<bool> m_read_ready;
 };
 
-} // namespace MinimalAudioEngine::Core
+} // namespace miniaudioengine::core
 
 #endif // __DOUBLE_BUFFER_H__

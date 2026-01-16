@@ -10,7 +10,7 @@
 #include <memory>
 #include <optional>
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 
 // Forward declaration
@@ -24,7 +24,7 @@ typedef std::shared_ptr<MidiFile> MidiFilePtr;
 /** @class File
  *  @brief Base class for various file types 
  */
-class File : public Core::IInput
+class File : public core::IInput
 {
   friend class FileManager;
 
@@ -47,8 +47,8 @@ public:
   }
 
 protected:
-  File(const std::filesystem::path &path, const Core::eInputType type):
-    Core::IInput(type),
+  File(const std::filesystem::path &path, const core::eInputType type):
+    core::IInput(type),
     m_filepath(path) {}
 
   std::filesystem::path m_filepath;
@@ -67,7 +67,7 @@ enum class PathType
 /** @class FileManager
  *  @brief Singleton class for managing file system operations.
  */
-class FileManager : public Core::IManager
+class FileManager : public core::IManager
 {
 public:
   static FileManager& instance()
@@ -157,6 +157,6 @@ private:
   FileManager& operator=(const FileManager&) = delete;
 };
 
-}  // namespace MinimalAudioEngine::Control
+}  // namespace miniaudioengine::control
 
 #endif  // __FILE_SYSTEM_H__

@@ -6,9 +6,9 @@
 #include "miditypes.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine;
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Data;
+using namespace miniaudioengine;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::data;
 
 class TrackMidiDataPlaneTest : public ::testing::Test
 { 

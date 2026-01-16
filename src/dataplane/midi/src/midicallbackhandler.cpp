@@ -4,9 +4,9 @@
 #include "miditypes.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine::Data;
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Core;
+using namespace miniaudioengine::data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::core;
 
 /** @brief Callback function to handle incoming MIDI messages.
  *  This function is called by the RtMidi library when a MIDI message is received.

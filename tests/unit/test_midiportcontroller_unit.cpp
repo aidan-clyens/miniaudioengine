@@ -3,8 +3,8 @@
 #include "midiportcontroller.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine;
-using namespace MinimalAudioEngine::Control;
+using namespace miniaudioengine;
+using namespace miniaudioengine::control;
 
 TEST(MidiPortControllerTest, GetPorts)
 {

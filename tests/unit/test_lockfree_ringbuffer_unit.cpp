@@ -6,7 +6,7 @@
 
 #include "lockfree_ringbuffer.h"
 
-using namespace MinimalAudioEngine::Core;
+using namespace miniaudioengine::core;
 
 class LockfreeRingBufferTest : public ::testing::Test
 {

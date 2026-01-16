@@ -3,9 +3,9 @@
 #include "miditypes.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine::Data;
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Core;
+using namespace miniaudioengine::data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::core;
 
 void MidiDataPlane::process_midi_message(const MidiMessage &midi_message)
 {

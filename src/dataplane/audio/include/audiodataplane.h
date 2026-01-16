@@ -13,7 +13,7 @@
 #include "wavfile.h"
 #include "logger.h"
 
-namespace MinimalAudioEngine::Data
+namespace miniaudioengine::data
 {
 
 /** @struct AudioOutputStatistics
@@ -56,14 +56,14 @@ struct AudioOutputStatistics
  *  @brief Data plane for handling audio data for a Track. The Data plane is only a callback
  *  target for RtAudio and is not a producer/consumer of audio data itself.
  */
-class AudioDataPlane : public Core::IDataPlane
+class AudioDataPlane : public core::IDataPlane
 {
 public:
   /** @brief Start audio processing.
    */
   void start() override
   {
-    Core::IDataPlane::start();
+    core::IDataPlane::start();
     m_read_position.store(0, std::memory_order_release);
   }
 
@@ -71,7 +71,7 @@ public:
    */
   void stop() override
   {
-    Core::IDataPlane::stop();
+    core::IDataPlane::stop();
     m_preloaded_frames_buffer.clear();
   }
 
@@ -88,7 +88,7 @@ public:
   /** @brief Preload WAV file data into the audio data plane. Called from the Track control plane before playback.
    *  @param wav_file Shared pointer to the WavFile to preload.
    */
-  void preload_wav_file(const Control::WavFilePtr& wav_file);
+  void preload_wav_file(const control::WavFilePtr& wav_file);
 
   /** @brief Get audio output statistics.
    *  @return AudioOutputStatistics structure containing output statistics.
@@ -140,6 +140,6 @@ private:
 
 typedef std::shared_ptr<AudioDataPlane> TrackAudioDataPlanePtr;
 
-} // namespace MinimalAudioEngine::Data
+} // namespace miniaudioengine::data
 
 #endif // __TRACK_AUDIO_DATA_PLANE_H__

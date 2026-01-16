@@ -3,7 +3,7 @@
 
 #include <rtaudio/RtAudio.h>
 
-namespace MinimalAudioEngine::Data
+namespace miniaudioengine::data
 {
 
 typedef std::shared_ptr<class AudioDataPlane> TrackAudioDataplanePtr;
@@ -21,6 +21,6 @@ public:
                     double stream_time, RtAudioStreamStatus status, void *user_data) noexcept;
 };
 
-} // namespace MinimalAudioEngine::Data
+} // namespace miniaudioengine::data
 
 #endif // __AUDIO_CALLBACK_HANDLER_H__

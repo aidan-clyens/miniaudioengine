@@ -7,7 +7,7 @@
 #include <atomic>
 #include <optional>
 
-namespace MinimalAudioEngine::Core
+namespace miniaudioengine::core
 {
 
 /** @class MessageQueue
@@ -107,6 +107,6 @@ private:
   std::atomic<bool> m_stopped;
 };
 
-} // namespace MinimalAudioEngine::Core
+} // namespace miniaudioengine::core
 
 #endif  // __MESSAGE_QUEUE_H_

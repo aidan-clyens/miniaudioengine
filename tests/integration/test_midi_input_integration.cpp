@@ -7,9 +7,9 @@
 #include "midifile.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine;
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Core;
+using namespace miniaudioengine;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::core;
 
 TEST(MidiInputIntegrationTest, MidiInput)
 {

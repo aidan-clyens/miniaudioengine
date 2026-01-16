@@ -6,7 +6,7 @@
 
 #include <vector>
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 
 /** @class IMidiController
@@ -14,7 +14,7 @@ namespace MinimalAudioEngine::Control
  *  This class serves as a base for all MIDI-related controllers,
  *  providing a common interface and shared functionality.
  */
-class IMidiController : public Core::IController
+class IMidiController : public core::IController
 {
 public:
   virtual ~IMidiController() = default;
@@ -24,6 +24,6 @@ public:
   virtual void close_input_port() = 0;
 };
 
-} // namespace MinimalAudioEngine::Control
+} // namespace miniaudioengine::control
 
 #endif // __MIDI_CONTROLLER_H__

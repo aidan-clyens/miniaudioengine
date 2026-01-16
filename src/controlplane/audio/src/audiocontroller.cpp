@@ -1,8 +1,8 @@
 #include "audiocontroller.h"
 #include "trackmanager.h"
 
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::data;
 
 bool IAudioController::validate_start_preconditions() const
 {

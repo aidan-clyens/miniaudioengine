@@ -11,10 +11,10 @@
 #include "trackmanager.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::data;
 
-namespace MinimalAudioEngine::Test
+namespace miniaudioengine::test
 {
 
 enum RtAudioErrorType
@@ -105,6 +105,6 @@ private:
   bool m_is_stream_running{false};
 };
 
-} // namespace MinimalAudioEngine::Test
+} // namespace miniaudioengine::test
 
 #endif // __AUDIO_CONTROLLER_MOCK_H__

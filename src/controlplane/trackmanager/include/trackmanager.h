@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 
 /** @class MainTrack
@@ -37,7 +37,7 @@ private:
  *  @brief The TrackManager manages a hierarchical tree of tracks with MainTrack as root.
  *  All tracks route their output to their parent, forming a mixing tree.
  */
-class TrackManager : public Core::IManager
+class TrackManager : public core::IManager
 {
 using MainTrackPtr = std::shared_ptr<MainTrack>;
 
@@ -96,12 +96,12 @@ public:
   /** @brief Get audio dataplanes for all active tracks.
    *  @return Vector of audio dataplane pointers.
    */
-  std::vector<Data::TrackAudioDataPlanePtr> get_track_audio_dataplanes();
+  std::vector<data::TrackAudioDataPlanePtr> get_track_audio_dataplanes();
 
   /** @brief Get MIDI dataplanes for all active tracks.
    *  @return Vector of MIDI dataplane pointers.
    */
-  std::vector<Data::TrackMidiDataPlanePtr> get_track_midi_dataplanes();
+  std::vector<data::TrackMidiDataPlanePtr> get_track_midi_dataplanes();
 
   /** @brief Clear all tracks except MainTrack.
    */
@@ -147,11 +147,11 @@ private:
   void collect_all_tracks_recursive(TrackPtr track, std::vector<TrackPtr>& out) const;
   void collect_leaf_tracks_recursive(TrackPtr track, std::vector<TrackPtr>& out) const;
   void collect_active_dataplanes_recursive(TrackPtr track,
-                                            std::vector<Data::TrackAudioDataPlanePtr>& out);
+                                            std::vector<data::TrackAudioDataPlanePtr>& out);
   void collect_active_midi_dataplanes_recursive(TrackPtr track,
-                                                 std::vector<Data::TrackMidiDataPlanePtr>& out);
+                                                 std::vector<data::TrackMidiDataPlanePtr>& out);
 };
 
-}  // namespace MinimalAudioEngine::Control
+}  // namespace miniaudioengine::control
 
 #endif  // __TRACK_MANAGER_H_

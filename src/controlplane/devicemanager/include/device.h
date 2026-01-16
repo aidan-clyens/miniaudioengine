@@ -3,7 +3,7 @@
 
 #include <string>
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 
 /** @class IDevice
@@ -42,6 +42,6 @@ public:
   }
 };
 
-} // namespace MinimalAudioEngine::Control
+} // namespace miniaudioengine::control
 
 #endif // __DEVICE_H__

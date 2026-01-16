@@ -21,7 +21,7 @@
 #include "mididataplane.h"
 #include "miditypes.h"
 
-namespace MinimalAudioEngine::Control
+namespace miniaudioengine::control
 {
 
 // Forward declarations
@@ -53,8 +53,8 @@ typedef std::function<void(eTrackEvent)> TrackEventCallback;
  */
 struct TrackStatistics
 {
-  Data::AudioOutputStatistics audio_output_stats;
-  Data::MidiInputStatistics midi_input_stats;
+  data::AudioOutputStatistics audio_output_stats;
+  data::MidiInputStatistics midi_input_stats;
 
   std::string to_string() const
   {
@@ -79,8 +79,8 @@ public:
     m_midi_output(std::nullopt),
     m_audio_controller(AudioStreamController::instance()),
     m_midi_controller(MidiPortController::instance()),
-    p_audio_dataplane(std::make_shared<Data::AudioDataPlane>()),
-    p_midi_dataplane(std::make_shared<Data::MidiDataPlane>())
+    p_audio_dataplane(std::make_shared<data::AudioDataPlane>()),
+    p_midi_dataplane(std::make_shared<data::MidiDataPlane>())
   {}
 
   ~Track() = default;
@@ -229,7 +229,7 @@ public:
   }
 
   /** @brief Set a callback function for track events.
-   *  @param callback The callback function to set e.g. `void playback_func(MinimalAudioEngine::eTrackEvent event)`.
+   *  @param callback The callback function to set e.g. `void playback_func(miniaudioengine::eTrackEvent event)`.
    */
   void set_event_callback(TrackEventCallback callback)
   {
@@ -239,14 +239,14 @@ public:
   // MIDI Callbacks
 
   /** @brief Set a callback function for MIDI note on events.
-   *  @param callback The callback function to set e.g. `void note_on_func(const MinimalAudioEngine::MidiNoteMessage& message)`.
+   *  @param callback The callback function to set e.g. `void note_on_func(const miniaudioengine::MidiNoteMessage& message)`.
    */
   void set_midi_note_on_callback(MidiNoteOnCallbackFunc callback)
   {
     m_note_on_callback = callback;
   }
   /** @brief Set a callback function for MIDI note off events.
-   *  @param callback The callback function to set e.g. `void note_off_func(const MinimalAudioEngine::MidiNoteMessage& message)`.
+   *  @param callback The callback function to set e.g. `void note_off_func(const miniaudioengine::MidiNoteMessage& message)`.
    */
   void set_midi_note_off_callback(MidiNoteOffCallbackFunc callback)
   {
@@ -254,7 +254,7 @@ public:
   }
 
   /** @brief Set a callback function for MIDI control change events.
-   *  @param callback The callback function to set e.g. `void control_change_func(const MinimalAudioEngine::MidiControlMessage& message)`.
+   *  @param callback The callback function to set e.g. `void control_change_func(const miniaudioengine::MidiControlMessage& message)`.
    */
   void set_midi_control_change_callback(MidiControlCallbackFunc callback)
   {
@@ -263,12 +263,12 @@ public:
 
   void handle_midi_message(const MidiMessage& message); // TODO - Remove
 
-  Data::TrackAudioDataPlanePtr get_audio_dataplane() const
+  data::TrackAudioDataPlanePtr get_audio_dataplane() const
   {
     return p_audio_dataplane;
   }
 
-  Data::TrackMidiDataPlanePtr get_midi_dataplane() const
+  data::TrackMidiDataPlanePtr get_midi_dataplane() const
   {
     return p_midi_dataplane;
   }
@@ -293,8 +293,8 @@ protected:
   IAudioController &m_audio_controller;
   IMidiController &m_midi_controller;
 
-  Data::TrackAudioDataPlanePtr p_audio_dataplane;
-  Data::TrackMidiDataPlanePtr p_midi_dataplane;
+  data::TrackAudioDataPlanePtr p_audio_dataplane;
+  data::TrackMidiDataPlanePtr p_midi_dataplane;
 
   TrackEventCallback m_event_callback;
 
@@ -307,6 +307,6 @@ protected:
   MidiControlCallbackFunc m_control_change_callback;
 };
 
-}  // namespace MinimalAudioEngine::Control
+}  // namespace miniaudioengine::control
 
 #endif  // __TRACK_H__

@@ -6,8 +6,8 @@
 #include "audiodevice.h"
 #include "audiocontroller_mock.h"
 
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Test;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::test;
 
 class AudioStreamControllerTest : public ::testing::Test
 {

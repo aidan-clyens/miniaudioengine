@@ -6,7 +6,7 @@
 #include "messagequeue.h" // for MessageQueue
 #include "logger.h"
 
-using namespace MinimalAudioEngine::Core;
+using namespace miniaudioengine::core;
 
 /** @class MessageQueueTest
  *  @brief MessageQueueTest fixture for MessageQueue unit tests. 

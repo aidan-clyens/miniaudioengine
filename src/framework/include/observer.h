@@ -1,7 +1,7 @@
 #ifndef __OBSERVER_H__
 #define __OBSERVER_H__
 
-namespace MinimalAudioEngine::Core
+namespace miniaudioengine::core
 {
 
 /** @class Observer
@@ -18,6 +18,6 @@ public:
 	virtual ~Observer() = default;
 };
 
-} // namespace MinimalAudioEngine
+} // namespace miniaudioengine
 
 #endif  // __OBSERVER_H__

@@ -8,7 +8,7 @@
 
 #include "observer.h"
 
-namespace MinimalAudioEngine::Core
+namespace miniaudioengine::core
 {
 
 /** @class Subject
@@ -97,6 +97,6 @@ private:
   mutable std::mutex m_mutex;
 };
 
-} // namespace MinimalAudioEngine
+} // namespace miniaudioengine
 
 #endif  // __SUBJECT_H__

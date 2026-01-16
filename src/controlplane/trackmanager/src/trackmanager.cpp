@@ -1,7 +1,7 @@
 #include "trackmanager.h"
 
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::data;
 
 // ============================================================================
 // Constructor
@@ -271,7 +271,7 @@ void TrackManager::collect_leaf_tracks_recursive(TrackPtr track, std::vector<Tra
 }
 
 void TrackManager::collect_active_dataplanes_recursive(TrackPtr track,
-                                                       std::vector<Data::TrackAudioDataPlanePtr>& out)
+                                                       std::vector<data::TrackAudioDataPlanePtr>& out)
 {
   if (!track)
   {
@@ -303,7 +303,7 @@ void TrackManager::collect_active_dataplanes_recursive(TrackPtr track,
 }
 
 void TrackManager::collect_active_midi_dataplanes_recursive(TrackPtr track,
-                                                            std::vector<Data::TrackMidiDataPlanePtr>& out)
+                                                            std::vector<data::TrackMidiDataPlanePtr>& out)
 {
   if (!track)
   {

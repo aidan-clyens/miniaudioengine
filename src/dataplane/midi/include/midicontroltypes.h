@@ -7,7 +7,7 @@
 #include <string_view>
 #include <ostream>
 
-namespace MinimalAudioEngine::Data
+namespace miniaudioengine::data
 {
 
 /** @enum eMidiController
@@ -363,6 +363,6 @@ inline std::ostream& operator<<(std::ostream& os, const eMidiNoteValues& note_va
   return os;
 }
 
-} // namespace MinimalAudioEngine::Data
+} // namespace miniaudioengine::data
 
 #endif // __MIDI_CONTROLLER_TYPES_H__

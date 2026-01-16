@@ -1,8 +1,8 @@
 #include "audiodataplane.h"
 
-using namespace MinimalAudioEngine::Data;
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Core;
+using namespace miniaudioengine::data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::core;
 
 void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
                                         double stream_time, RtAudioStreamStatus status) noexcept

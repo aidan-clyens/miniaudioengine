@@ -4,7 +4,7 @@
 #include "devicemanager.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine::Control;
+using namespace miniaudioengine::control;
 
 static unsigned int audio_device_id = 0;
 

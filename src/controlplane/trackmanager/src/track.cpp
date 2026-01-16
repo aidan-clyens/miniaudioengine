@@ -14,8 +14,8 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::data;
 
 // ============================================================================
 // Hierarchy Management

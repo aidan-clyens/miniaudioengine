@@ -3,8 +3,8 @@
 #include "trackmanager.h"
 #include "logger.h"
 
-using namespace MinimalAudioEngine::Control;
-using namespace MinimalAudioEngine::Data;
+using namespace miniaudioengine::control;
+using namespace miniaudioengine::data;
 
 /** @brief Lists all available MIDI input ports.
  *  This function retrieves and prints the names of all available MIDI input ports.
