@@ -65,6 +65,11 @@ public:
     m_console_output_enabled = enable;
   }
 
+  void enable_colors(bool enable)
+  {
+    m_colors_enabled = enable;
+  }
+
   template <typename... Args>
   void log(eLogLevel level, Args &&...args)
   {
@@ -90,9 +95,9 @@ public:
     if (m_console_output_enabled)
     {
       (*p_out_stream) << "[" << timestamp_stream.str() << "] "
-        << "[" << log_level_to_string(level) << "] ";
+        << get_color_code(level) << "[" << log_level_to_string(level) << "] " << get_reset_code();
       if (get_thread_name() != "unnamed")
-        (*p_out_stream) << "[Thread: " << get_thread_name() << "] ";
+        (*p_out_stream) << (m_colors_enabled ? "\033[1m" : "") << "[Thread: " << get_thread_name() << "]" << (m_colors_enabled ? "\033[0m" : "") << " ";
       (*p_out_stream) << message_stream.str() << "\n";
     }
 
@@ -112,6 +117,7 @@ private:
   std::mutex m_log_mutex;
 
   bool m_console_output_enabled = true;
+  bool m_colors_enabled = true;
 
   Logger() = default;
   ~Logger() = default;
@@ -133,6 +139,31 @@ private:
     default:
       return "UNKNOWN";
     }
+  }
+
+  const char* get_color_code(eLogLevel level)
+  {
+    if (!m_colors_enabled)
+      return "";
+
+    switch (level)
+    {
+    case eLogLevel::Info:
+      return "\033[32m";  // Green
+    case eLogLevel::Warning:
+      return "\033[33m";  // Yellow
+    case eLogLevel::Error:
+      return "\033[31m";  // Red
+    case eLogLevel::Debug:
+      return "\033[36m";  // Cyan
+    default:
+      return "\033[0m";   // Reset
+    }
+  }
+
+  const char* get_reset_code()
+  {
+    return m_colors_enabled ? "\033[0m" : "";
   }
 };
 
