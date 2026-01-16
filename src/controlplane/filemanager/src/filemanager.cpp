@@ -127,7 +127,7 @@ std::optional<WavFilePtr> FileManager::read_wav_file(const std::filesystem::path
 std::optional<MidiFilePtr> FileManager::read_midi_file(const std::filesystem::path &path)
 {
   std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
-  std::filesystem::path absolute_path = convert_to_absolute(path);
+  std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
 
   if (!path_exists(absolute_path) || !is_midi_file(absolute_path))
   {
@@ -136,4 +136,36 @@ std::optional<MidiFilePtr> FileManager::read_midi_file(const std::filesystem::pa
   }
 
   return MidiFilePtr(new MidiFile(absolute_path));
+}
+
+void FileManager::create_directory(const std::filesystem::path &path)
+{
+  std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
+  std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
+
+  LOG_INFO("Creating directory: ", absolute_path.string());
+  std::error_code ec;
+
+  if (!std::filesystem::create_directory(absolute_path, ec))
+  {
+    LOG_ERROR("Failed to create directory: ", absolute_path.string(), " Error: ", ec.message());
+  }
+}
+
+void FileManager::create_sub_directory(const std::filesystem::path &parent_path, const std::string &subdir_name)
+{
+  // Ensure parent directory exists
+  std::filesystem::path normalized_parent_path = std::filesystem::weakly_canonical(parent_path);
+  std::filesystem::path absolute_parent_path = convert_to_absolute(normalized_parent_path);
+
+  if (!path_exists(absolute_parent_path) || !is_directory(absolute_parent_path))
+  {
+    LOG_ERROR("Parent directory does not exist or is not a directory: ", absolute_parent_path.string());
+    return;
+  }
+
+  std::filesystem::path subdir_path = absolute_parent_path / subdir_name;;
+  LOG_INFO("Creating sub-directory: ", subdir_path.string());
+
+  create_directory(subdir_path);
 }

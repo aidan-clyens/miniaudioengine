@@ -148,3 +148,30 @@ TEST(FileSystemTest, LoadMidiFile)
 {
   ASSERT_EQ(1, 0) << "This is a placeholder test for loading a MIDI file.";
 }
+
+TEST(FileSystemTest, CreateDirectory)
+{
+  const std::string dir_name = "test_directory";
+
+  std::filesystem::path created_dir_path = PROJECT_ROOT_PATH / dir_name;
+  FileManager::instance().create_directory(created_dir_path);
+
+  ASSERT_TRUE(FileManager::instance().path_exists(created_dir_path)) << "Created directory '" + created_dir_path.string() + "' should exist.";
+  ASSERT_TRUE(FileManager::instance().is_directory(created_dir_path)) << "Created path '" + created_dir_path.string() + "' should be a directory.";
+}
+
+TEST(FileSystemTest, CreateSubDirectory)
+{
+  const std::string parent_dir_name = "test_parent_directory";
+  const std::string sub_dir_name = "test_sub_directory";
+
+  std::filesystem::path parent_dir_path = PROJECT_ROOT_PATH / parent_dir_name;
+  FileManager::instance().create_directory(parent_dir_path);
+  ASSERT_TRUE(FileManager::instance().path_exists(parent_dir_path)) << "Parent directory '" + parent_dir_path.string() + "' should exist.";
+
+  FileManager::instance().create_sub_directory(parent_dir_path, sub_dir_name);
+  std::filesystem::path sub_dir_path = parent_dir_path / sub_dir_name;
+
+  ASSERT_TRUE(FileManager::instance().path_exists(sub_dir_path)) << "Sub-directory '" + sub_dir_path.string() + "' should exist.";
+  ASSERT_TRUE(FileManager::instance().is_directory(sub_dir_path)) << "Sub-directory path '" + sub_dir_path.string() + "' should be a directory.";
+}

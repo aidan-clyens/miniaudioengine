@@ -125,6 +125,17 @@ public:
     return (path_exists(path) && std::filesystem::is_directory(path));
   }
 
+  /** @brief Creates a directory at the specified path.
+   *  @param path The path where the directory should be created.
+   */
+  void create_directory(const std::filesystem::path &path);
+  
+  /** @brief Creates a sub-directory within a specified parent directory.
+   *  @param parent_path The path to the parent directory.
+   *  @param subdir_name The name of the sub-directory to create.
+   */
+  void create_sub_directory(const std::filesystem::path &parent_path, const std::string &subdir_name);
+
   /** @brief Converts a relative path to an absolute path.
    *  @param path The path to convert.
    *  @return The absolute path.
