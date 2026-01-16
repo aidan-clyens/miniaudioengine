@@ -10,7 +10,7 @@
 #include "wavfile.h"
 #include "logger.h"
 
-#define TEST_WAV_FILE_PATH "C:\\Projects\\minimal-audio-engine\\samples\\test.wav"
+#define TEST_WAV_FILE_PATH "C:\\Projects\\miniaudioengine\\samples\\test.wav"
 
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;

@@ -147,7 +147,7 @@ void AudioDataPlane::prepare_output_buffer(unsigned int n_frames)
 }
 
 /** @brief Mix child track output into this track's output buffer.
- *  @param child_dataplane The child track's dataplane to read from.
+ *  @param child_dataplane The child track's data to read from.
  *  @param child_gain Gain to apply to child output.
  *  @param n_frames Number of frames to mix.
  *  @note This is called in the parent track's audio callback (data plane).

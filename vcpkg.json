@@ -1,7 +1,7 @@
 {
-  "name": "minimal-audio-engine",
+  "name": "miniaudioengine",
   "version": "0.1.0",
-  "description": "Minimal Audio Engine - A cross-platform audio processing library for real-time applications.",
+  "description": "Mini-Audio-Engine - A cross-platform audio processing library for real-time applications.",
   "dependencies": [
     "rtaudio",
     "rtmidi",

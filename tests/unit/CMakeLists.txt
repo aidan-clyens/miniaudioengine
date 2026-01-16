@@ -1,6 +1,6 @@
 enable_testing()
 
-add_executable(minimal-audio-engine-unit-tests
+add_executable(miniaudioengine-unit-tests
   test_audiostreamcontroller_unit.cpp
   test_midiportcontroller_unit.cpp
   test_filemanager_unit.cpp
@@ -15,18 +15,18 @@ add_executable(minimal-audio-engine-unit-tests
   test_doublebuffer_unit.cpp
 )
 
-target_link_libraries(minimal-audio-engine-unit-tests PRIVATE
+target_link_libraries(miniaudioengine-unit-tests PRIVATE
   GTest::gtest
   GTest::gtest_main
-  controlplane-audio
-  controlplane-midi
-  dataplane-audio
-  dataplane-midi
+  control-audio
+  control-midi
+  data-audio
+  data-midi
   trackmanager
   filemanager
   devicemanager
   test-mocks
 )
 
-add_test(NAME minimal-audio-engine-unit-tests COMMAND minimal-audio-engine-unit-tests)
-set_tests_properties(minimal-audio-engine-unit-tests PROPERTIES TIMEOUT 60)
+add_test(NAME miniaudioengine-unit-tests COMMAND miniaudioengine-unit-tests)
+set_tests_properties(miniaudioengine-unit-tests PROPERTIES TIMEOUT 60)

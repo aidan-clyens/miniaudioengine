@@ -296,7 +296,7 @@ void Track::stop()
     return;
   }
 
-  // Clear dataplane buffers and stop any data processing threads
+  // Clear data buffers and stop any data processing threads
   p_audio_dataplane->stop();
   m_audio_controller.stop_stream();
 }

@@ -1,18 +1,18 @@
 enable_testing()
 
-add_executable(minimal-audio-engine-profiling-tests
+add_executable(miniaudioengine-profiling-tests
   # test_lockfree_ringbuffer_profiling.cpp
   test_track_wav_file_profiling.cpp
 )
 
-target_link_libraries(minimal-audio-engine-profiling-tests PRIVATE
+target_link_libraries(miniaudioengine-profiling-tests PRIVATE
   GTest::gtest
   GTest::gtest_main
   framework
   trackmanager
   devicemanager
-  dataplane-audio
-  controlplane-audio
+  data-audio
+  control-audio
 )
 
-add_test(NAME minimal-audio-engine-profiling-tests COMMAND minimal-audio-engine-profiling-tests)
+add_test(NAME miniaudioengine-profiling-tests COMMAND miniaudioengine-profiling-tests)

@@ -30,4 +30,4 @@ docker buildx inspect --bootstrap
 
 echo.
 echo Setup complete. You can now build for multiple architectures.
-echo Example: docker buildx build --platform linux/amd64,linux/arm64 -t minimal-audio-engine:latest .
+echo Example: docker buildx build --platform linux/amd64,linux/arm64 -t miniaudioengine:latest .

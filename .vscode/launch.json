@@ -16,10 +16,10 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "minimal-audio-engine-unit-tests (Windows)",
+            "name": "miniaudioengine-unit-tests (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/tests/unit/Debug/minimal-audio-engine-unit-tests.exe",
+            "program": "${workspaceFolder}/build/tests/unit/Debug/miniaudioengine-unit-tests.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -27,10 +27,10 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "minimal-audio-engine-profiling-tests (Windows)",
+            "name": "miniaudioengine-profiling-tests (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/tests/profiling/Debug/minimal-audio-engine-profiling-tests.exe",
+            "program": "${workspaceFolder}/build/tests/profiling/Debug/miniaudioengine-profiling-tests.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

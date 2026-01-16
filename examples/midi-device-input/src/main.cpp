@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
   // Setup CLI
   miniaudioengine::CLI cli(
     PROGRAM_NAME,
-    "A MIDI input example program using the minimal-audio-engine library.",
+    "A MIDI input example program using the miniaudioengine library.",
     VERSION,
     commands
   );

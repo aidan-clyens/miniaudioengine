@@ -1,6 +1,6 @@
-add_library(controlplane-audio STATIC)
+add_library(control-audio STATIC)
 
-target_sources(controlplane-audio
+target_sources(control-audio
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
@@ -10,21 +10,21 @@ target_sources(controlplane-audio
       include/audiostreamcontroller.h
 )
 
-target_sources(controlplane-audio PRIVATE
+target_sources(control-audio PRIVATE
   src/audiocontroller.cpp
   src/audiostreamcontroller.cpp
 )
 
-target_include_directories(controlplane-audio
+target_include_directories(control-audio
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(controlplane-audio
+target_link_libraries(control-audio
   PUBLIC
     rtaudio
     devicemanager
     trackmanager
 )
 
-set_target_properties(controlplane-audio PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(control-audio PROPERTIES LINKER_LANGUAGE CXX)

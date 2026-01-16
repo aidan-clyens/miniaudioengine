@@ -3,7 +3,7 @@
     "version": "0.1.0",
     "description": "MIDI Device Input - A simple MIDI device input example using Minimal Audio Engine.",
     "dependencies": [
-        "minimal-audio-engine",
+        "miniaudioengine",
         "rtaudio",
         "rtmidi",
         "libsndfile"

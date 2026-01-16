@@ -94,12 +94,12 @@ public:
   // Data plane collection (for callbacks)
 
   /** @brief Get audio dataplanes for all active tracks.
-   *  @return Vector of audio dataplane pointers.
+   *  @return Vector of audio data pointers.
    */
   std::vector<data::TrackAudioDataPlanePtr> get_track_audio_dataplanes();
 
   /** @brief Get MIDI dataplanes for all active tracks.
-   *  @return Vector of MIDI dataplane pointers.
+   *  @return Vector of MIDI data pointers.
    */
   std::vector<data::TrackMidiDataPlanePtr> get_track_midi_dataplanes();
 

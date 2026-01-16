@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(minimal-audio-engine
+project(miniaudioengine
     VERSION 1.0.0
     LANGUAGES CXX
 )
@@ -90,47 +90,47 @@ include(CMakePackageConfigHelpers)
 # Install library targets and header files
 install(
     TARGETS
-        controlplane-audio
-        controlplane-midi
-        dataplane-audio
-        dataplane-midi
+        control-audio
+        control-midi
+        data-audio
+        data-midi
         trackmanager
         filemanager
         devicemanager
         framework
         cli
-    EXPORT minimal-audio-engine-targets
+    EXPORT miniaudioengine-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/minimal-audio-engine
+    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/miniaudioengine
 )
 
 # Export targets
-install(EXPORT minimal-audio-engine-targets
-    FILE minimal-audio-engine-targets.cmake
-    NAMESPACE minimal-audio-engine::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/minimal-audio-engine
+install(EXPORT miniaudioengine-targets
+    FILE miniaudioengine-targets.cmake
+    NAMESPACE miniaudioengine::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/miniaudioengine
 )
 
 # Create package configuration file
 configure_package_config_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/minimal-audio-engine-config.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/minimal-audio-engine-config.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/minimal-audio-engine
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/miniaudioengine-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/miniaudioengine-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/miniaudioengine
 )
 
 # Create package version file
 write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/minimal-audio-engine-config-version.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/miniaudioengine-config-version.cmake
     VERSION ${PROJECT_VERSION}
     COMPATIBILITY SameMajorVersion
 )
 
 # Install package configuration files
 install(FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/minimal-audio-engine-config.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/minimal-audio-engine-config-version.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/minimal-audio-engine
+    ${CMAKE_CURRENT_BINARY_DIR}/miniaudioengine-config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/miniaudioengine-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/miniaudioengine
 )

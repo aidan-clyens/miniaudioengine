@@ -17,7 +17,7 @@ target_include_directories(test-mocks
 
 target_link_libraries(test-mocks
   INTERFACE
-    controlplane-audio
-    dataplane-audio
+    control-audio
+    data-audio
     trackmanager
 )

@@ -23,10 +23,10 @@ target_include_directories(devicemanager
 
 target_link_libraries(devicemanager
   PUBLIC
-    dataplane-audio
-    dataplane-midi
-    controlplane-audio
-    controlplane-midi
+    data-audio
+    data-midi
+    control-audio
+    control-midi
 )
 
 set_target_properties(devicemanager PROPERTIES LINKER_LANGUAGE CXX)

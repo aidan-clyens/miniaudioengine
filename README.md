@@ -1,5 +1,5 @@
 ## 1. Introduction
-minimal-audio-engine is a cross-platform, cross-architecture, modern C++20 audio processing engine designed for embedded and desktop environments. It emphasizes thread-safe programming, concurrency patterns, real-time audio safety, and modern C++ best practices. The engine implements a strict 3-plane architecture separating control operations, background processing, and real-time data handling.
+miniaudioengine is a cross-platform, cross-architecture, modern C++20 audio processing engine designed for embedded and desktop environments. It emphasizes thread-safe programming, concurrency patterns, real-time audio safety, and modern C++ best practices. The engine implements a strict 3-plane architecture separating control operations, background processing, and real-time data handling.
 
 This project can be used as a foundation for building digital audio workstations, audio plugins (VST), embedded audio platforms, or any application requiring professional-grade audio processing with deterministic real-time performance.
 
@@ -20,7 +20,7 @@ The design focuses on lock-free data structures for real-time contexts, clear se
 ---
 
 ## 3. System Overview
-minimal-audio-engine implements a **3-Plane Architecture** with clear separation of concerns:
+miniaudioengine implements a **3-Plane Architecture** with clear separation of concerns:
 
 ### 3.1 Control Plane (Layer 3)
 **Synchronous operations called from main thread** - locks allowed, infrequent calls
@@ -80,7 +80,7 @@ cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build build
 
 # Run tests
-.\build\tests\unit\Debug\minimal-audio-engine-unit-tests.exe
+.\build\tests\unit\Debug\miniaudioengine-unit-tests.exe
 ```
 
 See [WINDOWS_SETUP.md](WINDOWS_SETUP.md) for detailed instructions.
@@ -100,7 +100,7 @@ cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 cmake --build build
 
 # Run tests
-./build/tests/unit/minimal-audio-engine-unit-tests
+./build/tests/unit/miniaudioengine-unit-tests
 ```
 
 ### 4.4 Docker Development Environment
@@ -182,7 +182,7 @@ Use the provided tasks for common operations:
 
 ### 5.2 Project Structure
 ```
-minimal-audio-engine/
+miniaudioengine/
 ├── src/                          # Source code
 │   ├── framework/                # Layer 0 - Lock-free primitives
 │   │   └── include/
@@ -193,7 +193,7 @@ minimal-audio-engine/
 │   │       ├── realtime_assert.h # RT safety macros (stubs)
 │   │       ├── logger.h          # Thread-safe logging
 │   │       └── observer.h        # Observer pattern
-│   ├── dataplane/                # Layer 1 - Real-time components
+│   ├── data/                # Layer 1 - Real-time components
 │   │   ├── audio/
 │   │   │   ├── audiodataplane.h         # Per-track audio rendering
 │   │   │   └── audiocallbackhandler.h   # RtAudio callback wrapper
@@ -201,7 +201,7 @@ minimal-audio-engine/
 │   │       ├── mididataplane.h          # Per-track MIDI processing
 │   │       ├── midicallbackhandler.h    # RtMidi callback wrapper
 │   │       └── midicontroltypes.h       # MIDI CC definitions
-│   ├── controlplane/             # Layer 3 - Synchronous control
+│   ├── control/             # Layer 3 - Synchronous control
 │   │   ├── audio/                # AudioStreamController
 │   │   ├── midi/                 # MidiPortController, MIDI types
 │   │   ├── trackmanager/         # Track, TrackManager, MainTrack
@@ -274,7 +274,7 @@ MainTrack (root, hardware output)
 #include "filemanager.h"
 #include "audiostreamcontroller.h"
 
-using namespace MinimalAudioEngine::Control;
+using namespace miniaudioengine::control;
 
 // Get singleton instances
 auto& track_manager = TrackManager::instance();
@@ -310,7 +310,7 @@ std::cout << stats.to_string() << std::endl;
 #include "trackmanager.h"
 #include "devicemanager.h"
 
-using namespace MinimalAudioEngine::Control;
+using namespace miniaudioengine::control;
 
 // Get default MIDI input device
 auto midi_device = DeviceManager::instance().get_default_midi_input_device();
@@ -336,7 +336,7 @@ track->play();
 
 ### 6.3 Hierarchical Track Routing
 ```cpp
-using namespace MinimalAudioEngine::Control;
+using namespace miniaudioengine::control;
 
 auto& track_manager = TrackManager::instance();
 
@@ -375,7 +375,7 @@ Comprehensive unit tests using Google Test framework:
 ```bash
 # Run all unit tests
 cmake --build build
-.\build\tests\unit\Debug\minimal-audio-engine-unit-tests.exe
+.\build\tests\unit\Debug\miniaudioengine-unit-tests.exe
 ```
 
 Tested components:

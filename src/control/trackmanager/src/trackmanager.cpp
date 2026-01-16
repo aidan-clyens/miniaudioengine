@@ -287,10 +287,10 @@ void TrackManager::collect_active_dataplanes_recursive(TrackPtr track,
     TrackPtr current = stack.back();
     stack.pop_back();
 
-    auto dataplane = current->get_audio_dataplane();
-    if (dataplane && dataplane->is_running())
+    auto data = current->get_audio_dataplane();
+    if (data && data->is_running())
     {
-      out.push_back(dataplane);
+      out.push_back(data);
     }
 
     // Add children to stack for further exploration
@@ -319,10 +319,10 @@ void TrackManager::collect_active_midi_dataplanes_recursive(TrackPtr track,
     TrackPtr current = stack.back();
     stack.pop_back();
 
-    auto dataplane = current->get_midi_dataplane();
-    if (dataplane && dataplane->is_running())
+    auto data = current->get_midi_dataplane();
+    if (data && data->is_running())
     {
-      out.push_back(dataplane);
+      out.push_back(data);
     }
 
     // Add children to stack for further exploration

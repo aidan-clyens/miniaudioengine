@@ -1,6 +1,6 @@
-add_library(dataplane-audio STATIC)
+add_library(data-audio STATIC)
 
-target_sources(dataplane-audio
+target_sources(data-audio
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS 
@@ -10,17 +10,17 @@ target_sources(dataplane-audio
       include/audiocallbackhandler.h
 )
 
-target_sources(dataplane-audio PRIVATE
+target_sources(data-audio PRIVATE
   src/audiocallbackhandler.cpp
   src/audiodataplane.cpp
 )
 
-target_include_directories(dataplane-audio
+target_include_directories(data-audio
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(dataplane-audio PUBLIC
+target_link_libraries(data-audio PUBLIC
   rtaudio
   framework
   devicemanager

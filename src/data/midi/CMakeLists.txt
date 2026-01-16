@@ -1,6 +1,6 @@
-add_library(dataplane-midi)
+add_library(data-midi)
 
-target_sources(dataplane-midi
+target_sources(data-midi
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
@@ -11,19 +11,19 @@ target_sources(dataplane-midi
       include/mididataplane.h
 )
 
-target_sources(dataplane-midi
+target_sources(data-midi
   PRIVATE
   src/midicallbackhandler.cpp
   src/mididataplane.cpp
 )
 
-target_include_directories(dataplane-midi
+target_include_directories(data-midi
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(dataplane-midi PUBLIC
+target_link_libraries(data-midi PUBLIC
   rtmidi
   framework
-  controlplane-midi
+  control-midi
 )

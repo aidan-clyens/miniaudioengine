@@ -1,4 +1,4 @@
 add_subdirectory(framework)
 add_subdirectory(cli)
-add_subdirectory(controlplane)
-add_subdirectory(dataplane)
+add_subdirectory(control)
+add_subdirectory(data)

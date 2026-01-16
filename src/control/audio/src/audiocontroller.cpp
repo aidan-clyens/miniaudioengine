@@ -34,7 +34,7 @@ bool IAudioController::register_dataplanes()
   // list of IDataplane types
   m_callback_context->active_tracks = TrackManager::instance().get_track_audio_dataplanes();
 
-  // For each active track, set output channels in dataplane
+  // For each active track, set output channels in data
   if (m_audio_output_device.has_value())
   {
     for (const auto& track_dp : m_callback_context->active_tracks)

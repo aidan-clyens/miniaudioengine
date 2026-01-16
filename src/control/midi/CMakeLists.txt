@@ -1,6 +1,6 @@
-add_library(controlplane-midi STATIC)
+add_library(control-midi STATIC)
 
-target_sources(controlplane-midi
+target_sources(control-midi
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
@@ -11,20 +11,20 @@ target_sources(controlplane-midi
       include/miditypes.h
 )
 
-target_sources(controlplane-midi
+target_sources(control-midi
   PRIVATE
     src/midiportcontroller.cpp
 )
 
-target_include_directories(controlplane-midi
+target_include_directories(control-midi
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(controlplane-midi
+target_link_libraries(control-midi
   PUBLIC
     framework
     rtmidi
-    dataplane-midi
+    data-midi
     trackmanager
 )
