@@ -153,7 +153,7 @@ TEST(FileSystemTest, CreateDirectory)
 {
   const std::string dir_name = "test_directory";
 
-  std::filesystem::path created_dir_path = PROJECT_ROOT_PATH / dir_name;
+  std::filesystem::path created_dir_path = dir_name;
   FileManager::instance().create_directory(created_dir_path);
 
   ASSERT_TRUE(FileManager::instance().path_exists(created_dir_path)) << "Created directory '" + created_dir_path.string() + "' should exist.";
@@ -165,7 +165,7 @@ TEST(FileSystemTest, CreateSubDirectory)
   const std::string parent_dir_name = "test_parent_directory";
   const std::string sub_dir_name = "test_sub_directory";
 
-  std::filesystem::path parent_dir_path = PROJECT_ROOT_PATH / parent_dir_name;
+  std::filesystem::path parent_dir_path = parent_dir_name;
   FileManager::instance().create_directory(parent_dir_path);
   ASSERT_TRUE(FileManager::instance().path_exists(parent_dir_path)) << "Parent directory '" + parent_dir_path.string() + "' should exist.";
 
