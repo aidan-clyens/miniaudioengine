@@ -88,7 +88,7 @@ public:
   /** @brief Preload WAV file data into the audio data plane. Called from the Track control plane before playback.
    *  @param wav_file Shared pointer to the WavFile to preload.
    */
-  void preload_wav_file(const control::WavFilePtr& wav_file);
+  void preload_wav_file(const file::WavFilePtr& wav_file);
 
   /** @brief Get audio output statistics.
    *  @return AudioOutputStatistics structure containing output statistics.

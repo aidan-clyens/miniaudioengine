@@ -14,6 +14,7 @@
 
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
+using namespace miniaudioengine::file;
 
 class TrackTest : public ::testing::Test
 {

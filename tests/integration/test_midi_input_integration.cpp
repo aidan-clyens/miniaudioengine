@@ -10,6 +10,7 @@
 using namespace miniaudioengine;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::core;
+using namespace miniaudioengine::file;
 
 TEST(MidiInputIntegrationTest, MidiInput)
 {

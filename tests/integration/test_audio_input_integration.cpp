@@ -13,6 +13,7 @@
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
 using namespace miniaudioengine::core;
+using namespace miniaudioengine::file;
 
 // Configure test setup and teardown
 class AudioInputIntegrationTest : public ::testing::Test

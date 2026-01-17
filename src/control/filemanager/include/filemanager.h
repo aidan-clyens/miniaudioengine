@@ -10,7 +10,7 @@
 #include <memory>
 #include <optional>
 
-namespace miniaudioengine::control
+namespace miniaudioengine::file
 {
 
 // Forward declaration
@@ -157,6 +157,6 @@ private:
   FileManager& operator=(const FileManager&) = delete;
 };
 
-}  // namespace miniaudioengine::control
+}  // namespace miniaudioengine::file
 
 #endif  // __FILE_SYSTEM_H__

@@ -15,6 +15,7 @@
 #endif
 
 using namespace miniaudioengine::control;
+using namespace miniaudioengine::file;
 using namespace miniaudioengine::data;
 
 // ============================================================================

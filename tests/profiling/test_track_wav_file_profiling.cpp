@@ -15,6 +15,7 @@
 using namespace miniaudioengine;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
+using namespace miniaudioengine::file;
 
 class TrackWavFileProfilingTest : public ::testing::Test
 {

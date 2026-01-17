@@ -31,8 +31,8 @@ class MidiFile;
 
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
-typedef std::variant<AudioDevice, WavFilePtr, std::nullopt_t> AudioIOVariant;
-typedef std::variant<MidiDevice, MidiFilePtr, std::nullopt_t> MidiIOVariant;
+typedef std::variant<AudioDevice, file::WavFilePtr, std::nullopt_t> AudioIOVariant;
+typedef std::variant<MidiDevice, file::MidiFilePtr, std::nullopt_t> MidiIOVariant;
 
 typedef std::function<void(const MidiNoteMessage&, TrackPtr)> MidiNoteOnCallbackFunc;
 typedef std::function<void(const MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;
