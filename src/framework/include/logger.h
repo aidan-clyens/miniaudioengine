@@ -94,11 +94,31 @@ public:
 
     if (m_console_output_enabled)
     {
-      (*p_out_stream) << "[" << timestamp_stream.str() << "] "
-        << get_color_code(level) << "[" << log_level_to_string(level) << "] " << get_reset_code();
+      // For ERROR and WARNING, color the entire line
+      bool color_entire_line = (level == eLogLevel::Error || level == eLogLevel::Warning);
+      
+      if (color_entire_line)
+        (*p_out_stream) << get_color_code(level);
+      
+      (*p_out_stream) << "[" << timestamp_stream.str() << "] ";
+      
+      if (!color_entire_line)
+        (*p_out_stream) << get_color_code(level);
+      
+      (*p_out_stream) << "[" << log_level_to_string(level) << "] ";
+      
+      if (!color_entire_line)
+        (*p_out_stream) << get_reset_code();
+      
       if (get_thread_name() != "unnamed")
-        (*p_out_stream) << (m_colors_enabled ? "\033[1m" : "") << "[Thread: " << get_thread_name() << "]" << (m_colors_enabled ? "\033[0m" : "") << " ";
-      (*p_out_stream) << message_stream.str() << "\n";
+        (*p_out_stream) << (m_colors_enabled && !color_entire_line ? "\033[1m" : "") << "[Thread: " << get_thread_name() << "]" << (m_colors_enabled && !color_entire_line ? "\033[0m" : "") << " ";
+      
+      (*p_out_stream) << message_stream.str();
+      
+      if (color_entire_line)
+        (*p_out_stream) << get_reset_code();
+      
+      (*p_out_stream) << "\n";
     }
 
     if (p_file_out_stream)
