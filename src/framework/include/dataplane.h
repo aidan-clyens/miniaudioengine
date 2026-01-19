@@ -1,6 +1,8 @@
 #ifndef __DATA_PLANE_H__
 #define __DATA_PLANE_H__
 
+#include <memory>
+
 namespace miniaudioengine::core
 {
 
