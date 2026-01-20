@@ -21,70 +21,91 @@ class AudioInputIntegrationTest : public ::testing::Test
 protected:
   void SetUp() override
   {
-    TrackManager::instance().clear_tracks();
+    m_track_manager.clear_tracks();
+    m_track_manager.set_audio_output_device(
+      DeviceManager::instance().get_default_audio_output_device().value()
+    );
   }
 
   void TearDown() override
   {
-    TrackManager::instance().clear_tracks();
+    m_track_manager.clear_tracks();
   }
+
+  TrackPtr create_track()
+  {
+    size_t current_track_count = m_track_manager.get_track_count();
+    auto track_ptr = m_track_manager.create_child_track();
+    size_t new_track_count = m_track_manager.get_track_count();
+    EXPECT_EQ(new_track_count, current_track_count + 1);
+    return track_ptr;
+  }
+
+  WavFilePtr load_wav_file(const std::string &filepath)
+  {
+    auto wav_file_opt = FileManager::instance().read_wav_file(filepath);
+    EXPECT_TRUE(wav_file_opt.has_value());
+    return wav_file_opt.value();
+  }
+
+  void verify_audio_statistics(AudioOutputStatistics stats, bool is_initial)
+  {
+    if (is_initial)
+    {
+      EXPECT_EQ(stats.total_frames_read, 0);
+      EXPECT_EQ(stats.total_read_time_ms, 0);
+      EXPECT_EQ(stats.total_batches, 0);
+      EXPECT_EQ(stats.throughput_frames_per_second, 0);
+      return;
+    }
+
+    EXPECT_GT(stats.total_frames_read, m_prev_stats.total_frames_read);
+    EXPECT_GT(stats.total_read_time_ms, m_prev_stats.total_read_time_ms);
+    EXPECT_GT(stats.total_batches, m_prev_stats.total_batches);
+    
+    EXPECT_GT(stats.throughput_frames_per_second, 45000.0); // Expect at least 45 kHz throughput
+    EXPECT_LT(stats.throughput_frames_per_second, 52000.0); // Expect less than 52 kHz throughput
+
+    m_prev_stats = stats;
+  }
+
+private:
+  TrackManager& m_track_manager = TrackManager::instance();
+
+  AudioOutputStatistics m_prev_stats = {};
 };
 
-TEST(AudioInputIntegrationTest, AudioFileInput)
+TEST_F(AudioInputIntegrationTest, AudioFileInput)
 {
   set_thread_name("Main");
 
-  // Set up audio output
-  AudioStreamController::instance().set_output_device(
-    DeviceManager::instance().get_default_audio_output_device().value()
-  );
-
   // Add a track
-  EXPECT_EQ(TrackManager::instance().get_track_count(), 0);
-  size_t track_index = TrackManager::instance().add_track();
-  EXPECT_EQ(TrackManager::instance().get_track_count(), 1);
+  TrackPtr track = create_track();
+  EXPECT_NE(track, nullptr);
 
-  auto track = TrackManager::instance().get_track(track_index);
-
-  LOG_INFO("Track added with index: ", track_index);
-
-  // AudioEngineStatistics stats = AudioEngine::instance().get_statistics();
-  // LOG_INFO("Tracks playing: ", stats.tracks_playing);
-  // LOG_INFO("Total frames processed: ", stats.total_frames_processed);
+  auto statistics = track->get_statistics();
+  LOG_INFO("Initial - Track Statistics: ", statistics.to_string());
+  verify_audio_statistics(statistics.audio_output_stats, true);
 
   // Open a test WAV file and load it into the track
   std::string test_wav_file = "../../../../samples/test.wav";
+  auto wav_file = load_wav_file(test_wav_file);
+  LOG_INFO("WAV file loaded: ", wav_file->get_filepath());
 
-  auto wav_file = FileManager::instance().read_wav_file(test_wav_file);
-  EXPECT_EQ(wav_file.has_value(), true);
-  WavFilePtr wav_file_ptr = wav_file.value();
-  EXPECT_EQ(wav_file_ptr->get_filepath(), FileManager::instance().convert_to_absolute(test_wav_file));
-  EXPECT_EQ(wav_file_ptr->get_filename(), FileManager::instance().convert_to_absolute(test_wav_file).filename().string());
-
-  LOG_INFO("WAV file loaded: ", wav_file_ptr->get_filepath());
-
-  track->add_audio_input(wav_file_ptr);
+  track->add_audio_input(wav_file);
 
   track->play();
   std::this_thread::sleep_for(std::chrono::seconds(2));
 
-  // Read audio engine statistics after adding the track and WAV file
-  // stats = AudioEngine::instance().get_statistics();
-  // LOG_INFO("Tracks playing: ", stats.tracks_playing);
-  // LOG_INFO("Total frames processed: ", stats.total_frames_processed);
+  statistics = track->get_statistics();
+  LOG_INFO("Playing - Track Statistics: ", statistics.to_string());
+  verify_audio_statistics(statistics.audio_output_stats, false);
 
   std::this_thread::sleep_for(std::chrono::seconds(2));
 
   track->stop();
 
-  // Wait until AudioStreamController stops streaming
-  while (AudioStreamController::instance().get_stream_state() != eAudioState::Stopped)
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
-
-  // Read audio engine statistics after stopping
-  // stats = AudioEngine::instance().get_statistics();
-  // LOG_INFO("Tracks playing: ", stats.tracks_playing);
-  // LOG_INFO("Total frames processed: ", stats.total_frames_processed);
+  statistics = track->get_statistics();
+  LOG_INFO("Playing - Track Statistics: ", statistics.to_string());
+  verify_audio_statistics(statistics.audio_output_stats, false);
 }
