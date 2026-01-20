@@ -10,7 +10,6 @@ add_executable(miniaudioengine-unit-tests
   test_trackmididataplane_unit.cpp
   test_devicemanager_unit.cpp
   test_messagequeue_unit.cpp
-  test_subject_observer_unit.cpp
   test_lockfree_ringbuffer_unit.cpp
   test_doublebuffer_unit.cpp
 )

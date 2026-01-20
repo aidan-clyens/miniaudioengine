@@ -26,7 +26,6 @@ namespace miniaudioengine::control
 {
 
 // Forward declarations
-struct AudioMessage;
 class WavFile;
 class MidiFile;
 

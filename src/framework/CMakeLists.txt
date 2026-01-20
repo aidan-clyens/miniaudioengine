@@ -9,9 +9,6 @@ target_sources(framework
       include/messagequeue.h
       include/lockfree_ringbuffer.h
       include/doublebuffer.h
-      include/observer.h
-      include/subject.h
-      include/engine.h
       include/logger.h
       include/input.h
       include/controller.h
