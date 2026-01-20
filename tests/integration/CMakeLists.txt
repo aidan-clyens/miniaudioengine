@@ -1,8 +1,8 @@
 enable_testing()
 
 add_executable(miniaudioengine-integration-tests
-  test_audio_input_integration.cpp
-  test_midi_input_integration.cpp
+  test_audio_input_file.cpp
+  test_midi_input_device.cpp
 )
 
 target_link_libraries(miniaudioengine-integration-tests PRIVATE
