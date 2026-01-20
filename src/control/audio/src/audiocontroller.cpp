@@ -30,9 +30,7 @@ bool IAudioController::validate_start_preconditions() const
 bool IAudioController::register_dataplanes()
 {
   m_callback_context->active_tracks.clear();
-  // TODO - Remove dependency on TrackManager singleton, use dependency injection for
-  // list of IDataplane types
-  m_callback_context->active_tracks = TrackManager::instance().get_track_audio_dataplanes();
+  m_callback_context->active_tracks = m_registered_dataplanes;
 
   // For each active track, set output channels in data
   if (m_audio_output_device.has_value())

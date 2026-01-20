@@ -11,6 +11,13 @@
 #include <memory>
 #include <rtaudio/RtAudio.h>
 
+// Forward declarations from data namespace
+namespace miniaudioengine::data
+{
+  class AudioCallbackContext;
+  typedef std::shared_ptr<class AudioDataPlane> AudioDataPlanePtr;
+}
+
 namespace miniaudioengine::control
 {
 
@@ -56,6 +63,21 @@ public:
     return m_callback_context;
   }
 
+  /** @brief Register Audio Data Plane for callbacks
+   *  @param p_audio_dataplane Shared pointer to the TrackAudioDataPlane to register
+   */
+  void register_audio_dataplane(data::AudioDataPlanePtr p_audio_dataplane)
+  {
+    m_registered_dataplanes.push_back(p_audio_dataplane);
+  }
+
+  /** @brief Clear all registered audio data planes
+   */
+  void clear_registered_dataplanes()
+  {
+    m_registered_dataplanes.clear();
+  }
+
 protected:
   IAudioController() : m_callback_context(std::make_shared<data::AudioCallbackContext>()) {}
 
@@ -73,6 +95,8 @@ protected:
   std::optional<AudioDevice> m_audio_output_device;
   std::shared_ptr<data::AudioCallbackContext> m_callback_context;
   eAudioState m_stream_state{eAudioState::Idle};
+
+  std::vector<data::AudioDataPlanePtr> m_registered_dataplanes;
 };
 
 } // namespace miniaudioengine::control

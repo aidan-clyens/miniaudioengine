@@ -25,4 +25,5 @@ target_link_libraries(data-audio PUBLIC
   framework
   devicemanager
   trackmanager
+  processor-audio
 )

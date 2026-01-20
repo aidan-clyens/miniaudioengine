@@ -9,7 +9,7 @@ tools: [read_file, grep_search, semantic_search, list_code_usages, file_search, 
 This agent analyzes C++ code in the Minimal Audio Engine project and generates PlantUML diagrams to visualize:
 - **Class Diagrams**: Inheritance hierarchies, composition, aggregation, and associations
 - **Sequence Diagrams**: Method call flows and object interactions (especially real-time vs. control plane)
-- **Component Diagrams**: Library dependencies and architectural layers (framework, dataplane, processingplane, controlplane)
+- **Component Diagrams**: Library dependencies and architectural layers (framework, data, processing, control)
 
 ## When to Use This Agent
 - Creating architecture documentation
@@ -20,8 +20,8 @@ This agent analyzes C++ code in the Minimal Audio Engine project and generates P
 - Analyzing threading patterns and callback flows
 
 ## Ideal Inputs
-- **File paths**: Specific C++ header files to diagram (e.g., `src/dataplane/audio/include/audiodataplane.h`)
-- **Directory paths**: Entire component directories (e.g., `src/controlplane/audio/`)
+- **File paths**: Specific C++ header files to diagram (e.g., `src/data/audio/include/audiodataplane.h`)
+- **Directory paths**: Entire component directories (e.g., `src/control/audio/`)
 - **Class names**: Specific classes to focus on (e.g., "AudioStreamController", "Track")
 - **Diagram type**: "class diagram", "sequence diagram", "component diagram"
 - **Scope**: "full hierarchy", "dependencies only", "single class with members"
@@ -52,7 +52,7 @@ This agent analyzes C++ code in the Minimal Audio Engine project and generates P
 - Annotate real-time safety boundaries
 
 ### 3. Component Diagram Generation
-- Show library dependencies (framework → dataplane → processingplane → controlplane)
+- Show library dependencies (framework → data → processing → control)
 - Illustrate external dependencies (RtAudio, RtMidi, libsndfile)
 - Display CMake target relationships
 - Highlight layer violations or architectural concerns
@@ -119,13 +119,13 @@ skinparam monochrome false
 class LockfreeRingBuffer <<framework>> #lightblue
 
 ' Data Plane (Layer 1) - green  
-class TrackAudioDataPlane <<dataplane>> #lightgreen
+class TrackAudioDataPlane <<data>> #lightgreen
 
 ' Processing Plane (Layer 2) - yellow
-class AudioProcessorWorker <<processingplane>> #lightyellow
+class AudioProcessorWorker <<processing>> #lightyellow
 
 ' Control Plane (Layer 3) - orange
-class AudioStreamController <<controlplane>> #lightsalmon
+class AudioStreamController <<control>> #lightsalmon
 
 ' Threading annotations
 class AudioCallbackHandler <<real-time>> #pink
@@ -149,7 +149,7 @@ class Track <<synchronous>> #lightgray
 
 ### User Request: "Create a class diagram for TrackAudioDataPlane and its dependencies"
 **Agent Response:**
-1. Read `src/dataplane/audio/include/audiodataplane.h`
+1. Read `src/data/audio/include/audiodataplane.h`
 2. Identify member types (WavFilePtr, AudioOutputStatistics, std::atomic<bool>)
 3. Search for base classes or interfaces (if any)
 4. Find classes that use TrackAudioDataPlane (AudioCallbackHandler, Track)
@@ -168,7 +168,7 @@ class Track <<synchronous>> #lightgray
 **Agent Response:**
 1. Read `src/CMakeLists.txt` to identify subdirectories
 2. Map directories to architectural layers
-3. Show dependencies: framework → dataplane → processingplane → controlplane
+3. Show dependencies: framework → data → processing → control
 4. Include external dependencies from vcpkg.json
 5. Add layer annotations (Layer 0-4)
 

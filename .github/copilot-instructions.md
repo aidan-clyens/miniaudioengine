@@ -11,16 +11,16 @@ The project is transitioning to a strict 3-plane architecture with clear separat
 ```
 Layer 4: cli (application interface - basic CLI implementation)
          ↓
-Layer 3: controlplane (synchronous control operations)
+Layer 3: control (synchronous control operations)
          ├── audio (AudioStreamController - device management)
          ├── midi (MidiPortController - MIDI port management)
          ├── trackmanager (Track lifecycle and routing)
          ├── devicemanager (hardware enumeration)
          └── filemanager (disk I/O - libsndfile wrapper)
          ↓
-Layer 2: processingplane (NOT YET IMPLEMENTED - planned for background worker threads)
+Layer 2: processing (NOT YET IMPLEMENTED - planned for background worker threads)
          ↓
-Layer 1: dataplane (lock-free real-time components)
+Layer 1: data (lock-free real-time components)
          ├── audio (TrackAudioDataPlane, AudioCallbackHandler)
          └── midi (TrackMidiDataPlane, MidiCallbackHandler)
          ↓
@@ -41,7 +41,7 @@ Control plane components like `AudioStreamController` and `TrackManager` are **s
 - No dedicated threads (unlike the old `IEngine` pattern)
 - Operations block until complete (e.g., `start_stream()`, `stop_stream()`)
 - Can use `std::mutex` for thread safety where needed
-- Example: [audiostreamcontroller.h](../src/controlplane/audio/include/audiostreamcontroller.h)
+- Example: [audiostreamcontroller.h](../src/control/audio/include/audiostreamcontroller.h)
 
 #### Data Plane (Real-Time Callbacks)
 Data plane components execute in real-time audio/MIDI callback threads:
@@ -93,7 +93,10 @@ Framework provides generic Observer/Subject implementation:
   │       ├── logger.h               (Thread-safe logging)
   │       ├── observer.h/subject.h   (Observer pattern)
   │       └── input.h                (Input handling utilities)
-  ├── dataplane/          (Layer 1 - real-time components)
+  ├── processing/         (Layer 2 - background workers - minimal implementation)
+  │   └── audio/
+  │       └── audioprocessor.h       (Audio processor interface)
+  ├── data/               (Layer 1 - real-time components)
   │   ├── audio/
   │   │   ├── audiodataplane.h  (Per-track audio rendering)
   │   │   └── audiocallbackhandler.h (RtAudio callback wrapper)
@@ -101,12 +104,22 @@ Framework provides generic Observer/Subject implementation:
   │       ├── mididataplane.h        (Per-track MIDI processing)
   │       ├── midicallbackhandler.h  (RtMidi callback wrapper)
   │       └── midicontroltypes.h     (MIDI CC definitions)
-  ├── controlplane/       (Layer 3 - synchronous control)
+  ├── data/               (Layer 1 - real-time components)
+  │   ├── audio/
+  │   │   ├── audiodataplane.h  (Per-track audio rendering)
+  │   │   └── audiocallbackhandler.h (RtAudio callback wrapper)
+  │   └── midi/
+  │       ├── mididataplane.h        (Per-track MIDI processing)
+  │       ├── midicallbackhandler.h  (RtMidi callback wrapper)
+  │       └── midicontroltypes.h     (MIDI CC definitions)
+  ├── control/            (Layer 3 - synchronous control)
   │   ├── audio/          (AudioStreamController - device management)
   │   ├── midi/           (MidiPortController - port management, miditypes)
   │   ├── trackmanager/   (Track, TrackManager)
   │   ├── devicemanager/  (Device enumeration)
   │   └── filemanager/    (WAV/MIDI file I/O)
+  ├── processing/         (Layer 2 - background workers - minimal implementation)
+  │   └── audio/          (AudioProcessor interface)
   └── cli/                (Layer 4 - basic CLI implementation)
       ├── include/cli.h
       └── src/cli.cpp
@@ -139,7 +152,12 @@ cmake --build build
 ### File Organization
 - **Headers**: `include/<component>.h` with public API
 - **Implementation**: `src/<component>.cpp` for private logic
-- **Namespace**: Everything in `MinimalAudioEngine`
+- **Namespaces**: 
+  - `miniaudioengine::core` - Framework layer primitives
+  - `miniaudioengine::data` - Data plane real-time components
+  - `miniaudioengine::control` - Control plane synchronous components
+  - `miniaudioengine::processing` - Processing plane workers
+  - `miniaudioengine::file` - File I/O components
 - **Include guards**: `#ifndef __COMPONENT_H__` style
 
 ### Thread Safety Guidelines
@@ -329,20 +347,20 @@ See [ARCHITECTURE_REFACTOR_GUIDE.md](../ARCHITECTURE_REFACTOR_GUIDE.md) for deta
 - [framework/include/logger.h](../src/framework/include/logger.h) - Thread-safe logging
 
 ### Data Plane (Layer 1)
-- [dataplane/audio/include/audiodataplane.h](../src/dataplane/audio/include/audiodataplane.h) - Per-track audio rendering
-- [dataplane/audio/include/audiocallbackhandler.h](../src/dataplane/audio/include/audiocallbackhandler.h) - RtAudio callback wrapper
-- [dataplane/midi/include/mididataplane.h](../src/dataplane/midi/include/mididataplane.h) - Per-track MIDI processing
-- [dataplane/midi/include/midicallbackhandler.h](../src/dataplane/midi/include/midicallbackhandler.h) - RtMidi callback wrapper
-- [dataplane/midi/include/midicontroltypes.h](../src/dataplane/midi/include/midicontroltypes.h) - MIDI CC definitions
+- [data/audio/include/audiodataplane.h](../src/data/audio/include/audiodataplane.h) - Per-track audio rendering
+- [data/audio/include/audiocallbackhandler.h](../src/data/audio/include/audiocallbackhandler.h) - RtAudio callback wrapper
+- [data/midi/include/mididataplane.h](../src/data/midi/include/mididataplane.h) - Per-track MIDI processing
+- [data/midi/include/midicallbackhandler.h](../src/data/midi/include/midicallbackhandler.h) - RtMidi callback wrapper
+- [data/midi/include/midicontroltypes.h](../src/data/midi/include/midicontroltypes.h) - MIDI CC definitions
 
 ### Control Plane (Layer 3)
-- [controlplane/audio/include/audiostreamcontroller.h](../src/controlplane/audio/include/audiostreamcontroller.h) - Audio device control (refactored)
-- [controlplane/midi/include/midiportcontroller.h](../src/controlplane/midi/include/midiportcontroller.h) - MIDI port control (refactored)
-- [controlplane/midi/include/miditypes.h](../src/controlplane/midi/include/miditypes.h) - MIDI message types
-- [controlplane/trackmanager/include/track.h](../src/controlplane/trackmanager/include/track.h) - Track management
-- [controlplane/trackmanager/include/trackmanager.h](../src/controlplane/trackmanager/include/trackmanager.h) - Track collection manager
-- [controlplane/devicemanager/include/devicemanager.h](../src/controlplane/devicemanager/include/devicemanager.h) - Device enumeration
-- [controlplane/filemanager/include/filemanager.h](../src/controlplane/filemanager/include/filemanager.h) - File I/O
+- [control/audio/include/audiostreamcontroller.h](../src/control/audio/include/audiostreamcontroller.h) - Audio device control (refactored)
+- [control/midi/include/midiportcontroller.h](../src/control/midi/include/midiportcontroller.h) - MIDI port control (refactored)
+- [control/midi/include/miditypes.h](../src/control/midi/include/miditypes.h) - MIDI message types
+- [control/trackmanager/include/track.h](../src/control/trackmanager/include/track.h) - Track management
+- [control/trackmanager/include/trackmanager.h](../src/control/trackmanager/include/trackmanager.h) - Track collection manager
+- [control/devicemanager/include/devicemanager.h](../src/control/devicemanager/include/devicemanager.h) - Device enumeration
+- [control/filemanager/include/filemanager.h](../src/control/filemanager/include/filemanager.h) - File I/O
 
 ### Build System
 - [src/CMakeLists.txt](../src/CMakeLists.txt) - Top-level component dependency graph

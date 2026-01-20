@@ -10,6 +10,7 @@
 #include <rtaudio/RtAudio.h>
 
 #include "dataplane.h"
+#include "audioprocessor.h"
 #include "wavfile.h"
 #include "logger.h"
 
@@ -120,6 +121,14 @@ public:
    */
   void prepare_output_buffer(unsigned int n_frames);
 
+  /** @brief Add an audio processor to the data plane.
+   *  @param processor Shared pointer to the audio processor to add.
+   */
+  void add_processor(std::shared_ptr<processing::IAudioProcessor> processor)
+  {
+    m_processors.push_back(processor);
+  }
+
   std::string to_string() const
   {
     return "AudioDataPlane";
@@ -134,11 +143,13 @@ private:
 
   std::atomic<unsigned int> m_read_position{0};
 
+  std::vector<std::shared_ptr<processing::IAudioProcessor>> m_processors;
+
 private:
   void update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time);
 };
 
-typedef std::shared_ptr<AudioDataPlane> TrackAudioDataPlanePtr;
+typedef std::shared_ptr<AudioDataPlane> AudioDataPlanePtr;
 
 } // namespace miniaudioengine::data
 

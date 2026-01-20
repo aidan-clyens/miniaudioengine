@@ -61,7 +61,7 @@ private:
   void update_midi_input_statistics(const control::MidiMessage& midi_message); 
 };
 
-typedef std::shared_ptr<MidiDataPlane> TrackMidiDataPlanePtr;
+typedef std::shared_ptr<MidiDataPlane> MidiDataPlanePtr;
 
 } // namespace miniaudioengine::data
 

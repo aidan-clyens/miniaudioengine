@@ -119,6 +119,8 @@ bool AudioStreamController::stop_stream()
     m_rtaudio.closeStream();
   }
 
+  clear_registered_dataplanes();
+
   LOG_INFO("AudioStreamController: RtAudio stream stopped successfully.");
   m_stream_state = eAudioState::Stopped;
 

@@ -94,6 +94,7 @@ install(
         control-midi
         data-audio
         data-midi
+        processor-audio
         trackmanager
         filemanager
         devicemanager

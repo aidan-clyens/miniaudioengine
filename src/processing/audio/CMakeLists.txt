@@ -9,9 +9,9 @@ target_sources(processor-audio
       include/audioprocessor.h
 )
 
-# target_sources(processor-audio PRIVATE
-
-# )
+target_sources(processor-audio PRIVATE
+  src/audioprocessor.cpp
+)
 
 target_include_directories(processor-audio
   PUBLIC

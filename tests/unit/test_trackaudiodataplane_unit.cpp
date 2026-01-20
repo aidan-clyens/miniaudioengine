@@ -25,13 +25,13 @@ protected:
     p_track_audio_dataplane->stop();
   }
 
-  TrackAudioDataPlanePtr &track_audio_dataplane()
+  AudioDataPlanePtr &track_audio_dataplane()
   {
     return p_track_audio_dataplane;
   }
 
 private:
-  TrackAudioDataPlanePtr p_track_audio_dataplane;
+  AudioDataPlanePtr p_track_audio_dataplane;
 };
 
 /** @brief TrackAudioDataPlaneTest - Setup

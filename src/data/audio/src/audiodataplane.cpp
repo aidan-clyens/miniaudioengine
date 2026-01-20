@@ -7,57 +7,81 @@ using namespace miniaudioengine::core;
 void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
                                         double stream_time, RtAudioStreamStatus status) noexcept
 {
-  if (input_buffer != nullptr)
-  {
-    float *in = static_cast<float *>(input_buffer);
-    // TODO - Process input buffer: read to input ring buffer
-  }
+  float *in_buffer = static_cast<float *>(input_buffer);
+  float *out_buffer = static_cast<float *>(output_buffer);
 
-  if (output_buffer == nullptr)
+  if (out_buffer == nullptr)
     return;
 
-  float *out = static_cast<float *>(output_buffer);
+  prepare_output_buffer(n_frames);
 
-  // Check if stopped once before processing buffer
+  // Exit if dataplane is stopped
   if (!is_running())
   {
-    std::fill_n(out, n_frames * m_output_channels, 0.0f);
     return;
   }
 
   auto batch_start_time = std::chrono::high_resolution_clock::now();
 
-  // Prepare output buffer for this track
-  prepare_output_buffer(n_frames);
-
-  // Fill output buffer from preloaded frames buffer
-  unsigned int read_pos = m_read_position.load(std::memory_order_acquire);
-  for (unsigned int i = 0; i < n_frames; ++i)
+  // Step 1: Read input buffer (if any)
+  // If input buffer is defined, then input is comign from a device
+  // If not, check for file input (preloaded buffer)
+  if (in_buffer != nullptr)
   {
-    for (unsigned int ch = 0; ch < m_output_channels; ++ch)
+    // Copy from input buffer to output buffer
+    // TODO - Handle difference in input/output channels
+    for (size_t i = 0; i < n_frames * m_input_channels; ++i)
     {
-      unsigned int buffer_index = (read_pos + i) * m_output_channels + ch;
-      if (buffer_index < m_preloaded_frames_buffer.size())
-      {
-        float sample = m_preloaded_frames_buffer[buffer_index];
-        m_output_buffer[i * m_output_channels + ch] = sample; // Write to virtual output
-        out[i * m_output_channels + ch] = sample; // Write to hardware output
-      }
-      else
-      {
-        m_output_buffer[i * m_output_channels + ch] = 0.0f;
-        out[i * m_output_channels + ch] = 0.0f; // Fill with silence if out of preloaded data
-      }
+      m_output_buffer[i] = in_buffer[i];
     }
   }
+  else if (!m_preloaded_frames_buffer.empty())
+  {
+    // Fill output buffer from preloaded frames buffer
+    unsigned int read_pos = m_read_position.load(std::memory_order_acquire);
 
+    for (unsigned int i = 0; i < n_frames; ++i)
+    {
+      for (unsigned int ch = 0; ch < m_output_channels; ++ch)
+      {
+        unsigned int buffer_index = (read_pos + i) * m_output_channels + ch;
+        if (buffer_index < m_preloaded_frames_buffer.size())
+        {
+          float sample = m_preloaded_frames_buffer[buffer_index];
+          m_output_buffer[i * m_output_channels + ch] = sample; // Write to hardware output
+        }
+        else
+        {
+          m_output_buffer[i * m_output_channels + ch] = 0.0f; // Fill with silence if out of preloaded data
+        }
+      }
+    }
+
+    // Advance read position
+    m_read_position.fetch_add(n_frames, std::memory_order_release);
+  }
+
+  // Step 2: Apply processing chain
+  for (auto &processor : m_processors)
+  {
+    if (processor->is_bypassed())
+    {
+      continue; // Skip processing if bypassed
+    }
+
+    processor->process_audio(m_output_buffer.data(), m_output_channels, n_frames, stream_time);
+  }
+
+  // Step 3: Write to output buffer (if main track)
+  for (unsigned int i = 0; i < n_frames * m_output_channels; ++i)
+  {
+    out_buffer[i] = m_output_buffer[i];
+  }
+
+  // Step 4: Update statistics
   auto batch_end_time = std::chrono::high_resolution_clock::now();
   std::chrono::duration<double, std::milli> batch_duration = batch_end_time - batch_start_time;
-
   double batch_time_ms = batch_duration.count();
-
-  // Advance read position
-  m_read_position.fetch_add(n_frames, std::memory_order_release);
 
   // Update statistics
   update_audio_output_statistics(n_frames, batch_time_ms, stream_time);

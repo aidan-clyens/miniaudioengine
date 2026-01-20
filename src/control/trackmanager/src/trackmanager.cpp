@@ -114,9 +114,9 @@ size_t TrackManager::get_track_count() const
 /** @brief Get all TrackAudioDataPlanes from the TrackManager.
  *  @return A vector of shared pointers to all TrackAudioDataPlanes.
  */
-std::vector<TrackAudioDataPlanePtr> TrackManager::get_track_audio_dataplanes()
+std::vector<AudioDataPlanePtr> TrackManager::get_track_audio_dataplanes()
 {
-  std::vector<TrackAudioDataPlanePtr> dataplanes;
+  std::vector<AudioDataPlanePtr> dataplanes;
   collect_active_dataplanes_recursive(m_main_track, dataplanes);
   return dataplanes;
 }
@@ -124,9 +124,9 @@ std::vector<TrackAudioDataPlanePtr> TrackManager::get_track_audio_dataplanes()
 /** @brief Get all TrackMidiDataPlanes from the TrackManager.
  *  @return A vector of shared pointers to all TrackMidiDataPlanes.
  */
-std::vector<TrackMidiDataPlanePtr> TrackManager::get_track_midi_dataplanes()
+std::vector<MidiDataPlanePtr> TrackManager::get_track_midi_dataplanes()
 {
-  std::vector<TrackMidiDataPlanePtr> dataplanes;
+  std::vector<MidiDataPlanePtr> dataplanes;
   collect_active_midi_dataplanes_recursive(m_main_track, dataplanes);
   return dataplanes;
 }
@@ -271,7 +271,7 @@ void TrackManager::collect_leaf_tracks_recursive(TrackPtr track, std::vector<Tra
 }
 
 void TrackManager::collect_active_dataplanes_recursive(TrackPtr track,
-                                                       std::vector<data::TrackAudioDataPlanePtr>& out)
+                                                       std::vector<data::AudioDataPlanePtr>& out)
 {
   if (!track)
   {
@@ -303,7 +303,7 @@ void TrackManager::collect_active_dataplanes_recursive(TrackPtr track,
 }
 
 void TrackManager::collect_active_midi_dataplanes_recursive(TrackPtr track,
-                                                            std::vector<data::TrackMidiDataPlanePtr>& out)
+                                                            std::vector<data::MidiDataPlanePtr>& out)
 {
   if (!track)
   {

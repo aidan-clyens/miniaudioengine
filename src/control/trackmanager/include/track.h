@@ -20,6 +20,7 @@
 #include "midiportcontroller.h"
 #include "mididataplane.h"
 #include "miditypes.h"
+#include "audioprocessor.h"
 
 namespace miniaudioengine::control
 {
@@ -205,6 +206,14 @@ public:
    */
   MidiIOVariant get_midi_output() const;
 
+  /** @brief Add an audio processor to the track's audio data plane.
+   *  @param processor Shared pointer to the audio processor to add.
+   */
+  void add_audio_processor(std::shared_ptr<processing::IAudioProcessor> processor)
+  {
+    p_audio_dataplane->add_processor(processor);
+  }
+
   // Playback control
   /** @brief Start playback of the track. */
   void play();
@@ -263,12 +272,12 @@ public:
 
   void handle_midi_message(const MidiMessage& message); // TODO - Remove
 
-  data::TrackAudioDataPlanePtr get_audio_dataplane() const
+  data::AudioDataPlanePtr get_audio_dataplane() const
   {
     return p_audio_dataplane;
   }
 
-  data::TrackMidiDataPlanePtr get_midi_dataplane() const
+  data::MidiDataPlanePtr get_midi_dataplane() const
   {
     return p_midi_dataplane;
   }
@@ -293,8 +302,8 @@ protected:
   IAudioController &m_audio_controller;
   IMidiController &m_midi_controller;
 
-  data::TrackAudioDataPlanePtr p_audio_dataplane;
-  data::TrackMidiDataPlanePtr p_midi_dataplane;
+  data::AudioDataPlanePtr p_audio_dataplane;
+  data::MidiDataPlanePtr p_midi_dataplane;
 
   TrackEventCallback m_event_callback;
 

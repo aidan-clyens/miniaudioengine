@@ -13,7 +13,7 @@ using namespace miniaudioengine::data;
 class TrackMidiDataPlaneTest : public ::testing::Test
 { 
 public:
-  TrackMidiDataPlanePtr track_midi_data_plane;
+  MidiDataPlanePtr track_midi_data_plane;
 
   void SetUp() override
   {

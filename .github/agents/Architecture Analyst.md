@@ -273,16 +273,16 @@ Review these files for architectural understanding:
 - **[framework/include/input.h](../src/framework/include/input.h)** - Input abstraction
 
 **Data Plane (Layer 1)**:
-- **[dataplane/audio/include/audiodataplane.h](../src/dataplane/audio/include/audiodataplane.h)** - Per-track audio rendering
-- **[dataplane/audio/include/audiocallbackhandler.h](../src/dataplane/audio/include/audiocallbackhandler.h)** - RtAudio callback wrapper
-- **[dataplane/midi/include/mididataplane.h](../src/dataplane/midi/include/mididataplane.h)** - Per-track MIDI processing
-- **[dataplane/midi/include/midicallbackhandler.h](../src/dataplane/midi/include/midicallbackhandler.h)** - RtMidi callback wrapper
+- **[data/audio/include/audiodataplane.h](../src/data/audio/include/audiodataplane.h)** - Per-track audio rendering
+- **[data/audio/include/audiocallbackhandler.h](../src/data/audio/include/audiocallbackhandler.h)** - RtAudio callback wrapper
+- **[data/midi/include/mididataplane.h](../src/data/midi/include/mididataplane.h)** - Per-track MIDI processing
+- **[data/midi/include/midicallbackhandler.h](../src/data/midi/include/midicallbackhandler.h)** - RtMidi callback wrapper
 
 **Control Plane (Layer 3)**:
-- **[controlplane/audio/include/audiostreamcontroller.h](../src/controlplane/audio/include/audiostreamcontroller.h)** - Synchronous audio device control
-- **[controlplane/midi/include/midiportcontroller.h](../src/controlplane/midi/include/midiportcontroller.h)** - Synchronous MIDI port control
-- **[controlplane/trackmanager/include/track.h](../src/controlplane/trackmanager/include/track.h)** - Variant-based track routing
-- **[controlplane/trackmanager/include/trackmanager.h](../src/controlplane/trackmanager/include/trackmanager.h)** - Track collection management
+- **[control/audio/include/audiostreamcontroller.h](../src/control/audio/include/audiostreamcontroller.h)** - Synchronous audio device control
+- **[control/midi/include/midiportcontroller.h](../src/control/midi/include/midiportcontroller.h)** - Synchronous MIDI port control
+- **[control/trackmanager/include/track.h](../src/control/trackmanager/include/track.h)** - Variant-based track routing
+- **[control/trackmanager/include/trackmanager.h](../src/control/trackmanager/include/trackmanager.h)** - Track collection management
 
 ## Guidance Philosophy
 

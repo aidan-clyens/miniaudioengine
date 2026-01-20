@@ -96,12 +96,12 @@ public:
   /** @brief Get audio dataplanes for all active tracks.
    *  @return Vector of audio data pointers.
    */
-  std::vector<data::TrackAudioDataPlanePtr> get_track_audio_dataplanes();
+  std::vector<data::AudioDataPlanePtr> get_track_audio_dataplanes();
 
   /** @brief Get MIDI dataplanes for all active tracks.
    *  @return Vector of MIDI data pointers.
    */
-  std::vector<data::TrackMidiDataPlanePtr> get_track_midi_dataplanes();
+  std::vector<data::MidiDataPlanePtr> get_track_midi_dataplanes();
 
   /** @brief Clear all tracks except MainTrack.
    */
@@ -147,9 +147,9 @@ private:
   void collect_all_tracks_recursive(TrackPtr track, std::vector<TrackPtr>& out) const;
   void collect_leaf_tracks_recursive(TrackPtr track, std::vector<TrackPtr>& out) const;
   void collect_active_dataplanes_recursive(TrackPtr track,
-                                            std::vector<data::TrackAudioDataPlanePtr>& out);
+                                            std::vector<data::AudioDataPlanePtr>& out);
   void collect_active_midi_dataplanes_recursive(TrackPtr track,
-                                                 std::vector<data::TrackMidiDataPlanePtr>& out);
+                                                 std::vector<data::MidiDataPlanePtr>& out);
 };
 
 }  // namespace miniaudioengine::control

@@ -27,6 +27,7 @@ target_link_libraries(trackmanager PUBLIC
   control-midi
   data-midi
   data-audio
+  processor-audio
   filemanager
   devicemanager
 )

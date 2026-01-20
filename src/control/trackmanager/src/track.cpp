@@ -247,6 +247,9 @@ MidiIOVariant Track::get_midi_output() const
 }
 
 /** @brief Starts playback of the track.
+ *  If the track has an audio input file, it preloads the data and starts the audio dataplane.
+ *  If the track has a MIDI input device, it opens the port and starts the MIDI dataplane.
+ *  Then the audio stream is started via the audio controller.
  */
 void Track::play()
 {
@@ -277,6 +280,8 @@ void Track::play()
     p_midi_dataplane->start();
   }
 
+  // Register audio dataplane with controller and start stream
+  m_audio_controller.register_audio_dataplane(p_audio_dataplane);
   if (!m_audio_controller.start_stream())
   {
     LOG_ERROR("Track: Failed to start audio stream.");
