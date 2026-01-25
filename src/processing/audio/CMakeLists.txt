@@ -7,6 +7,7 @@ target_sources(processor-audio
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
       include/audioprocessor.h
+      include/sample.h
 )
 
 target_sources(processor-audio PRIVATE
@@ -21,6 +22,7 @@ target_include_directories(processor-audio
 target_link_libraries(processor-audio
   PUBLIC
     framework
+    filemanager
 )
 
 set_target_properties(processor-audio PROPERTIES LINKER_LANGUAGE CXX)

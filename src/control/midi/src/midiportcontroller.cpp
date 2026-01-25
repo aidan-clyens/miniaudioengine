@@ -17,7 +17,7 @@ std::vector<MidiPort> MidiPortController::get_ports()
 
   // Get the number of available MIDI input ports
   unsigned int port_count = m_rtmidi_in.getPortCount();
-  LOG_INFO("Number of MIDI input ports: ", port_count);
+  LOG_DEBUG("MidiPortController: Number of MIDI input ports: ", port_count);
 
   // List all available MIDI input ports
   for (unsigned int i = 0; i < port_count; ++i)
@@ -29,7 +29,7 @@ std::vector<MidiPort> MidiPortController::get_ports()
     }
     catch (const RtMidiError &error)
     {
-      LOG_ERROR("Error getting port name: ", error.getMessage());
+      LOG_ERROR("MidiPortController: Error getting port name: ", error.getMessage());
     }
   }
 
@@ -45,21 +45,21 @@ void MidiPortController::open_input_port(unsigned int port_number)
 {
   if (port_number >= m_rtmidi_in.getPortCount())
   {
-    LOG_ERROR("Invalid MIDI port number: ", port_number);
+    LOG_ERROR("MidiPortController: Invalid MIDI port number: ", port_number);
     throw std::out_of_range("Invalid MIDI port number: " + std::to_string(port_number));
   }
 
   // Check if context is initialized
   if (!m_callback_context)
   {
-    LOG_ERROR("MIDI callback context is not initialized.");
+    LOG_ERROR("MidiPortController: MIDI callback context is not initialized.");
     throw std::runtime_error("MIDI callback context is not initialized.");
   }
 
   // Check if port is already open
   if (m_rtmidi_in.isPortOpen())
   {
-    LOG_WARNING("MIDI input port is already open. Closing existing port.");
+    LOG_WARNING("MidiPortController: MIDI input port is already open. Closing existing port.");
     close_input_port();
   }
 
@@ -70,7 +70,7 @@ void MidiPortController::open_input_port(unsigned int port_number)
   }
   catch (const RtMidiError &error)
   {
-    LOG_ERROR("Failed to open MIDI input port: ", error.getMessage());
+    LOG_ERROR("MidiPortController: Failed to open MIDI input port: ", error.getMessage());
     return;
   }
 
@@ -81,7 +81,7 @@ void MidiPortController::open_input_port(unsigned int port_number)
   m_rtmidi_in.setCallback(&MidiCallbackHandler::midi_callback, m_callback_context.get());
   m_rtmidi_in.ignoreTypes(false, true, true);
 
-  LOG_INFO("MIDI input port opened successfully.");
+  LOG_DEBUG("MidiPortController: MIDI input port opened successfully.");
 }
 
 /** @brief Closes the currently opened MIDI input port.
@@ -96,10 +96,10 @@ void MidiPortController::close_input_port()
   try
   {
     m_rtmidi_in.closePort();
-    LOG_INFO("MIDI input port closed successfully.");
+    LOG_DEBUG("MidiPortController: MIDI input port closed successfully.");
   }
   catch (const RtMidiError &error)
   {
-    LOG_ERROR("Error closing MIDI input port: ", error.getMessage());
+    LOG_ERROR("MidiPortController: Error closing MIDI input port: ", error.getMessage());
   }
 }

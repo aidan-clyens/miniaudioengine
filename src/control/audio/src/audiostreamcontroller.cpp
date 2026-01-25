@@ -34,12 +34,12 @@ void AudioStreamController::set_output_device(const AudioDevice &device)
   // Close stream if already open
   if (m_rtaudio.isStreamOpen())
   {
-    LOG_INFO("AudioStreamController: Closing existing RtAudio stream...");
+    LOG_DEBUG("AudioStreamController: Closing existing RtAudio stream...");
     m_rtaudio.closeStream();
-    LOG_INFO("AudioStreamController: Closed existing RtAudio stream.");
+    LOG_DEBUG("AudioStreamController: Closed existing RtAudio stream.");
   }
 
-  LOG_INFO("AudioStreamController: Output device set to ", device.name);
+  LOG_DEBUG("AudioStreamController: Output device set to ", device.name);
   m_audio_output_device = device;
 }
 
@@ -88,7 +88,7 @@ bool AudioStreamController::start_stream()
     return false;
   }
 
-  LOG_INFO("AudioStreamController: RtAudio stream started successfully.");
+  LOG_DEBUG("AudioStreamController: RtAudio stream started successfully.");
   m_stream_state = eAudioState::Playing;
 
   return true;
@@ -121,7 +121,7 @@ bool AudioStreamController::stop_stream()
 
   clear_registered_dataplanes();
 
-  LOG_INFO("AudioStreamController: RtAudio stream stopped successfully.");
+  LOG_DEBUG("AudioStreamController: RtAudio stream stopped successfully.");
   m_stream_state = eAudioState::Stopped;
 
   return true;

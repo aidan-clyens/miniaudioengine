@@ -1,0 +1,11 @@
+{
+  "name": "sampler",
+  "version": "0.1.0",
+  "description": "Sampler. An audio sampler application that plays audio samples via MIDI input.",
+  "dependencies": [
+    "miniaudioengine",
+    "rtaudio",
+    "rtmidi",
+    "libsndfile"
+  ]
+}

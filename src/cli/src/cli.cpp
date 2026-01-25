@@ -7,11 +7,8 @@ using namespace miniaudioengine;
 
 void CLI::parse_command_line_arguments(int argc, char *argv[])
 {
-  if (argc < 2)
-  {
-    help(argv[0]);
+  if (argc < 1)
     return;
-  }
 
   m_program_name = argv[0];
 
