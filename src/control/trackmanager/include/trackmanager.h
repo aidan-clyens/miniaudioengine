@@ -26,7 +26,7 @@ public:
   void set_audio_output_device(const AudioDevice& device)
   {
     m_audio_output_device = device;
-    m_audio_controller.set_output_device(device);
+    p_audio_controller->set_output_device(device);
   }
 
 private:

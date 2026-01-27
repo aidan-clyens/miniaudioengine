@@ -209,7 +209,7 @@ TEST_F(TrackTest, PlayWavFileInput)
   auto output_device = DeviceManager::instance().get_default_audio_output_device();
   EXPECT_TRUE(output_device.has_value()) << "No audio output device found for testing";
 
-  AudioStreamController::instance().set_output_device(output_device.value());
+  TrackManager::instance().set_audio_output_device(output_device.value());
 
   // Open WAV file and add as audio input
   auto file = FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);  

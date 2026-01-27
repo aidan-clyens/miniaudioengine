@@ -7,7 +7,7 @@ using namespace miniaudioengine::control;
 std::vector<AudioDevice> DeviceManager::get_audio_devices() const
 {
   std::vector<AudioDevice> devices;
-  auto audio_devices = AudioStreamController::instance().get_audio_devices();
+  auto audio_devices = p_audio_controller->get_audio_devices();
 
   size_t index = 0;
   for (const auto& info : audio_devices)

@@ -279,8 +279,8 @@ void Track::play()
   }
 
   // Register audio dataplane with controller and start stream
-  m_audio_controller.register_audio_dataplane(p_audio_dataplane);
-  if (!m_audio_controller.start_stream())
+  p_audio_controller->register_audio_dataplane(p_audio_dataplane);
+  if (!p_audio_controller->start_stream())
   {
     LOG_ERROR("Track: Failed to start audio stream.");
     return;
@@ -304,7 +304,7 @@ void Track::stop()
 
   // Clear data buffers and stop any data processing threads
   p_audio_dataplane->stop();
-  m_audio_controller.stop_stream();
+  p_audio_controller->stop_stream();
 }
 
 /** @brief Handles a MIDI message.

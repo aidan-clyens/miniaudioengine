@@ -56,7 +56,7 @@ TEST_F(TrackWavFileProfilingTest, Throughput)
   auto output_device = DeviceManager::instance().get_default_audio_output_device();
   EXPECT_TRUE(output_device.has_value()) << "Default output device should be available";  
 
-  AudioStreamController::instance().set_output_device(output_device.value());
+  TrackManager::instance().set_audio_output_device(output_device.value());
 
   // Add WAV file as audio input
   auto wav_file = FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);

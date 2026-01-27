@@ -77,7 +77,7 @@ public:
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt),
-    m_audio_controller(AudioStreamController::instance()),
+    p_audio_controller(std::make_shared<AudioStreamController>()),
     m_midi_controller(MidiPortController::instance()),
     p_audio_dataplane(std::make_shared<data::AudioDataPlane>()),
     p_midi_dataplane(std::make_shared<data::MidiDataPlane>())
@@ -225,7 +225,7 @@ public:
    */
   bool is_playing() const
   {
-    return m_audio_controller.get_stream_state() == eAudioState::Playing;
+    return p_audio_controller->get_stream_state() == eAudioState::Playing;
   }
   
   TrackStatistics get_statistics() const
@@ -298,7 +298,7 @@ protected:
   std::queue<MidiMessage> m_message_queue; // TODO - Remove?
   std::mutex m_queue_mutex; // TODO - Remove?
 
-  IAudioController &m_audio_controller;
+  std::shared_ptr<IAudioController> p_audio_controller;
   IMidiController &m_midi_controller;
 
   data::AudioDataPlanePtr p_audio_dataplane;

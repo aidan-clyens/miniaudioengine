@@ -23,12 +23,8 @@ namespace miniaudioengine::control
 class AudioStreamController : public IAudioController
 {
 public:
-  // TODO - Remove singleton pattern and use dependency injection
-  static IAudioController &instance()
-  {
-    static AudioStreamController impl;
-    return impl;
-  }
+  explicit AudioStreamController() = default;
+  ~AudioStreamController() override = default;
 
   /** @brief Get Available Audio Devices
    *  @return List of available audio devices
@@ -51,9 +47,6 @@ public:
   bool stop_stream() override;
 
 private:
-  AudioStreamController() = default;
-  virtual ~AudioStreamController() = default;
-
   RtAudio m_rtaudio;
 };
 
