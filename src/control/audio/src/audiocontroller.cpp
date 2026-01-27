@@ -24,6 +24,7 @@ bool IAudioController::validate_start_preconditions() const
     throw std::runtime_error("AudioController: No AudioCallbackContext registered. Cannot start stream.");
   }
 
+  LOG_DEBUG("AudioController: Start preconditions validated successfully.");
   return true;
 }
 

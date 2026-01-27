@@ -159,6 +159,7 @@ int main()
   core::Logger &logger = core::Logger::instance();
   logger.enable_console_output(false);
   logger.set_log_file("Sampler.log");
+  core::set_thread_name("Sampler");
 
   sampler::Sampler app;
 

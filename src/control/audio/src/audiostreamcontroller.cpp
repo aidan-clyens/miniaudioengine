@@ -66,6 +66,10 @@ bool AudioStreamController::start_stream()
   unsigned int sample_rate = m_audio_output_device->preferred_sample_rate;
   unsigned int buffer_frames = 4096;
 
+  LOG_DEBUG("AudioStreamController: Opening RtAudio stream with device ", m_audio_output_device->name,
+            ", Sample Rate: ", sample_rate,
+            ", Buffer Frames: ", buffer_frames);
+
   RtAudioErrorType rc;
   rc = m_rtaudio.openStream(&params,
                             nullptr,
@@ -88,7 +92,7 @@ bool AudioStreamController::start_stream()
     return false;
   }
 
-  LOG_DEBUG("AudioStreamController: RtAudio stream started successfully.");
+  LOG_DEBUG("AudioStreamController: RtAudio stream started successfully with output device ", m_audio_output_device->name);
   m_stream_state = eAudioState::Playing;
 
   return true;

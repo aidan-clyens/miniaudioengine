@@ -253,8 +253,6 @@ MidiIOVariant Track::get_midi_output() const
  */
 void Track::play()
 {
-  LOG_INFO("Track: Play...");
-
   // If already playing, do nothing
   if (is_playing())
   {
@@ -265,7 +263,7 @@ void Track::play()
   // If audio input is a WAV file, start producer thread BEFORE starting audio stream
   if (std::holds_alternative<WavFilePtr>(m_audio_input))
   {
-    LOG_DEBUG("Track: Preloading WAV file data into AudioDataPlane ", std::get<WavFilePtr>(m_audio_input)->to_string());
+    LOG_INFO("Track: Preloading WAV file data into AudioDataPlane ", std::get<WavFilePtr>(m_audio_input)->to_string());
     WavFilePtr wav_file = std::get<WavFilePtr>(m_audio_input);
     p_audio_dataplane->preload_wav_file(wav_file); // Preload WAV file data
     p_audio_dataplane->start();
@@ -274,7 +272,7 @@ void Track::play()
   // If MIDI input is a MIDI device, ensure the port is open
   if (std::holds_alternative<MidiDevice>(m_midi_input))
   {
-    LOG_DEBUG("Track: Opening MIDI input port ", std::get<MidiDevice>(m_midi_input).to_string());
+    LOG_INFO("Track: Opening MIDI input port ", std::get<MidiDevice>(m_midi_input).to_string());
     MidiDevice midi_device = std::get<MidiDevice>(m_midi_input);
     m_midi_controller.open_input_port(midi_device.id);
     p_midi_dataplane->start();
@@ -287,6 +285,8 @@ void Track::play()
     LOG_ERROR("Track: Failed to start audio stream.");
     return;
   }
+
+  LOG_INFO("Track: Started playing.");
 }
 
 /** @brief Stops playback of the track.

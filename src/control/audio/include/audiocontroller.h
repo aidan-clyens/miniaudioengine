@@ -68,6 +68,7 @@ public:
    */
   void register_audio_dataplane(data::AudioDataPlanePtr p_audio_dataplane)
   {
+    LOG_DEBUG("AudioController: Registering AudioDataPlane.");
     m_registered_dataplanes.push_back(p_audio_dataplane);
   }
 
@@ -76,6 +77,7 @@ public:
   void clear_registered_dataplanes()
   {
     m_registered_dataplanes.clear();
+    LOG_DEBUG("AudioController: Cleared all registered AudioDataPlanes.");
   }
 
 protected:
