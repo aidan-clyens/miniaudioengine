@@ -13,6 +13,7 @@
 #include "midicontroltypes.h"
 #include "sampleplayer.h"
 #include "cli.h"
+#include "mididevice.h"
 
 static const std::filesystem::path SAMPLE_FOLDER = "C:\\Projects\\miniaudioengine\\samples\\drums";
 
@@ -75,6 +76,16 @@ public:
 
     auto wav_files = m_file_manager.list_wav_files_in_directory(directory);
     return wav_files;
+  }
+
+  std::vector<control::MidiDevice> list_midi_devices()
+  {
+    return m_device_manager.get_midi_devices();
+  }
+
+  std::vector<control::AudioDevice> list_audio_devices()
+  {
+    return m_device_manager.get_audio_devices();
   }
 
   /** @brief Adds a sample file and maps it to a specific MIDI note.
@@ -173,6 +184,64 @@ int main()
         std::cout << sample << "\n";
       }
       std::exit(0);
+    }),
+    Command("--list-midi-devices", "-lm", "List all available MIDI input devices", [&app](const char *)
+    {
+      auto midi_inputs = app.list_midi_devices();
+      std::cout << "Available MIDI Input Devices:\n";
+      for (const auto &device : midi_inputs)
+      {
+        std::cout << device.to_string() << "\n";
+      }
+      std::exit(0);
+    }),
+    Command("--list-audio-devices", "-la", "List all available audio output devices", [&app](const char *)
+    {
+      auto audio_outputs = app.list_audio_devices();
+      std::cout << "Available Audio Output Devices:\n";
+      for (const auto &device : audio_outputs)
+      {
+        std::cout << device.to_string() << "\n";
+      }
+      std::exit(0);
+    }),
+    Command("--input", "-i", "Specify MIDI input device ID", [&app](const char *arg)
+    {
+      unsigned int device_id = static_cast<unsigned int>(std::stoi(arg));
+      auto midi_inputs = app.list_midi_devices();
+      auto it = std::find_if(midi_inputs.begin(), midi_inputs.end(), [device_id](const control::MidiDevice &device)
+      {
+        return device.id == device_id;
+      });
+      if (it != midi_inputs.end())
+      {
+        std::cout << "Using MIDI input device: " << it->to_string() << "\n";
+        // Here you would set the MIDI input device in the app
+      }
+      else
+      {
+        std::cerr << "MIDI input device with ID " << device_id << " not found." << std::endl;
+        std::exit(1);
+      }
+    }),
+    Command("--output", "-o", "Specify audio output device ID", [&app](const char *arg)
+    {
+      unsigned int device_id = static_cast<unsigned int>(std::stoi(arg));
+      auto audio_outputs = app.list_audio_devices();
+      auto it = std::find_if(audio_outputs.begin(), audio_outputs.end(), [device_id](const control::AudioDevice &device)
+      {
+        return device.id == device_id;
+      });
+      if (it != audio_outputs.end())
+      {
+        std::cout << "Using audio output device: " << it->to_string() << "\n";
+        // Here you would set the audio output device in the app
+      }
+      else
+      {
+        std::cerr << "Audio output device with ID " << device_id << " not found." << std::endl;
+        std::exit(1);
+      }
     }),
     Command("--verbose", "-vb", "Enable verbose logging output", [&app](const char *)
     {

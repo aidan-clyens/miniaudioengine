@@ -9,6 +9,7 @@ target_link_libraries(
     trackmanager
     devicemanager
     filemanager
+    control-midi
     data-midi
     processor-audio
     processor-sampleplayer
