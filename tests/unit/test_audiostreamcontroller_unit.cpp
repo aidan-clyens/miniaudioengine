@@ -41,7 +41,7 @@ public:
     // Stop audio stream if playing
     if (p_audio_controller->get_stream_state() == eStreamState::Playing)
     {
-      p_audio_controller->stop_stream();
+      p_audio_controller->stop();
     }
   }
 
@@ -134,7 +134,7 @@ TEST_F(AudioStreamControllerTest, StartStream_NoActiveTracks)
   set_default_audio_output_device();
 
   // Start stream
-  bool rc = get_audio_controller_mock()->start_stream();
+  bool rc = get_audio_controller_mock()->start();
   EXPECT_FALSE(rc) << "Expected stream start to fail due to no active tracks";
 }
 
@@ -147,7 +147,7 @@ TEST_F(AudioStreamControllerTest, StartStream)
   // TODO - Add active track to TrackManager mock
 
   // Start stream
-  bool rc = get_audio_controller_mock()->start_stream();
+  bool rc = get_audio_controller_mock()->start();
   EXPECT_TRUE(rc) << "Expected stream to start successfully";
 
   auto state = get_audio_controller_mock()->get_stream_state();
@@ -161,7 +161,7 @@ TEST_F(AudioStreamControllerTest, StopStream)
   set_default_audio_output_device();
 
   // Start stream
-  get_audio_controller_mock()->start_stream();
+  get_audio_controller_mock()->start();
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
   auto state = get_audio_controller_mock()->get_stream_state();
@@ -169,7 +169,7 @@ TEST_F(AudioStreamControllerTest, StopStream)
   EXPECT_TRUE(false) << "Expected to fail";
 
   // Stop stream
-  get_audio_controller_mock()->stop_stream();
+  get_audio_controller_mock()->stop();
 
   std::this_thread::sleep_for(std::chrono::seconds(1));
   state = get_audio_controller_mock()->get_stream_state();
@@ -187,7 +187,7 @@ TEST_F(AudioStreamControllerTest, SetAudioOutputDevice_StreamOpen)
   EXPECT_TRUE(device != nullptr) << "Expected to find a default audio output device";
 
   // Start stream
-  get_audio_controller_mock()->start_stream();
+  get_audio_controller_mock()->start();
 
   auto state = get_audio_controller_mock()->get_stream_state();
   EXPECT_EQ(state, eStreamState::Playing) << "Expected stream state to be Playing";

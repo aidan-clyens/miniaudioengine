@@ -1,7 +1,13 @@
 #include "trackmanager.h"
 
+using namespace miniaudioengine::core;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
+
+bool MainTrack::is_playing() const
+{
+  return p_audio_controller->get_stream_state() == eStreamState::Playing;
+}
 
 // ============================================================================
 // Constructor
@@ -40,8 +46,15 @@ TrackPtr TrackManager::create_child_track(TrackPtr parent)
   }
 
   auto new_track = std::make_shared<Track>(false);
-  parent->add_child_track(new_track);
-  
+  try
+  {
+    parent->add_child_track(new_track);
+  }
+  catch (const std::exception& e)
+  {
+    LOG_ERROR("TrackManager: Failed to create child track: ", e.what());
+  }
+
   LOG_INFO("TrackManager: Created child track. Total tracks in hierarchy: ", get_track_count());
   return new_track;
 }

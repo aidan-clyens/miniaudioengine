@@ -6,9 +6,21 @@
 using namespace miniaudioengine;
 using namespace miniaudioengine::control;
 
-TEST(MidiPortControllerTest, GetPorts)
+class MidiPortControllerTest : public ::testing::Test
 {
-  std::vector<MidiPort> ports = MidiPortController::instance().get_ports();
+public:
+  MidiPortControllerPtr get_midi_port_controller()
+  {
+    return p_midi_controller;
+  }
+
+private:
+  MidiPortControllerPtr p_midi_controller{std::make_shared<MidiPortController>()};
+};
+
+TEST_F(MidiPortControllerTest, GetPorts)
+{
+  std::vector<MidiPort> ports = get_midi_port_controller()->get_ports();
   EXPECT_GE(ports.size(), 0);
   
   for (const auto &port : ports)
@@ -19,9 +31,9 @@ TEST(MidiPortControllerTest, GetPorts)
   }
 }
 
-TEST(MidiPortControllerTest, OpenCloseInputPort)
+TEST_F(MidiPortControllerTest, OpenCloseInputPort)
 {
-  std::vector<MidiPort> ports = MidiPortController::instance().get_ports();
+  std::vector<MidiPort> ports = get_midi_port_controller()->get_ports();
   
   if (ports.empty())
   {
@@ -29,21 +41,21 @@ TEST(MidiPortControllerTest, OpenCloseInputPort)
     GTEST_SKIP() << "No MIDI input ports available.";
   }
 
-  EXPECT_NO_THROW(MidiPortController::instance().open_input_port(0));
-  EXPECT_NO_THROW(MidiPortController::instance().close_input_port());
+  EXPECT_NO_THROW(get_midi_port_controller()->open_input_port(0));
+  EXPECT_NO_THROW(get_midi_port_controller()->close_input_port());
 }
 
-TEST(MidiPortControllerTest, OpenInvalidPort)
+TEST_F(MidiPortControllerTest, OpenInvalidPort)
 {
-  std::vector<MidiPort> ports = MidiPortController::instance().get_ports();
+  std::vector<MidiPort> ports = get_midi_port_controller()->get_ports();
   unsigned int invalid_port_number = ports.size(); // Out of range port number
 
-  EXPECT_THROW(MidiPortController::instance().open_input_port(invalid_port_number), std::out_of_range);
+  EXPECT_THROW(get_midi_port_controller()->open_input_port(invalid_port_number), std::out_of_range);
 }
 
-TEST(MidiPortControllerTest, ReopenPort)
+TEST_F(MidiPortControllerTest, ReopenPort)
 {
-  std::vector<MidiPort> ports = MidiPortController::instance().get_ports();
+  std::vector<MidiPort> ports = get_midi_port_controller()->get_ports();
   
   if (ports.empty())
   {
@@ -51,12 +63,12 @@ TEST(MidiPortControllerTest, ReopenPort)
     GTEST_SKIP() << "No MIDI input ports available.";
   }
 
-  EXPECT_NO_THROW(MidiPortController::instance().open_input_port(0));
-  EXPECT_NO_THROW(MidiPortController::instance().open_input_port(0)); // Reopen same port
-  EXPECT_NO_THROW(MidiPortController::instance().close_input_port());
+  EXPECT_NO_THROW(get_midi_port_controller()->open_input_port(0));
+  EXPECT_NO_THROW(get_midi_port_controller()->open_input_port(0)); // Reopen same port
+  EXPECT_NO_THROW(get_midi_port_controller()->close_input_port());
 }
 
-TEST(MidiPortControllerTest, CloseWithoutOpen)
+TEST_F(MidiPortControllerTest, CloseWithoutOpen)
 {
-  EXPECT_NO_THROW(MidiPortController::instance().close_input_port());
+  EXPECT_NO_THROW(get_midi_port_controller()->close_input_port());
 }

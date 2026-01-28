@@ -11,6 +11,7 @@
 #include "audiodevice.h"
 #include "mididevice.h"
 #include "audiostreamcontroller.h"
+#include "midiportcontroller.h"
 
 namespace miniaudioengine::control
 {
@@ -74,7 +75,8 @@ public:
 
 private:
   DeviceManager():
-    p_audio_controller(std::make_shared<AudioStreamController>())
+    p_audio_controller(std::make_shared<AudioStreamController>()),
+    p_midi_controller(std::make_shared<MidiPortController>())
   {}
   ~DeviceManager() = default;
 
@@ -82,7 +84,8 @@ private:
   DeviceManager& operator=(const DeviceManager&) = delete;
 
 private:
-  std::shared_ptr<IAudioController> p_audio_controller;
+  AudioStreamControllerPtr p_audio_controller;
+  MidiPortControllerPtr p_midi_controller;
 };
 
 } // namespace miniaudioengine::control

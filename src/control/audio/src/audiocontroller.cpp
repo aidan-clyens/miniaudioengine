@@ -1,5 +1,6 @@
 #include "audiocontroller.h"
-#include "trackmanager.h"
+
+#include "audiodataplane.h"
 
 using namespace miniaudioengine::core;
 using namespace miniaudioengine::control;
@@ -61,12 +62,11 @@ bool IAudioController::register_dataplanes()
 
   if (m_callback_context->active_tracks.empty())
   {
-    LOG_WARNING("AudioController: No active tracks found in TrackManager.");
+    LOG_WARNING("AudioController: No active dataplanes registered.");
     return false;
   }
 
-  LOG_DEBUG("AudioController: Registered ", m_callback_context->active_tracks.size(), " active tracks for audio callback. (", 
-            TrackManager::instance().get_track_count(), " total tracks in TrackManager)");
+  LOG_DEBUG("AudioController: Registered ", m_callback_context->active_tracks.size(), " active dataplanes for audio callback.");
 
   return true;
 }

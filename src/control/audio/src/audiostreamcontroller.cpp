@@ -23,17 +23,19 @@ std::vector<AudioDevice> AudioStreamController::get_audio_devices()
   return devices;
 }
 
-bool AudioStreamController::start_stream()
+bool AudioStreamController::start()
 {
   // Use base class validation
   if (!validate_start_preconditions())
   {
+    LOG_ERROR("AudioStreamController: Stream preconditions not met. Cannot start stream.");
     return false;
   }
 
   // Use base class track registration
   if (!register_dataplanes())
   {
+    LOG_ERROR("AudioStreamController: No active dataplanes registered. Cannot start stream.");
     return false;
   }
 
@@ -85,7 +87,7 @@ bool AudioStreamController::start_stream()
   return true;
 }
 
-bool AudioStreamController::stop_stream()
+bool AudioStreamController::stop()
 {
   if (m_stream_state != eStreamState::Playing)
   {

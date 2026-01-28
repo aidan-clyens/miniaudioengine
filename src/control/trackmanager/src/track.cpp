@@ -32,17 +32,20 @@ void Track::add_child_track(TrackPtr child)
 {
   if (!child)
   {
+    LOG_ERROR("Track: Cannot add null child track.");
     throw std::runtime_error("Cannot add null child track.");
   }
 
   if (child->has_parent())
   {
+    LOG_ERROR("Track: Cannot add child track - it already has a parent.");
     throw std::runtime_error("Child track already has a parent. Remove from parent first.");
   }
 
   // Prevent adding self as child
   if (child.get() == this)
   {
+    LOG_ERROR("Track: Cannot add track as its own child.");
     throw std::runtime_error("Cannot add track as its own child.");
   }
 
@@ -52,6 +55,7 @@ void Track::add_child_track(TrackPtr child)
   {
     if (current == child)
     {
+      LOG_ERROR("Track: Cannot add child track - would create a cycle in hierarchy.");
       throw std::runtime_error("Cannot add child: would create a cycle in hierarchy.");
     }
     current = current->get_parent();
@@ -71,7 +75,8 @@ void Track::remove_child_track(TrackPtr child)
 {
   if (!child)
   {
-    return;
+    LOG_ERROR("Track: Cannot remove null child track.");
+    throw std::runtime_error("Cannot remove null child track.");
   }
 
   std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
@@ -152,6 +157,7 @@ void Track::add_midi_input(const MidiIOVariant& input)
 {
   if (has_midi_input())
   {
+    LOG_ERROR("Track: Cannot add MIDI input - already has one configured.");
     throw std::runtime_error("This track already has a MIDI input.");
   }
 
@@ -170,6 +176,7 @@ void Track::add_midi_output(const MidiIOVariant &output)
 {
   if (has_midi_output())
   {
+    LOG_ERROR("Track: Cannot add MIDI output - already has one configured.");
     throw std::runtime_error("This track already has a MIDI output.");
   }
 
@@ -190,7 +197,7 @@ void Track::remove_audio_input()
 void Track::remove_midi_input()
 {
   m_midi_input = std::nullopt;
-  m_midi_controller.close_input_port();
+  p_midi_controller->close_input_port();
 }
 
 /** @brief Removes the MIDI output from the track.
@@ -276,11 +283,10 @@ void Track::play()
   {
     LOG_INFO("Track: Opening MIDI input port ", std::get<MidiDevice>(m_midi_input).to_string());
     MidiDevice midi_device = std::get<MidiDevice>(m_midi_input);
-    m_midi_controller.open_input_port(midi_device.id);
+    p_midi_controller->open_input_port(midi_device.id);
     p_midi_dataplane->start();
   }
 
-  // Register audio dataplane with controller and start stream
   auto main_track = get_main_track();
   if (!main_track)
   {
@@ -288,11 +294,19 @@ void Track::play()
     return;
   }
 
-  auto audio_controller = main_track->get_audio_controller();
-  audio_controller->register_dataplane(p_audio_dataplane);
-  if (!audio_controller->start_stream())
+  // Register audio dataplane with controller and start stream
+  main_track->register_dataplane(p_audio_dataplane);
+  if (!main_track->start())
   {
     LOG_ERROR("Track: Failed to start audio stream.");
+    return;
+  }
+
+  // Register MIDI dataplane with controller
+  p_midi_controller->register_dataplane(p_midi_dataplane);
+  if (!p_midi_controller->start())
+  {
+    LOG_ERROR("Track: Failed to start MIDI input.");
     return;
   }
 
@@ -318,8 +332,7 @@ void Track::stop()
   auto main_track = get_main_track();
   if (main_track)
   {
-    auto audio_controller = main_track->get_audio_controller();
-    audio_controller->stop_stream();
+    main_track->stop();
   }
 }
 
@@ -398,8 +411,7 @@ bool Track::is_playing() const
     return false;
   }
 
-  auto audio_controller = main_track->get_audio_controller();
-  return audio_controller->get_stream_state() == eStreamState::Playing;
+  return main_track->is_playing();
 }
 
 std::string Track::to_string() const

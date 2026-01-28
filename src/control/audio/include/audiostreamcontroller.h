@@ -34,16 +34,18 @@ public:
   /** @brief Start Audio Stream
    *  @return true if the audio stream was started successfully, false otherwise
    */
-  bool start_stream() override;
+  bool start() override;
   
   /** @brief Stop Audio Stream
    *  @return true if the audio stream was stopped successfully, false otherwise
    */
-  bool stop_stream() override;
+  bool stop() override;
 
 private:
   RtAudio m_rtaudio;
 };
+
+using AudioStreamControllerPtr = std::shared_ptr<AudioStreamController>;
 
 } // namespace miniaudioengine::control
 

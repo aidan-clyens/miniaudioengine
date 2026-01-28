@@ -78,7 +78,7 @@ public:
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt),
-    m_midi_controller(MidiPortController::instance()),
+    p_midi_controller(std::make_shared<MidiPortController>()),
     p_audio_dataplane(std::make_shared<data::AudioDataPlane>()),
     p_midi_dataplane(std::make_shared<data::MidiDataPlane>())
   {}
@@ -313,7 +313,7 @@ protected:
   std::queue<MidiMessage> m_message_queue; // TODO - Remove?
   std::mutex m_queue_mutex; // TODO - Remove?
 
-  IMidiController &m_midi_controller;
+  MidiPortControllerPtr p_midi_controller;
 
   data::AudioDataPlanePtr p_audio_dataplane;
   data::MidiDataPlanePtr p_midi_dataplane;

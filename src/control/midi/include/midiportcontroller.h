@@ -13,10 +13,13 @@ namespace miniaudioengine::control
 class MidiPortController : public IMidiController
 {
 public:
-  static MidiPortController &instance()
+  explicit MidiPortController():
+    m_callback_context(std::make_shared<data::MidiCallbackContext>())
+  {}
+
+  virtual ~MidiPortController()
   {
-    static MidiPortController instance;
-    return instance;
+    close_input_port();
   }
 
   /** @brief Gets the list of available MIDI input ports.
@@ -35,16 +38,15 @@ public:
    */
   void close_input_port();
 
-private:
-  MidiPortController() : m_callback_context(std::make_shared<data::MidiCallbackContext>()) {}
-  virtual ~MidiPortController()
-  {
-    close_input_port();
-  }
+  bool start() override { return false; }
+  bool stop() override { return false; }
 
+private:
   RtMidiIn m_rtmidi_in;
   std::shared_ptr<data::MidiCallbackContext> m_callback_context;
 };
+
+using MidiPortControllerPtr = std::shared_ptr<MidiPortController>;
 
 } // namespace miniaudioengine::control
 

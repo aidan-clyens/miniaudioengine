@@ -3,6 +3,8 @@
 
 #include <memory>
 
+#include "logger.h"
+
 namespace miniaudioengine::core
 {
 
@@ -64,6 +66,7 @@ public:
    */
   virtual void start()
   {
+    LOG_DEBUG("DataPlane: Sent Start command.");
     m_stop_command.store(false, std::memory_order_release);
   }
 
@@ -71,6 +74,7 @@ public:
    */
   virtual void stop()
   {
+    LOG_DEBUG("DataPlane: Sent Stop command.");
     m_stop_command.store(true, std::memory_order_release);
   }
 

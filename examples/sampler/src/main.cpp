@@ -115,6 +115,28 @@ public:
     LOG_INFO("Sampler: Loaded sample: ", *sample);
   }
 
+  void set_audio_output_device(const control::AudioDevice &device)
+  {
+    try
+    {
+      m_track_manager.set_audio_output_device(device);
+    } catch (const std::exception &e)
+    {
+      LOG_ERROR("Sampler: Failed to set audio output device: ", e.what());
+    }
+  }
+
+  void set_midi_input_device(const control::MidiDevice &device)
+  {
+    try
+    {
+      m_track->add_midi_input(device);
+    } catch (const std::exception &e)
+    {
+      LOG_ERROR("Sampler: Failed to set MIDI input device: ", e.what());
+    }
+  }
+
   /** @brief Starts the audio processing and MIDI handling.
    */
   void run()
@@ -216,7 +238,7 @@ int main()
       if (it != midi_inputs.end())
       {
         std::cout << "Using MIDI input device: " << it->to_string() << "\n";
-        // Here you would set the MIDI input device in the app
+        app.set_midi_input_device(*it);
       }
       else
       {
@@ -235,7 +257,7 @@ int main()
       if (it != audio_outputs.end())
       {
         std::cout << "Using audio output device: " << it->to_string() << "\n";
-        // Here you would set the audio output device in the app
+        app.set_audio_output_device(*it);
       }
       else
       {

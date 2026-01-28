@@ -34,9 +34,6 @@ public:
 
   virtual std::vector<AudioDevice> get_audio_devices() = 0;
 
-  virtual bool start_stream() = 0;
-  virtual bool stop_stream() = 0;
-
   virtual std::shared_ptr<data::AudioCallbackContext> get_callback_context() const
   {
     return m_callback_context;

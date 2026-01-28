@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 
+#include "logger.h"
+
 namespace miniaudioengine::core
 {
 
@@ -37,6 +39,7 @@ public:
 
   void register_dataplane(IDataPlanePtr data_plane)
   {
+    LOG_DEBUG("IController: Registering dataplane.");
     p_data_planes.push_back(data_plane);
   }
 
@@ -61,6 +64,9 @@ public:
   {
     return m_stream_state;
   }
+
+  virtual bool start() = 0;
+  virtual bool stop() = 0;
 
 protected:
   eStreamState m_stream_state{eStreamState::Idle};

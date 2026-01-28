@@ -30,13 +30,22 @@ public:
     p_audio_controller->set_output_device(std::make_shared<AudioDevice>(device));
   }
 
-  /** @brief Get the audio stream controller (only MainTrack has this).
-   *  @return Shared pointer to the audio stream controller.
-   */
-  std::shared_ptr<IAudioController> get_audio_controller() const
+  void register_dataplane(data::AudioDataPlanePtr data_plane)
   {
-    return p_audio_controller;
+    p_audio_controller->register_dataplane(data_plane);
   }
+
+  bool start()
+  {
+    return p_audio_controller->start();
+  }
+
+  bool stop()
+  {
+    return p_audio_controller->stop();
+  }
+
+  bool is_playing() const;
 
 private:
   AudioDevice m_audio_output_device;

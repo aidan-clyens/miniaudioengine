@@ -72,7 +72,7 @@ public:
     return m_audio_input_device;
   }
 
-  bool start_stream() override
+  bool start() override
   {
     // Use base class validation
     if (!validate_start_preconditions())
@@ -93,7 +93,7 @@ public:
     return true;
   }
 
-  bool stop_stream() override
+  bool stop() override
   {
     if (m_stream_state != eStreamState::Playing)
     {

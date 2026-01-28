@@ -23,8 +23,9 @@ target_include_directories(control-audio
 target_link_libraries(control-audio
   PUBLIC
     rtaudio
+    framework
+    data-audio
     devicemanager
-    trackmanager
 )
 
 set_target_properties(control-audio PROPERTIES LINKER_LANGUAGE CXX)
