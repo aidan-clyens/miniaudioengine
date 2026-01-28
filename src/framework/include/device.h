@@ -2,8 +2,9 @@
 #define __DEVICE_H__
 
 #include <string>
+#include <memory>
 
-namespace miniaudioengine::control
+namespace miniaudioengine::core
 {
 
 /** @class IDevice
@@ -42,6 +43,8 @@ public:
   }
 };
 
-} // namespace miniaudioengine::control
+using IDevicePtr = std::shared_ptr<IDevice>;
+
+} // namespace miniaudioengine::core
 
 #endif // __DEVICE_H__

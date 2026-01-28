@@ -15,10 +15,12 @@ target_sources(framework
       include/manager.h
       include/dataplane.h
       include/processor.h
+      include/device.h
 )
 
 target_sources(framework PRIVATE 
   src/logger.cpp
+  src/controller.cpp
 )
 
 target_include_directories(framework

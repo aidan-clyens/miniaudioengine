@@ -1,4 +1,5 @@
 #include "track.h"
+#include "trackmanager.h"
 
 #include "wavfile.h"
 #include "midifile.h"
@@ -14,6 +15,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+using namespace miniaudioengine::core;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::file;
 using namespace miniaudioengine::data;
@@ -279,8 +281,16 @@ void Track::play()
   }
 
   // Register audio dataplane with controller and start stream
-  p_audio_controller->register_audio_dataplane(p_audio_dataplane);
-  if (!p_audio_controller->start_stream())
+  auto main_track = get_main_track();
+  if (!main_track)
+  {
+    LOG_ERROR("Track: Cannot play - no MainTrack found in hierarchy.");
+    return;
+  }
+
+  auto audio_controller = main_track->get_audio_controller();
+  audio_controller->register_dataplane(p_audio_dataplane);
+  if (!audio_controller->start_stream())
   {
     LOG_ERROR("Track: Failed to start audio stream.");
     return;
@@ -304,7 +314,13 @@ void Track::stop()
 
   // Clear data buffers and stop any data processing threads
   p_audio_dataplane->stop();
-  p_audio_controller->stop_stream();
+
+  auto main_track = get_main_track();
+  if (main_track)
+  {
+    auto audio_controller = main_track->get_audio_controller();
+    audio_controller->stop_stream();
+  }
 }
 
 /** @brief Handles a MIDI message.
@@ -343,6 +359,47 @@ void Track::handle_midi_message(const MidiMessage& message)
       LOG_INFO("Track: Unknown MIDI Message Type - ", message.type_name);
       break;
   }
+}
+
+/** @brief Get the root MainTrack (traverses up hierarchy).
+ *  @return Shared pointer to MainTrack, or nullptr if no root found.
+ */
+std::shared_ptr<MainTrack> Track::get_main_track() const
+{
+  // If this is the main track, return it (need to cast)
+  if (m_is_main_track)
+  {
+    // Safe cast: we know this is a MainTrack because m_is_main_track is true
+    return std::static_pointer_cast<MainTrack>(const_cast<Track*>(this)->shared_from_this());
+  }
+
+  // Traverse up to find MainTrack
+  TrackPtr current = const_cast<Track*>(this)->shared_from_this();
+  while (current)
+  {
+    if (current->is_main_track())
+    {
+      return std::static_pointer_cast<MainTrack>(current);
+    }
+    current = current->get_parent();
+  }
+
+  return nullptr; // No MainTrack found (shouldn't happen in normal usage)
+}
+
+/** @brief Check if the track is currently playing.
+ *  @return True if the track is playing, false otherwise.
+ */
+bool Track::is_playing() const
+{
+  auto main_track = get_main_track();
+  if (!main_track)
+  {
+    return false;
+  }
+
+  auto audio_controller = main_track->get_audio_controller();
+  return audio_controller->get_stream_state() == eStreamState::Playing;
 }
 
 std::string Track::to_string() const

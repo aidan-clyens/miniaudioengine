@@ -5,6 +5,8 @@
 
 #include <vector>
 #include <string>
+#include <memory>
+#include <rtaudio/RtAudio.h>
 
 namespace miniaudioengine::control
 {
@@ -12,11 +14,24 @@ namespace miniaudioengine::control
 /** @class AudioDevice
  *  @brief Audio device
  */
-class AudioDevice : public IDevice
+class AudioDevice : public core::IDevice
 {
 public:
   AudioDevice() = default;
-  ~AudioDevice() = default;
+  AudioDevice(RtAudio::DeviceInfo info): core::IDevice()
+  {
+    id = info.ID;
+    name = info.name;
+    is_default_output = info.isDefaultOutput;
+    is_default_input = info.isDefaultInput;
+    output_channels = info.outputChannels;
+    input_channels = info.inputChannels;
+    duplex_channels = info.duplexChannels;
+    sample_rates = info.sampleRates;
+    preferred_sample_rate = info.preferredSampleRate;
+  }
+
+  virtual ~AudioDevice() = default;
 
   AudioDevice(const AudioDevice&) = default;
   AudioDevice& operator=(const AudioDevice&) = default;
@@ -60,6 +75,8 @@ public:
            preferred_sample_rate == other.preferred_sample_rate;
   }
 };
+
+using AudioDevicePtr = std::shared_ptr<AudioDevice>;
 
 } // namespace miniaudioengine::control
 

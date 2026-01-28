@@ -15,48 +15,58 @@ public:
   AudioStreamControllerTest() = default;
   ~AudioStreamControllerTest() override = default;
 
-  std::optional<AudioDevice> get_default_audio_output_device() const
+  AudioControllerMockPtr get_audio_controller_mock() const
   {
-    return m_audio_output_device;
+    return p_audio_controller;
+  }
+
+  AudioDevicePtr get_default_audio_output_device() const
+  {
+    return p_audio_output_device;
   }
 
   void SetUp() override
   {
+    // Initialize mock audio controller
+    p_audio_controller = std::make_shared<AudioControllerMock>();
+
     // Get audio output device
-    m_audio_output_device = DeviceManager::instance().get_default_audio_output_device();
-    ASSERT_TRUE(m_audio_output_device.has_value()) << "Expected to find a default audio output device";
+    p_audio_output_device = std::make_shared<AudioDevice>(p_audio_controller->get_audio_output_device_mock());
+    EXPECT_TRUE(p_audio_output_device != nullptr);
+    EXPECT_TRUE(p_audio_output_device->is_output());
   }
 
   void TearDown() override
   {
     // Stop audio stream if playing
-    if (AudioControllerMock::instance().get_stream_state() == eAudioState::Playing)
+    if (p_audio_controller->get_stream_state() == eStreamState::Playing)
     {
-      AudioControllerMock::instance().stop_stream();
+      p_audio_controller->stop_stream();
     }
   }
 
   void set_default_audio_output_device()
   {
     // Get audio output device
-    ASSERT_TRUE(m_audio_output_device.has_value()) << "Expected to find a default audio output device";
+    EXPECT_TRUE(p_audio_output_device != nullptr) << "Expected to find a default audio output device";
 
-    AudioControllerMock::instance().set_output_device(m_audio_output_device.value());
-    EXPECT_EQ(AudioControllerMock::instance().get_output_device(), m_audio_output_device);
-    auto output_device = AudioControllerMock::instance().get_output_device();
-    EXPECT_TRUE(output_device.has_value()) << "Expected output device to be set";
-    EXPECT_EQ(*output_device, *(m_audio_output_device)) << "Expected output device to match the set device";
+    p_audio_controller->set_output_device(p_audio_output_device);
+    EXPECT_EQ(p_audio_controller->get_output_device(), p_audio_output_device);
+    auto output_device = p_audio_controller->get_output_device();
+    EXPECT_NE(output_device, nullptr) << "Expected output device to be set";
+    EXPECT_EQ(*output_device, *p_audio_output_device) << "Expected output device to match the set device";
   }
 
 private:
-  std::optional<AudioDevice> m_audio_output_device;
+  AudioDevicePtr p_audio_output_device;
+  AudioControllerMockPtr p_audio_controller;
 };
 
 /** @brief Get Audio Devices
  */
 TEST_F(AudioStreamControllerTest, GetAudioDevices)
 {
-  auto devices = AudioControllerMock::instance().get_audio_devices();
+  auto devices = get_audio_controller_mock()->get_audio_devices();
   EXPECT_NE(devices.size(), 0) << "Expected to find at least 1 audio device";
 }
 
@@ -64,7 +74,7 @@ TEST_F(AudioStreamControllerTest, GetAudioDevices)
  */
 TEST_F(AudioStreamControllerTest, AudioCallbackContextSet)
 {
-  auto callback_context = AudioControllerMock::instance().get_callback_context();
+  auto callback_context = get_audio_controller_mock()->get_callback_context();
   EXPECT_NE(callback_context, nullptr) << "Expected AudioCallbackContext to be set";
   EXPECT_EQ(callback_context->active_tracks.size(), 0) << "Expected no active tracks initially";
 }
@@ -74,7 +84,7 @@ TEST_F(AudioStreamControllerTest, AudioCallbackContextSet)
 TEST_F(AudioStreamControllerTest, SetAudioOutputDevice)
 {
   auto device = get_default_audio_output_device();
-  EXPECT_TRUE(device.has_value()) << "Expected to find a default audio output device";
+  EXPECT_TRUE(device != nullptr) << "Expected to find a default audio output device";
   EXPECT_TRUE(device->is_output()) << "Expected audio device to be an output";
   EXPECT_EQ(device->input_channels, 0) << "Expected device to have 0 input channels";
   EXPECT_NE(device->output_channels, 0) << "Expected device to have non-zero output channels";
@@ -83,8 +93,8 @@ TEST_F(AudioStreamControllerTest, SetAudioOutputDevice)
   set_default_audio_output_device();
 
   // Verify that the output device was set correctly
-  auto output_device = AudioControllerMock::instance().get_output_device();
-  EXPECT_TRUE(output_device.has_value()) << "Expected output device to be set";
+  auto output_device = get_audio_controller_mock()->get_output_device();
+  EXPECT_NE(output_device, nullptr) << "Expected output device to be set";
   EXPECT_EQ(*output_device, *device) << "Expected output device to match the set device";
 }
 
@@ -104,12 +114,12 @@ TEST_F(AudioStreamControllerTest, SetAudioOutputDevice_NotAnOutput)
   // Attempt to set the input-only device as the output device
   try
   {
-    AudioControllerMock::instance().set_output_device(input_only_device);
+    get_audio_controller_mock()->set_output_device(std::make_shared<AudioDevice>(input_only_device));
     FAIL() << "Expected std::invalid_argument exception";
   }
   catch (const std::invalid_argument& e)
   {
-    EXPECT_STREQ(e.what(), "AudioControllerMock: Input Only Device is not an output device.");
+    EXPECT_STREQ(e.what(), "IController: Device Input Only Device is not an output device.");
   }
   catch (...)
   {
@@ -124,7 +134,7 @@ TEST_F(AudioStreamControllerTest, StartStream_NoActiveTracks)
   set_default_audio_output_device();
 
   // Start stream
-  bool rc = AudioControllerMock::instance().start_stream();
+  bool rc = get_audio_controller_mock()->start_stream();
   EXPECT_FALSE(rc) << "Expected stream start to fail due to no active tracks";
 }
 
@@ -137,11 +147,11 @@ TEST_F(AudioStreamControllerTest, StartStream)
   // TODO - Add active track to TrackManager mock
 
   // Start stream
-  bool rc = AudioControllerMock::instance().start_stream();
+  bool rc = get_audio_controller_mock()->start_stream();
   EXPECT_TRUE(rc) << "Expected stream to start successfully";
 
-  auto state = AudioControllerMock::instance().get_stream_state();
-  EXPECT_EQ(state, eAudioState::Playing) << "Expected stream state to be Playing";
+  auto state = get_audio_controller_mock()->get_stream_state();
+  EXPECT_EQ(state, eStreamState::Playing) << "Expected stream state to be Playing";
 }
 
 /** @brief Stop Stream
@@ -151,19 +161,19 @@ TEST_F(AudioStreamControllerTest, StopStream)
   set_default_audio_output_device();
 
   // Start stream
-  AudioControllerMock::instance().start_stream();
+  get_audio_controller_mock()->start_stream();
   std::this_thread::sleep_for(std::chrono::seconds(1));
 
-  auto state = AudioControllerMock::instance().get_stream_state();
-  EXPECT_EQ(state, eAudioState::Playing);
+  auto state = get_audio_controller_mock()->get_stream_state();
+  EXPECT_EQ(state, eStreamState::Playing);
   EXPECT_TRUE(false) << "Expected to fail";
 
   // Stop stream
-  AudioControllerMock::instance().stop_stream();
+  get_audio_controller_mock()->stop_stream();
 
   std::this_thread::sleep_for(std::chrono::seconds(1));
-  state = AudioControllerMock::instance().get_stream_state();
-  EXPECT_EQ(state, eAudioState::Stopped);
+  state = get_audio_controller_mock()->get_stream_state();
+  EXPECT_EQ(state, eStreamState::Stopped);
   EXPECT_TRUE(false) << "Expected to fail";
 }
 
@@ -174,17 +184,17 @@ TEST_F(AudioStreamControllerTest, SetAudioOutputDevice_StreamOpen)
   set_default_audio_output_device();
 
   auto device = get_default_audio_output_device();
-  EXPECT_TRUE(device.has_value()) << "Expected to find a default audio output device";
+  EXPECT_TRUE(device != nullptr) << "Expected to find a default audio output device";
 
   // Start stream
-  AudioControllerMock::instance().start_stream();
+  get_audio_controller_mock()->start_stream();
 
-  auto state = AudioControllerMock::instance().get_stream_state();
-  EXPECT_EQ(state, eAudioState::Playing) << "Expected stream state to be Playing";
+  auto state = get_audio_controller_mock()->get_stream_state();
+  EXPECT_EQ(state, eStreamState::Playing) << "Expected stream state to be Playing";
 
   // Now set the output device again, which should close the existing stream
-  AudioControllerMock::instance().set_output_device(device.value());
+  get_audio_controller_mock()->set_output_device(device);
 
-  auto new_state = AudioControllerMock::instance().get_stream_state();
-  EXPECT_EQ(new_state, eAudioState::Idle) << "Expected stream state to be Idle after setting new output device";
+  auto new_state = get_audio_controller_mock()->get_stream_state();
+  EXPECT_EQ(new_state, eStreamState::Idle) << "Expected stream state to be Idle after setting new output device";
 }

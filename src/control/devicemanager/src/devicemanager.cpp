@@ -6,26 +6,7 @@ using namespace miniaudioengine::control;
 
 std::vector<AudioDevice> DeviceManager::get_audio_devices() const
 {
-  std::vector<AudioDevice> devices;
-  auto audio_devices = p_audio_controller->get_audio_devices();
-
-  size_t index = 0;
-  for (const auto& info : audio_devices)
-  {
-    AudioDevice device;
-    device.id = info.ID;
-    device.name = info.name;
-    device.input_channels = info.inputChannels;
-    device.output_channels = info.outputChannels;
-    device.duplex_channels = info.duplexChannels;
-    device.is_default_input = info.isDefaultInput;
-    device.is_default_output = info.isDefaultOutput;
-    device.sample_rates = info.sampleRates;
-    device.preferred_sample_rate = info.preferredSampleRate;
-    devices.push_back(device);
-  }
-
-  return devices;
+  return p_audio_controller->get_audio_devices();
 }
 
 AudioDevice DeviceManager::get_audio_device(const unsigned int id) const

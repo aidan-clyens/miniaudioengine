@@ -3,12 +3,13 @@
 #include "trackmanager.h"
 #include "logger.h"
 
+using namespace miniaudioengine::core;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
 
-std::vector<RtAudio::DeviceInfo> AudioStreamController::get_audio_devices()
+std::vector<AudioDevice> AudioStreamController::get_audio_devices()
 {
-  std::vector<RtAudio::DeviceInfo> devices;
+  std::vector<AudioDevice> devices;
   unsigned int device_count = m_rtaudio.getDeviceCount();
   devices.reserve(device_count);
 
@@ -16,31 +17,10 @@ std::vector<RtAudio::DeviceInfo> AudioStreamController::get_audio_devices()
   for (const unsigned int i : device_ids)
   {
     RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(i);
-    devices.push_back(info);
+    devices.push_back(AudioDevice(info));
   }
-  
+
   return devices;
-}
-
-void AudioStreamController::set_output_device(const AudioDevice &device)
-{
-  // Check if device is an output device
-  if (!device.is_output())
-  {
-    LOG_ERROR("AudioStreamController: Device ", device.name, " is not an output device.");
-    throw std::invalid_argument("AudioStreamController: Device " + device.name + " is not an output device.");
-  }
-
-  // Close stream if already open
-  if (m_rtaudio.isStreamOpen())
-  {
-    LOG_DEBUG("AudioStreamController: Closing existing RtAudio stream...");
-    m_rtaudio.closeStream();
-    LOG_DEBUG("AudioStreamController: Closed existing RtAudio stream.");
-  }
-
-  LOG_DEBUG("AudioStreamController: Output device set to ", device.name);
-  m_audio_output_device = device;
 }
 
 bool AudioStreamController::start_stream()
@@ -57,16 +37,23 @@ bool AudioStreamController::start_stream()
     return false;
   }
 
+  auto device = std::dynamic_pointer_cast<AudioDevice>(get_output_device());
+  if (device == nullptr)
+  {
+    LOG_ERROR("AudioStreamController: Output device is null after validation. Cannot start stream.");
+    return false;
+  }
+
   RtAudio::StreamParameters params = {
-    .deviceId = m_audio_output_device->id,
-    .nChannels = m_audio_output_device->output_channels,
+    .deviceId = device->id,
+    .nChannels = device->output_channels,
     .firstChannel = 0
   };
 
-  unsigned int sample_rate = m_audio_output_device->preferred_sample_rate;
+  unsigned int sample_rate = device->preferred_sample_rate;
   unsigned int buffer_frames = 4096;
 
-  LOG_DEBUG("AudioStreamController: Opening RtAudio stream with device ", m_audio_output_device->name,
+  LOG_DEBUG("AudioStreamController: Opening RtAudio stream with device ", device->name,
             ", Sample Rate: ", sample_rate,
             ", Buffer Frames: ", buffer_frames);
 
@@ -92,15 +79,15 @@ bool AudioStreamController::start_stream()
     return false;
   }
 
-  LOG_DEBUG("AudioStreamController: RtAudio stream started successfully with output device ", m_audio_output_device->name);
-  m_stream_state = eAudioState::Playing;
+  LOG_DEBUG("AudioStreamController: RtAudio stream started successfully with output device ", device->name);
+  m_stream_state = eStreamState::Playing;
 
   return true;
 }
 
 bool AudioStreamController::stop_stream()
 {
-  if (m_stream_state != eAudioState::Playing)
+  if (m_stream_state != eStreamState::Playing)
   {
     LOG_WARNING("AudioStreamController: Stream is not running. No action taken.");
     return false;
@@ -123,10 +110,10 @@ bool AudioStreamController::stop_stream()
     m_rtaudio.closeStream();
   }
 
-  clear_registered_dataplanes();
+  clear_registered_dataplane();
 
   LOG_DEBUG("AudioStreamController: RtAudio stream stopped successfully.");
-  m_stream_state = eAudioState::Stopped;
+  m_stream_state = eStreamState::Stopped;
 
   return true;
 }

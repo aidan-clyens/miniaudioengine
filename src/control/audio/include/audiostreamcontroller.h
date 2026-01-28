@@ -29,12 +29,7 @@ public:
   /** @brief Get Available Audio Devices
    *  @return List of available audio devices
    */
-  std::vector<RtAudio::DeviceInfo> get_audio_devices() override;
-
-  /** @brief Set Output Audio Device
-   *  @param device Audio device to set as output
-   */
-  void set_output_device(const AudioDevice& device) override;
+  std::vector<AudioDevice> get_audio_devices();
 
   /** @brief Start Audio Stream
    *  @return true if the audio stream was started successfully, false otherwise

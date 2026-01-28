@@ -28,6 +28,7 @@ namespace miniaudioengine::control
 // Forward declarations
 class WavFile;
 class MidiFile;
+class MainTrack;
 
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
@@ -77,13 +78,12 @@ public:
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt),
-    p_audio_controller(std::make_shared<AudioStreamController>()),
     m_midi_controller(MidiPortController::instance()),
     p_audio_dataplane(std::make_shared<data::AudioDataPlane>()),
     p_midi_dataplane(std::make_shared<data::MidiDataPlane>())
   {}
 
-  ~Track() = default;
+  virtual ~Track() = default;
 
   // Hierarchy management (Control Plane)
 
@@ -223,11 +223,27 @@ public:
   /** @brief Check if the track is currently playing.
    *  @return True if the track is playing, false otherwise.
    */
-  bool is_playing() const
+  bool is_playing() const;
+
+  /** @brief Get the audio dataplane for this track.
+   *  @return Shared pointer to the audio dataplane.
+   */
+  data::AudioDataPlanePtr get_audio_dataplane() const
   {
-    return p_audio_controller->get_stream_state() == eAudioState::Playing;
+    return p_audio_dataplane;
   }
-  
+
+  /** @brief Get the MIDI dataplane for this track.
+   *  @return Shared pointer to the MIDI dataplane.
+   */
+  data::MidiDataPlanePtr get_midi_dataplane() const
+  {
+    return p_midi_dataplane;
+  }
+
+  /** @brief Get track statistics.
+   *  @return TrackStatistics structure containing audio and MIDI statistics.
+   */
   TrackStatistics get_statistics() const
   {
     TrackStatistics stats;
@@ -253,6 +269,7 @@ public:
   {
     m_note_on_callback = callback;
   }
+  
   /** @brief Set a callback function for MIDI note off events.
    *  @param callback The callback function to set e.g. `void note_off_func(const miniaudioengine::MidiNoteMessage& message)`.
    */
@@ -269,21 +286,19 @@ public:
     m_control_change_callback = callback;
   }
 
-  void handle_midi_message(const MidiMessage& message); // TODO - Remove
-
-  data::AudioDataPlanePtr get_audio_dataplane() const
-  {
-    return p_audio_dataplane;
-  }
-
-  data::MidiDataPlanePtr get_midi_dataplane() const
-  {
-    return p_midi_dataplane;
-  }
-
+  /** @brief Get string representation of the track.
+   *  @return String representation of the track.
+   */
   std::string to_string() const;
 
 protected:
+  /** @brief Get the root MainTrack (traverses up hierarchy).
+   *  @return Shared pointer to MainTrack, or nullptr if no root found.
+   */
+  std::shared_ptr<class MainTrack> get_main_track() const;
+
+  void handle_midi_message(const MidiMessage& message); // TODO - Remove
+
   // Hierarchy
   std::weak_ptr<Track> m_parent;
   std::vector<TrackPtr> m_children;
@@ -298,7 +313,6 @@ protected:
   std::queue<MidiMessage> m_message_queue; // TODO - Remove?
   std::mutex m_queue_mutex; // TODO - Remove?
 
-  std::shared_ptr<IAudioController> p_audio_controller;
   IMidiController &m_midi_controller;
 
   data::AudioDataPlanePtr p_audio_dataplane;

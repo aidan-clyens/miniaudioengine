@@ -21,16 +21,6 @@ namespace miniaudioengine::data
 namespace miniaudioengine::control
 {
 
-/** @enum eAudioState
- *  @brief AudioEngine states
- */
-enum class eAudioState
-{
-  Idle,
-  Stopped,
-  Playing,
-};
-
 /** @class IAudioController
  *  @brief Abstract base class for audio controllers in the framework.
  *  This class provides common state management and validation logic
@@ -42,42 +32,14 @@ class IAudioController : public core::IController
 public:
   virtual ~IAudioController() = default;
 
-  virtual std::vector<RtAudio::DeviceInfo> get_audio_devices() = 0;
-  virtual void set_output_device(const AudioDevice &device) = 0;
-
-  virtual std::optional<AudioDevice> get_output_device() const
-  {
-    return m_audio_output_device;
-  }
+  virtual std::vector<AudioDevice> get_audio_devices() = 0;
 
   virtual bool start_stream() = 0;
   virtual bool stop_stream() = 0;
 
-  virtual eAudioState get_stream_state() const
-  {
-    return m_stream_state;
-  }
-
   virtual std::shared_ptr<data::AudioCallbackContext> get_callback_context() const
   {
     return m_callback_context;
-  }
-
-  /** @brief Register Audio Data Plane for callbacks
-   *  @param p_audio_dataplane Shared pointer to the TrackAudioDataPlane to register
-   */
-  void register_audio_dataplane(data::AudioDataPlanePtr p_audio_dataplane)
-  {
-    LOG_DEBUG("AudioController: Registering AudioDataPlane.");
-    m_registered_dataplanes.push_back(p_audio_dataplane);
-  }
-
-  /** @brief Clear all registered audio data planes
-   */
-  void clear_registered_dataplanes()
-  {
-    m_registered_dataplanes.clear();
-    LOG_DEBUG("AudioController: Cleared all registered AudioDataPlanes.");
   }
 
 protected:
@@ -94,11 +56,7 @@ protected:
   bool register_dataplanes();
 
   // Common state shared by all implementations
-  std::optional<AudioDevice> m_audio_output_device;
   std::shared_ptr<data::AudioCallbackContext> m_callback_context;
-  eAudioState m_stream_state{eAudioState::Idle};
-
-  std::vector<data::AudioDataPlanePtr> m_registered_dataplanes;
 };
 
 } // namespace miniaudioengine::control

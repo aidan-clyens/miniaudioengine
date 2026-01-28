@@ -5,12 +5,12 @@
 
 namespace miniaudioengine::data
 {
-
-typedef std::shared_ptr<class AudioDataPlane> TrackAudioDataplanePtr;
+// Forward declaration
+typedef std::shared_ptr<class AudioDataPlane> AudioDataPlanePtr;
 
 struct AudioCallbackContext
 {
-  std::vector<TrackAudioDataplanePtr> active_tracks;
+  std::vector<AudioDataPlanePtr> active_tracks;
 };
 
 class AudioCallbackHandler

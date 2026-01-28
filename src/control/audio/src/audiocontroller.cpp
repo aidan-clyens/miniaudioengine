@@ -1,18 +1,20 @@
 #include "audiocontroller.h"
 #include "trackmanager.h"
 
+using namespace miniaudioengine::core;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
 
 bool IAudioController::validate_start_preconditions() const
 {
-  if (m_stream_state == eAudioState::Playing)
+  if (m_stream_state == eStreamState::Playing)
   {
     LOG_WARNING("AudioController: Stream is already running. No action taken.");
     return false;
   }
 
-  if (!m_audio_output_device.has_value())
+  auto device = std::dynamic_pointer_cast<AudioDevice>(get_output_device());
+  if (device == nullptr)
   {
     LOG_WARNING("AudioController: No output device set. Cannot start stream.");
     return false;
@@ -30,15 +32,30 @@ bool IAudioController::validate_start_preconditions() const
 
 bool IAudioController::register_dataplanes()
 {
+  auto dataplanes = get_registered_dataplanes();
+  if (dataplanes.empty())
+  {
+    LOG_ERROR("AudioController: No IDataPlanes registered. Cannot register dataplanes for audio callback.");
+    return false;
+  }
+
   m_callback_context->active_tracks.clear();
-  m_callback_context->active_tracks = m_registered_dataplanes;
+  for (auto & dp : dataplanes)
+  {
+    auto audio_dp = std::dynamic_pointer_cast<AudioDataPlane>(dp);
+    if (audio_dp != nullptr)
+    {
+      m_callback_context->active_tracks.push_back(audio_dp);
+    }
+  }
 
   // For each active track, set output channels in data
-  if (m_audio_output_device.has_value())
+  auto device = std::dynamic_pointer_cast<AudioDevice>(get_output_device());
+  if (device != nullptr)
   {
     for (const auto& track_dp : m_callback_context->active_tracks)
     {
-      track_dp->set_output_channels(m_audio_output_device->output_channels);
+      track_dp->set_output_channels(device->output_channels);
     }
   }
 

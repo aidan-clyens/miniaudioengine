@@ -17,8 +17,9 @@ namespace miniaudioengine::control
 class MainTrack : public Track
 {
 public:
-  MainTrack() : Track(true) {} // is_main_track = true
-  ~MainTrack() = default;
+  MainTrack() : Track(true),
+                p_audio_controller(std::make_shared<AudioStreamController>()) {} // is_main_track = true
+  ~MainTrack() override = default;
 
   /** @brief Set the audio output device for the MainTrack.
    *  @param device The audio output device to use.
@@ -26,11 +27,20 @@ public:
   void set_audio_output_device(const AudioDevice& device)
   {
     m_audio_output_device = device;
-    p_audio_controller->set_output_device(device);
+    p_audio_controller->set_output_device(std::make_shared<AudioDevice>(device));
+  }
+
+  /** @brief Get the audio stream controller (only MainTrack has this).
+   *  @return Shared pointer to the audio stream controller.
+   */
+  std::shared_ptr<IAudioController> get_audio_controller() const
+  {
+    return p_audio_controller;
   }
 
 private:
   AudioDevice m_audio_output_device;
+  std::shared_ptr<IAudioController> p_audio_controller; // Only MainTrack owns the controller
 };
 
 /** @class TrackManager

@@ -9,7 +9,7 @@ namespace miniaudioengine::control
 /** @class MidiDevice
  *  @brief MIDI device
  */
-class MidiDevice : public IDevice
+class MidiDevice : public core::IDevice
 {
 public:
   MidiDevice() = default;
