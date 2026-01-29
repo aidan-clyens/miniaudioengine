@@ -9,7 +9,6 @@
 #include <vector>
 #include <optional>
 #include <memory>
-#include <rtaudio/RtAudio.h>
 
 // Forward declarations from data namespace
 namespace miniaudioengine::data

@@ -120,30 +120,6 @@ size_t TrackManager::get_track_count() const
   return get_all_tracks().size();
 }
 
-// ============================================================================
-// Data Plane Collection
-// ============================================================================
-
-/** @brief Get all TrackAudioDataPlanes from the TrackManager.
- *  @return A vector of shared pointers to all TrackAudioDataPlanes.
- */
-std::vector<AudioDataPlanePtr> TrackManager::get_track_audio_dataplanes()
-{
-  std::vector<AudioDataPlanePtr> dataplanes;
-  collect_active_dataplanes_recursive(m_main_track, dataplanes);
-  return dataplanes;
-}
-
-/** @brief Get all TrackMidiDataPlanes from the TrackManager.
- *  @return A vector of shared pointers to all TrackMidiDataPlanes.
- */
-std::vector<MidiDataPlanePtr> TrackManager::get_track_midi_dataplanes()
-{
-  std::vector<MidiDataPlanePtr> dataplanes;
-  collect_active_midi_dataplanes_recursive(m_main_track, dataplanes);
-  return dataplanes;
-}
-
 /** @brief Clear all tracks except MainTrack.
  */
 void TrackManager::clear_tracks()

@@ -110,18 +110,6 @@ public:
    */
   size_t get_track_count() const;
 
-  // Data plane collection (for callbacks)
-
-  /** @brief Get audio dataplanes for all active tracks.
-   *  @return Vector of audio data pointers.
-   */
-  std::vector<data::AudioDataPlanePtr> get_track_audio_dataplanes();
-
-  /** @brief Get MIDI dataplanes for all active tracks.
-   *  @return Vector of MIDI data pointers.
-   */
-  std::vector<data::MidiDataPlanePtr> get_track_midi_dataplanes();
-
   /** @brief Clear all tracks except MainTrack.
    */
   void clear_tracks();

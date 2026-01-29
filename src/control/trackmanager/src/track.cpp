@@ -260,13 +260,13 @@ MidiIOVariant Track::get_midi_output() const
  *  If the track has a MIDI input device, it opens the port and starts the MIDI dataplane.
  *  Then the audio stream is started via the audio controller.
  */
-void Track::play()
+bool Track::play()
 {
   // If already playing, do nothing
   if (is_playing())
   {
     LOG_WARNING("Track: Already playing.");
-    return;
+    return false;
   }
 
   // If audio input is a WAV file, start producer thread BEFORE starting audio stream
@@ -291,31 +291,23 @@ void Track::play()
   if (!main_track)
   {
     LOG_ERROR("Track: Cannot play - no MainTrack found in hierarchy.");
-    return;
+    return false;
   }
 
   // Register audio dataplane with controller and start stream
-  main_track->register_dataplane(p_audio_dataplane);
   if (!main_track->start())
   {
     LOG_ERROR("Track: Failed to start audio stream.");
-    return;
-  }
-
-  // Register MIDI dataplane with controller
-  p_midi_controller->register_dataplane(p_midi_dataplane);
-  if (!p_midi_controller->start())
-  {
-    LOG_ERROR("Track: Failed to start MIDI input.");
-    return;
+    return false;
   }
 
   LOG_INFO("Track: Started playing.");
+  return true;
 }
 
 /** @brief Stops playback of the track.
  */
-void Track::stop()
+bool Track::stop()
 {
   LOG_INFO("Track: Stop...");
 
@@ -323,7 +315,7 @@ void Track::stop()
   if (!is_playing())
   {
     LOG_WARNING("Track: Not currently playing.");
-    return;
+    return false;
   }
 
   // Clear data buffers and stop any data processing threads
@@ -332,8 +324,13 @@ void Track::stop()
   auto main_track = get_main_track();
   if (main_track)
   {
-    main_track->stop();
+    if (!main_track->stop())
+    {
+      LOG_ERROR("Track: Failed to stop audio stream.");
+      return false;
+    }
   }
+  return true;
 }
 
 /** @brief Handles a MIDI message.

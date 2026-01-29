@@ -215,10 +215,10 @@ public:
 
   // Playback control
   /** @brief Start playback of the track. */
-  void play();
+  bool play();
 
   /** @brief Stop playback of the track. */
-  void stop();
+  bool stop();
 
   /** @brief Check if the track is currently playing.
    *  @return True if the track is playing, false otherwise.

@@ -1,6 +1,6 @@
 #include "midiportcontroller.h"
 
-#include "trackmanager.h"
+#include "mididataplane.h"
 #include "logger.h"
 
 using namespace miniaudioengine::control;
@@ -63,6 +63,26 @@ void MidiPortController::open_input_port(unsigned int port_number)
     close_input_port();
   }
 
+  // Set the callback function to handle incoming MIDI messages
+  m_callback_context->active_tracks.clear();
+  for (const auto &dataplane : get_registered_dataplanes())
+  {
+    auto midi_dataplane = std::dynamic_pointer_cast<MidiDataPlane>(dataplane);
+    if (midi_dataplane)
+    {
+      m_callback_context->active_tracks.push_back(midi_dataplane);
+    }
+  }
+
+  if (m_callback_context->active_tracks.empty())
+  {
+    LOG_WARNING("MidiPortController: No active MIDI dataplanes registered.");
+    return;
+  }
+
+  m_rtmidi_in.setCallback(&MidiCallbackHandler::midi_callback, m_callback_context.get());
+  m_rtmidi_in.ignoreTypes(false, true, true);
+
   // Set up the MIDI input port
   try
   {
@@ -73,13 +93,6 @@ void MidiPortController::open_input_port(unsigned int port_number)
     LOG_ERROR("MidiPortController: Failed to open MIDI input port: ", error.getMessage());
     return;
   }
-
-  // Set the callback function to handle incoming MIDI messages
-  m_callback_context->active_tracks.clear();
-  m_callback_context->active_tracks = TrackManager::instance().get_track_midi_dataplanes();
-
-  m_rtmidi_in.setCallback(&MidiCallbackHandler::midi_callback, m_callback_context.get());
-  m_rtmidi_in.ignoreTypes(false, true, true);
 
   LOG_DEBUG("MidiPortController: MIDI input port opened successfully.");
 }

@@ -26,5 +26,4 @@ target_link_libraries(control-midi
     framework
     rtmidi
     data-midi
-    trackmanager
 )

@@ -144,7 +144,11 @@ public:
     g_running.store(true);
     LOG_INFO("Sampler: Starting audio processing...");
 
-    m_track->play();
+    if (!m_track->play())
+    {
+      std::cerr << "Error: Failed to start audio processing." << std::endl;
+      return;
+    }
 
     // Main loop
     while (g_running.load())
