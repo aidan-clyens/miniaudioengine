@@ -2,6 +2,8 @@
 #define __DATA_PLANE_H__
 
 #include <memory>
+#include <atomic>
+#include <string>
 
 #include "logger.h"
 
@@ -78,8 +80,16 @@ public:
     m_stop_command.store(true, std::memory_order_release);
   }
 
+  std::string to_string() const
+  {
+    return "IDataPlane(" + m_name + ", Input Channels=" + std::to_string(m_input_channels) +
+           ", Output Channels=" + std::to_string(m_output_channels) + ")";
+  }
+
 protected:
   std::atomic<bool> m_stop_command{true};
+
+  std::string m_name{"IDataPlane"};
 
   unsigned int m_input_channels{0};
   unsigned int m_output_channels{0};

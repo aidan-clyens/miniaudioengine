@@ -37,11 +37,7 @@ class IController
 public:
   virtual ~IController() = default;
 
-  void register_dataplane(IDataPlanePtr data_plane)
-  {
-    LOG_DEBUG("IController: Registering dataplane.");
-    p_data_planes.push_back(data_plane);
-  }
+  void register_dataplane(IDataPlanePtr data_plane);
 
   std::vector<IDataPlanePtr> get_registered_dataplanes() const
   {

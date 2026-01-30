@@ -4,6 +4,7 @@
 #include "manager.h"
 #include "track.h"
 #include "audiostreamcontroller.h"
+#include "midiportcontroller.h"
 
 #include <memory>
 #include <vector>
@@ -18,7 +19,8 @@ class MainTrack : public Track
 {
 public:
   MainTrack() : Track(true),
-                p_audio_controller(std::make_shared<AudioStreamController>()) {} // is_main_track = true
+                p_audio_controller(std::make_shared<AudioStreamController>()),
+                p_midi_controller(std::make_shared<MidiPortController>()) {} // is_main_track = true
   ~MainTrack() override = default;
 
   /** @brief Set the audio output device for the MainTrack.
@@ -30,19 +32,30 @@ public:
     p_audio_controller->set_output_device(std::make_shared<AudioDevice>(device));
   }
 
-  void register_dataplane(data::AudioDataPlanePtr data_plane)
+  void open_midi_input_port(const MidiDevice& device)
+  {
+    p_midi_controller->open_input_port(device.id);
+  }
+
+  void register_audio_dataplane(data::AudioDataPlanePtr data_plane)
   {
     p_audio_controller->register_dataplane(data_plane);
   }
 
+  void register_midi_dataplane(data::MidiDataPlanePtr midi_dataplane)
+  {
+    p_midi_controller->register_dataplane(midi_dataplane);
+  }
+
   bool start()
   {
-    return p_audio_controller->start();
+    return p_audio_controller->start() && p_midi_controller->start();
   }
 
   bool stop()
   {
-    return p_audio_controller->stop();
+    p_midi_controller->close_input_port();
+    return p_audio_controller->stop() && p_midi_controller->stop();
   }
 
   bool is_playing() const;
@@ -50,6 +63,7 @@ public:
 private:
   AudioDevice m_audio_output_device;
   std::shared_ptr<IAudioController> p_audio_controller; // Only MainTrack owns the controller
+  std::shared_ptr<IMidiController> p_midi_controller; // Only MainTrack owns the controller
 };
 
 /** @class TrackManager

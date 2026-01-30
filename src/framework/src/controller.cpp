@@ -1,4 +1,5 @@
 #include "controller.h"
+#include "dataplane.h"
 
 #include "device.h"
 #include "logger.h"
@@ -21,4 +22,10 @@ void IController::set_output_device(IDevicePtr device)
 
   LOG_DEBUG("IController: Output device set to ", device->to_string());
   p_device = device;
+}
+
+void IController::register_dataplane(IDataPlanePtr data_plane)
+{
+  LOG_DEBUG("IController: Registering dataplane ", data_plane->to_string());
+  p_data_planes.push_back(data_plane);
 }

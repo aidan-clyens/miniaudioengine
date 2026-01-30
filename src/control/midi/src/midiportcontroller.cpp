@@ -94,7 +94,7 @@ void MidiPortController::open_input_port(unsigned int port_number)
     return;
   }
 
-  LOG_DEBUG("MidiPortController: MIDI input port opened successfully.");
+  LOG_DEBUG("MidiPortController: Opened MIDI input port (ID=", port_number, ", Name=", m_rtmidi_in.getPortName(port_number), ")");
 }
 
 /** @brief Closes the currently opened MIDI input port.
@@ -109,7 +109,7 @@ void MidiPortController::close_input_port()
   try
   {
     m_rtmidi_in.closePort();
-    LOG_DEBUG("MidiPortController: MIDI input port closed successfully.");
+    LOG_DEBUG("MidiPortController: Closed MIDI input port (Name=", m_rtmidi_in.getPortName(), ")");
   }
   catch (const RtMidiError &error)
   {

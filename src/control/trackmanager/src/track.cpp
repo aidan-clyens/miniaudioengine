@@ -60,10 +60,26 @@ void Track::add_child_track(TrackPtr child)
     }
     current = current->get_parent();
   }
+  
+  {
+    std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
+    m_children.push_back(child);
+    child->m_parent = shared_from_this();
+  }
 
-  std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
-  m_children.push_back(child);
-  child->m_parent = shared_from_this();
+  auto main_track = get_main_track();
+  if (main_track)
+  {
+    // Register child dataplanes with MainTrack controllers
+    main_track->register_audio_dataplane(child->p_audio_dataplane);
+    main_track->register_midi_dataplane(child->p_midi_dataplane);
+
+    // Update child dataplanes with output settings from MainTrack
+    child->p_audio_dataplane->set_input_channels(0);
+    child->p_audio_dataplane->set_input_channels(0);
+    child->p_midi_dataplane->set_output_channels(0);
+    child->p_midi_dataplane->set_output_channels(0);
+  }
 
   LOG_INFO("Track: Added child track. Total children: ", m_children.size());
 }
@@ -197,7 +213,6 @@ void Track::remove_audio_input()
 void Track::remove_midi_input()
 {
   m_midi_input = std::nullopt;
-  p_midi_controller->close_input_port();
 }
 
 /** @brief Removes the MIDI output from the track.
@@ -269,11 +284,19 @@ bool Track::play()
     return false;
   }
 
+  auto main_track = get_main_track();
+  if (!main_track)
+  {
+    LOG_ERROR("Track: Cannot play - no MainTrack found in hierarchy.");
+    return false;
+  }
+
   // If audio input is a WAV file, start producer thread BEFORE starting audio stream
   if (std::holds_alternative<WavFilePtr>(m_audio_input))
   {
     LOG_INFO("Track: Preloading WAV file data into AudioDataPlane ", std::get<WavFilePtr>(m_audio_input)->to_string());
     WavFilePtr wav_file = std::get<WavFilePtr>(m_audio_input);
+    
     p_audio_dataplane->preload_wav_file(wav_file); // Preload WAV file data
     p_audio_dataplane->start();
   }
@@ -283,18 +306,15 @@ bool Track::play()
   {
     LOG_INFO("Track: Opening MIDI input port ", std::get<MidiDevice>(m_midi_input).to_string());
     MidiDevice midi_device = std::get<MidiDevice>(m_midi_input);
-    p_midi_controller->open_input_port(midi_device.id);
+
     p_midi_dataplane->start();
+
+    main_track->open_midi_input_port(std::get<MidiDevice>(m_midi_input));
   }
 
-  auto main_track = get_main_track();
-  if (!main_track)
-  {
-    LOG_ERROR("Track: Cannot play - no MainTrack found in hierarchy.");
-    return false;
-  }
+  main_track->register_audio_dataplane(p_audio_dataplane);
+  main_track->register_midi_dataplane(p_midi_dataplane);
 
-  // Register audio dataplane with controller and start stream
   if (!main_track->start())
   {
     LOG_ERROR("Track: Failed to start audio stream.");
@@ -320,6 +340,7 @@ bool Track::stop()
 
   // Clear data buffers and stop any data processing threads
   p_audio_dataplane->stop();
+  p_midi_dataplane->stop();
 
   auto main_track = get_main_track();
   if (main_track)

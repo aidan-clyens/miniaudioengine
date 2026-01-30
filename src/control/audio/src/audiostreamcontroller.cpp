@@ -25,6 +25,8 @@ std::vector<AudioDevice> AudioStreamController::get_audio_devices()
 
 bool AudioStreamController::start()
 {
+  LOG_DEBUG("AudioStreamController: Starting audio stream.");
+
   // Use base class validation
   if (!validate_start_preconditions())
   {
@@ -81,7 +83,7 @@ bool AudioStreamController::start()
     return false;
   }
 
-  LOG_DEBUG("AudioStreamController: RtAudio stream started successfully with output device ", device->name);
+  LOG_DEBUG("AudioStreamController: RtAudio stream Started with output device ", device->name);
   m_stream_state = eStreamState::Playing;
 
   return true;
