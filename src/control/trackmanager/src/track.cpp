@@ -30,6 +30,12 @@ using namespace miniaudioengine::data;
  */
 void Track::add_child_track(TrackPtr child)
 {
+  if (!m_is_main_track)
+  {
+    LOG_ERROR("Track: Cannot add child track to a non-MainTrack.");
+    throw std::runtime_error("Only MainTrack may have children.");
+  }
+
   if (!child)
   {
     LOG_ERROR("Track: Cannot add null child track.");
@@ -42,6 +48,12 @@ void Track::add_child_track(TrackPtr child)
     throw std::runtime_error("Child track already has a parent. Remove from parent first.");
   }
 
+  if (child->is_main_track())
+  {
+    LOG_ERROR("Track: Cannot add MainTrack as a child.");
+    throw std::runtime_error("Cannot add MainTrack as a child.");
+  }
+
   // Prevent adding self as child
   if (child.get() == this)
   {
@@ -49,18 +61,6 @@ void Track::add_child_track(TrackPtr child)
     throw std::runtime_error("Cannot add track as its own child.");
   }
 
-  // Prevent cycles: check if this track is a descendant of child
-  TrackPtr current = shared_from_this();
-  while (current)
-  {
-    if (current == child)
-    {
-      LOG_ERROR("Track: Cannot add child track - would create a cycle in hierarchy.");
-      throw std::runtime_error("Cannot add child: would create a cycle in hierarchy.");
-    }
-    current = current->get_parent();
-  }
-  
   {
     std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
     m_children.push_back(child);
@@ -89,6 +89,12 @@ void Track::add_child_track(TrackPtr child)
  */
 void Track::remove_child_track(TrackPtr child)
 {
+  if (!m_is_main_track)
+  {
+    LOG_ERROR("Track: Cannot remove child track from a non-MainTrack.");
+    throw std::runtime_error("Only MainTrack may remove children.");
+  }
+
   if (!child)
   {
     LOG_ERROR("Track: Cannot remove null child track.");

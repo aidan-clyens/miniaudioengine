@@ -40,8 +40,12 @@ TrackPtr TrackManager::create_track()
  */
 TrackPtr TrackManager::create_child_track(TrackPtr parent)
 {
-  if (!parent)
+  if (!parent || !parent->is_main_track())
   {
+    if (parent && !parent->is_main_track())
+    {
+      LOG_WARNING("TrackManager: Non-MainTrack parent provided. Defaulting to MainTrack.");
+    }
     parent = m_main_track;
   }
 
@@ -75,14 +79,12 @@ void TrackManager::remove_track(TrackPtr track)
     throw std::runtime_error("Cannot remove MainTrack from hierarchy.");
   }
 
-  // Remove all children recursively
-  auto children = track->get_children();
-  for (auto& child : children)
+  if (track->get_child_count() > 0)
   {
-    remove_track(child);
+    LOG_WARNING("TrackManager: Removing a track that still has children. Children will be detached.");
   }
 
-  // Remove from parent
+  // Remove from parent (MainTrack)
   track->remove_from_parent();
   
   LOG_INFO("TrackManager: Removed track from hierarchy. Total tracks: ", get_track_count());
@@ -98,18 +100,16 @@ void TrackManager::remove_track(TrackPtr track)
 std::vector<TrackPtr> TrackManager::get_all_tracks() const
 {
   std::vector<TrackPtr> all_tracks;
-  collect_all_tracks_recursive(m_main_track, all_tracks);
-  return all_tracks;
-}
 
-/** @brief Get all leaf tracks (tracks with no children).
- *  @return Vector of leaf track pointers.
- */
-std::vector<TrackPtr> TrackManager::get_leaf_tracks() const
-{
-  std::vector<TrackPtr> leaf_tracks;
-  collect_leaf_tracks_recursive(m_main_track, leaf_tracks);
-  return leaf_tracks;
+  all_tracks.push_back(m_main_track);
+
+  const auto &children = m_main_track->get_children();
+  for (const auto &child : children)
+  {
+    all_tracks.push_back(child);
+  }
+
+  return all_tracks;
 }
 
 /** @brief Get total number of tracks including MainTrack.
@@ -193,132 +193,4 @@ TrackPtr TrackManager::get_track(size_t index)
 std::vector<TrackPtr> TrackManager::get_tracks() const
 {
   return m_main_track->get_children();
-}
-
-// ============================================================================
-// Helper Methods
-// ============================================================================
-
-void TrackManager::collect_all_tracks_recursive(TrackPtr track, std::vector<TrackPtr>& out) const
-{
-  if (!track)
-  {
-    return;
-  }
-
-  // Iterative depth-first traversal using a stack
-  std::vector<TrackPtr> stack;
-  stack.push_back(track);
-
-  while (!stack.empty())
-  {
-    TrackPtr current = stack.back();
-    stack.pop_back();
-
-    out.push_back(current);
-
-    // Add children to stack in reverse order for correct DFS order
-    const auto& children = current->get_children();
-    for (auto it = children.rbegin(); it != children.rend(); ++it)
-    {
-      stack.push_back(*it);
-    }
-  }
-}
-
-void TrackManager::collect_leaf_tracks_recursive(TrackPtr track, std::vector<TrackPtr>& out) const
-{
-  if (!track)
-  {
-    return;
-  }
-
-  // Iterative depth-first traversal using a stack
-  std::vector<TrackPtr> stack;
-  stack.push_back(track);
-
-  while (!stack.empty())
-  {
-    TrackPtr current = stack.back();
-    stack.pop_back();
-
-    if (current->get_child_count() == 0)
-    {
-      // This is a leaf track
-      out.push_back(current);
-    }
-    else
-    {
-      // Add children to stack for further exploration
-      const auto& children = current->get_children();
-      for (auto it = children.rbegin(); it != children.rend(); ++it)
-      {
-        stack.push_back(*it);
-      }
-    }
-  }
-}
-
-void TrackManager::collect_active_dataplanes_recursive(TrackPtr track,
-                                                       std::vector<data::AudioDataPlanePtr>& out)
-{
-  if (!track)
-  {
-    return;
-  }
-
-  // Iterative depth-first traversal using a stack
-  std::vector<TrackPtr> stack;
-  stack.push_back(track);
-
-  while (!stack.empty())
-  {
-    TrackPtr current = stack.back();
-    stack.pop_back();
-
-    auto data = current->get_audio_dataplane();
-    if (data && data->is_running())
-    {
-      out.push_back(data);
-    }
-
-    // Add children to stack for further exploration
-    const auto& children = current->get_children();
-    for (auto it = children.rbegin(); it != children.rend(); ++it)
-    {
-      stack.push_back(*it);
-    }
-  }
-}
-
-void TrackManager::collect_active_midi_dataplanes_recursive(TrackPtr track,
-                                                            std::vector<data::MidiDataPlanePtr>& out)
-{
-  if (!track)
-  {
-    return;
-  }
-
-  // Iterative depth-first traversal using a stack
-  std::vector<TrackPtr> stack;
-  stack.push_back(track);
-
-  while (!stack.empty())
-  {
-    TrackPtr current = stack.back();
-    stack.pop_back();
-
-    auto data = current->get_midi_dataplane();
-    if (data && data->is_running())
-    {
-      out.push_back(data);
-    }
-
-    // Add children to stack for further exploration
-    const auto& children = current->get_children();
-    for (auto it = children.rbegin(); it != children.rend(); ++it)
-    {
-      stack.push_back(*it);
-    }
-  }
 }

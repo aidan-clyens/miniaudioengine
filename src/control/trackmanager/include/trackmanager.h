@@ -67,8 +67,8 @@ private:
 };
 
 /** @class TrackManager
- *  @brief The TrackManager manages a hierarchical tree of tracks with MainTrack as root.
- *  All tracks route their output to their parent, forming a mixing tree.
+ *  @brief The TrackManager manages a single-layer hierarchy with MainTrack as root.
+ *  All regular Tracks are direct children of MainTrack and may not have children.
  */
 class TrackManager : public core::IManager
 {
@@ -95,29 +95,24 @@ public:
    */
   TrackPtr create_track();
 
-  /** @brief Create a new track as child of specified parent.
-   *  @param parent The parent track (defaults to MainTrack if nullptr).
+  /** @brief Create a new track as child of MainTrack.
+   *  @param parent Ignored unless it is MainTrack (defaults to MainTrack if nullptr).
    *  @return Shared pointer to the new track.
    */
   TrackPtr create_child_track(TrackPtr parent = nullptr);
 
   /** @brief Remove a track from the hierarchy.
-   *  @param track The track to remove (will also remove all descendants).
+   *  @param track The track to remove.
    *  @throws std::runtime_error if attempting to remove MainTrack.
    */
   void remove_track(TrackPtr track);
 
   // Tree traversal
 
-  /** @brief Get all tracks in the hierarchy (breadth-first traversal).
+  /** @brief Get all tracks in the hierarchy (MainTrack + direct children).
    *  @return Vector of all track pointers including MainTrack.
    */
   std::vector<TrackPtr> get_all_tracks() const;
-
-  /** @brief Get all leaf tracks (tracks with no children).
-   *  @return Vector of leaf track pointers.
-   */
-  std::vector<TrackPtr> get_leaf_tracks() const;
 
   /** @brief Get total number of tracks including MainTrack.
    *  @return Total track count.
@@ -163,14 +158,6 @@ private:
 
   MainTrackPtr m_main_track; // Root of track tree (owns hardware audio output)
   mutable std::mutex m_manager_mutex;
-
-  // Helper methods
-  void collect_all_tracks_recursive(TrackPtr track, std::vector<TrackPtr>& out) const;
-  void collect_leaf_tracks_recursive(TrackPtr track, std::vector<TrackPtr>& out) const;
-  void collect_active_dataplanes_recursive(TrackPtr track,
-                                            std::vector<data::AudioDataPlanePtr>& out);
-  void collect_active_midi_dataplanes_recursive(TrackPtr track,
-                                                 std::vector<data::MidiDataPlanePtr>& out);
 };
 
 }  // namespace miniaudioengine::control

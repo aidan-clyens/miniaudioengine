@@ -64,9 +64,9 @@ struct TrackStatistics
 };
 
 /** @class Track
- *  @brief The Track can handle audio or MIDI input with hierarchical parent-child routing.
- *  Tracks form a tree structure with MainTrack as root. Each track has a virtual output
- *  that routes to its parent track.
+ *  @brief The Track can handle audio or MIDI input with single-layer routing.
+ *  MainTrack is the sole parent; regular Tracks may not have children.
+ *  Each track has a virtual output that routes to MainTrack.
  */
 class Track : public std::enable_shared_from_this<Track>
 {
@@ -86,13 +86,13 @@ public:
 
   // Hierarchy management (Control Plane)
 
-  /** @brief Add a child track to this track.
+  /** @brief Add a child track to this track (MainTrack only).
    *  @param child The child track to add.
-   *  @throws std::runtime_error if the child already has a parent or if adding would create a cycle.
+   *  @throws std::runtime_error if called on a non-MainTrack or if the child already has a parent.
    */
   void add_child_track(TrackPtr child);
 
-  /** @brief Remove a child track from this track.
+  /** @brief Remove a child track from this track (MainTrack only).
    *  @param child The child track to remove.
    */
   void remove_child_track(TrackPtr child);

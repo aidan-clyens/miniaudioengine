@@ -43,7 +43,6 @@ TEST_F(TrackManagerTest, Initial)
 {
   EXPECT_EQ(get_track_manager().get_track_count(), 1);
   EXPECT_EQ(get_track_manager().get_all_tracks().size(), 1);
-  EXPECT_EQ(get_track_manager().get_leaf_tracks().size(), 1);
 
   auto main_track = get_track_manager().get_main_track();
   EXPECT_TRUE(main_track->is_main_track());
@@ -61,7 +60,6 @@ TEST_F(TrackManagerTest, CreateSingleChildTrack)
 
   EXPECT_EQ(get_track_manager().get_track_count(), 2);
   EXPECT_EQ(get_track_manager().get_all_tracks().size(), 2);
-  EXPECT_EQ(get_track_manager().get_leaf_tracks().size(), 1); // track1
 }
 
 TEST_F(TrackManagerTest, CreateNestedTracks)
@@ -82,7 +80,6 @@ TEST_F(TrackManagerTest, CreateNestedTracks)
 
   EXPECT_EQ(get_track_manager().get_track_count(), 4);
   EXPECT_EQ(get_track_manager().get_all_tracks().size(), 4);
-  EXPECT_EQ(get_track_manager().get_leaf_tracks().size(), 2); // track2 and track3
 }
 
 TEST_F(TrackManagerTest, RemoveTrackWithChildren)
@@ -99,5 +96,4 @@ TEST_F(TrackManagerTest, RemoveTrackWithChildren)
 
   EXPECT_EQ(get_track_manager().get_track_count(), 2);
   EXPECT_EQ(main_track->get_child_count(), 1);                // only track3 remains
-  EXPECT_EQ(get_track_manager().get_leaf_tracks().size(), 1); // only track3
 }

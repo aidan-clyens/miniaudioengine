@@ -10,9 +10,6 @@ void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsi
   float *in_buffer = static_cast<float *>(input_buffer);
   float *out_buffer = static_cast<float *>(output_buffer);
 
-  if (out_buffer == nullptr)
-    return;
-
   prepare_output_buffer(n_frames);
 
   // Exit if dataplane is stopped
@@ -72,10 +69,13 @@ void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsi
     processor->process_audio(m_output_buffer.data(), m_output_channels, n_frames, stream_time);
   }
 
-  // Step 3: Write to output buffer (if main track)
-  for (unsigned int i = 0; i < n_frames * m_output_channels; ++i)
+  // Step 3: Write to output buffer (if provided)
+  if (out_buffer != nullptr)
   {
-    out_buffer[i] = m_output_buffer[i];
+    for (unsigned int i = 0; i < n_frames * m_output_channels; ++i)
+    {
+      out_buffer[i] = m_output_buffer[i];
+    }
   }
 
   // Step 4: Update statistics
