@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "vector": "cpp",
+        "memory": "cpp",
+        "thread": "cpp",
+        "functional": "cpp",
+        "optional": "cpp",
+        "string": "cpp"
+    }
+}
