@@ -31,18 +31,18 @@ public:
    */
   std::vector<AudioDevice> get_audio_devices();
 
+private:
+  RtAudio m_rtaudio;
+
   /** @brief Start Audio Stream
    *  @return true if the audio stream was started successfully, false otherwise
    */
-  bool start() override;
-  
+  bool _start() override;
+
   /** @brief Stop Audio Stream
    *  @return true if the audio stream was stopped successfully, false otherwise
    */
-  bool stop() override;
-
-private:
-  RtAudio m_rtaudio;
+  bool _stop() override;
 };
 
 using AudioStreamControllerPtr = std::shared_ptr<AudioStreamController>;

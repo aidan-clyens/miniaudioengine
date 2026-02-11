@@ -6,6 +6,9 @@ target_sources(test-mocks
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
+      include/dataplane_mock.h
+      include/controller_mock.h
+      include/device_mock.h
       include/audiocontroller_mock.h
 )
 
@@ -17,6 +20,7 @@ target_include_directories(test-mocks
 
 target_link_libraries(test-mocks
   INTERFACE
+    framework
     control-audio
     data-audio
     trackmanager

@@ -20,7 +20,6 @@ using IDevicePtr = std::shared_ptr<IDevice>;
  */
 enum class eStreamState
 {
-  Idle,
   Stopped,
   Playing,
   Monitor,
@@ -37,18 +36,30 @@ class IController
 public:
   virtual ~IController() = default;
 
+  /** @brief Register a data plane with the controller.
+   *  @param data_plane Shared pointer to an IDataPlane object to register.
+   */
   void register_dataplane(IDataPlanePtr data_plane);
 
+  /** @brief Get a list of all registered data planes.
+   *  @return A vector of shared pointers to the registered IDataPlane objects.
+   */
   std::vector<IDataPlanePtr> get_registered_dataplanes() const
   {
     return p_data_planes;
   }
 
+  /** @brief Clear all registered data planes from the controller.
+   */
   void clear_registered_dataplane()
   {
     p_data_planes.clear();
   }
 
+  /** @brief Set the output device object
+   *  @param device Shared pointer to an IDevice object representing the output device to use.
+   *  @throws std::invalid_argument if the provided device is null or not an output device.
+   */
   void set_output_device(IDevicePtr device);
 
   IDevicePtr get_output_device() const
@@ -56,16 +67,67 @@ public:
     return p_device;
   }
 
+  /** @brief Get the current stream state of the controller.
+   *  @return The current stream state as an eStreamState enum value.
+   */
   eStreamState get_stream_state() const
   {
     return m_stream_state;
   }
 
-  virtual bool start() = 0;
-  virtual bool stop() = 0;
+  /** @brief Start the controller's processing.
+   *  @return True if the controller started successfully, false otherwise.
+   */
+  bool start()
+  {
+    if (m_stream_state == eStreamState::Playing)
+    {
+      LOG_WARNING("Controller is already playing. Start command ignored.");
+      return false;
+    }
+
+    if (_start())
+    {
+      m_stream_state = eStreamState::Playing;
+      LOG_DEBUG("Controller started successfully.");
+      return true;
+    }
+    else
+    {
+      LOG_ERROR("Failed to start the controller.");
+      return false;
+    }
+  }
+
+  /** @brief Stop the controller's processing.
+   *  @return True if the controller stopped successfully, false otherwise.
+   */
+  bool stop()
+  {
+    if (m_stream_state == eStreamState::Stopped)
+    {
+      LOG_WARNING("Controller is already stopped. Stop command ignored.");
+      return false;
+    }
+
+    if (_stop())
+    {
+      m_stream_state = eStreamState::Stopped;
+      LOG_DEBUG("Controller stopped successfully.");
+      return true;
+    }
+    else
+    {
+      LOG_ERROR("Failed to stop the controller.");
+      return false;
+    }
+  }
 
 protected:
-  eStreamState m_stream_state{eStreamState::Idle};
+  eStreamState m_stream_state{eStreamState::Stopped};
+
+  virtual bool _start() = 0;
+  virtual bool _stop() = 0;
 
 private:
   std::vector<IDataPlanePtr> p_data_planes;

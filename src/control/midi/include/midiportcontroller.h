@@ -36,11 +36,11 @@ public:
    */
   void close_input_port() override;
 
-  bool start() override { return false; }
-  bool stop() override { return false; }
-
 private:
   RtMidiIn m_rtmidi_in;
+
+  bool _start() override { return false; }
+  bool _stop() override { return false; }
 };
 
 using MidiPortControllerPtr = std::shared_ptr<MidiPortController>;

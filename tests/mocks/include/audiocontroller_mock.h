@@ -72,7 +72,13 @@ public:
     return m_audio_input_device;
   }
 
-  bool start() override
+private:
+  bool m_is_stream_running{false};
+
+  AudioDevice m_audio_output_device;
+  AudioDevice m_audio_input_device;
+
+  bool _start() override
   {
     // Use base class validation
     if (!validate_start_preconditions())
@@ -93,7 +99,7 @@ public:
     return true;
   }
 
-  bool stop() override
+  bool _stop() override
   {
     if (m_stream_state != eStreamState::Playing)
     {
@@ -107,12 +113,6 @@ public:
 
     return true;
   }
-
-private:
-  bool m_is_stream_running{false};
-
-  AudioDevice m_audio_output_device;
-  AudioDevice m_audio_input_device;
 };
 
 using AudioControllerMockPtr = std::shared_ptr<AudioControllerMock>;

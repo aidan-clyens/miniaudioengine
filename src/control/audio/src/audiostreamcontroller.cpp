@@ -23,7 +23,7 @@ std::vector<AudioDevice> AudioStreamController::get_audio_devices()
   return devices;
 }
 
-bool AudioStreamController::start()
+bool AudioStreamController::_start()
 {
   LOG_DEBUG("AudioStreamController: Starting audio stream.");
 
@@ -89,7 +89,7 @@ bool AudioStreamController::start()
   return true;
 }
 
-bool AudioStreamController::stop()
+bool AudioStreamController::_stop()
 {
   if (m_stream_state != eStreamState::Playing)
   {

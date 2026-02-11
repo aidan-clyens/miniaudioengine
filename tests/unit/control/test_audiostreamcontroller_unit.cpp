@@ -196,5 +196,5 @@ TEST_F(AudioStreamControllerTest, SetAudioOutputDevice_StreamOpen)
   get_audio_controller_mock()->set_output_device(device);
 
   auto new_state = get_audio_controller_mock()->get_stream_state();
-  EXPECT_EQ(new_state, eStreamState::Idle) << "Expected stream state to be Idle after setting new output device";
+  EXPECT_EQ(new_state, eStreamState::Stopped) << "Expected stream state to be Stopped after setting new output device";
 }
