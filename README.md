@@ -124,8 +124,6 @@ See [Dockerfile](Dockerfile) and [docker/](docker/) scripts for details.
 Use the provided tasks for common operations:
 - **CMake Configure**: Initialize build system
 - **CMake Build**: Compile all targets
-- **Run Unit Tests**: Execute test suite
-- **Run**: Launch example applications
 
 ---
 
@@ -179,89 +177,6 @@ Use the provided tasks for common operations:
 | Audio Devices, MIDI Devices (x86/ARM)|
 +--------------------------------------+
 ```
-
-### 5.2 Project Structure
-```
-miniaudioengine/
-├── src/                          # Source code
-│   ├── framework/                # Layer 0 - Lock-free primitives
-│   │   └── include/
-│   │       ├── engine.h          # Legacy threading pattern (IEngine<T>)
-│   │       ├── messagequeue.h    # Thread-safe message queue
-│   │       ├── lockfree_ringbuffer.h  # Lock-free SPSC queue
-│   │       ├── doublebuffer.h    # Atomic double-buffer
-│   │       ├── realtime_assert.h # RT safety macros (stubs)
-│   │       ├── logger.h          # Thread-safe logging
-│   │       └── observer.h        # Observer pattern
-│   ├── data/                # Layer 1 - Real-time components
-│   │   ├── audio/
-│   │   │   ├── audiodataplane.h         # Per-track audio rendering
-│   │   │   └── audiocallbackhandler.h   # RtAudio callback wrapper
-│   │   └── midi/
-│   │       ├── mididataplane.h          # Per-track MIDI processing
-│   │       ├── midicallbackhandler.h    # RtMidi callback wrapper
-│   │       └── midicontroltypes.h       # MIDI CC definitions
-│   ├── control/             # Layer 3 - Synchronous control
-│   │   ├── audio/                # AudioStreamController
-│   │   ├── midi/                 # MidiPortController, MIDI types
-│   │   ├── trackmanager/         # Track, TrackManager, MainTrack
-│   │   ├── devicemanager/        # Device enumeration
-│   │   └── filemanager/          # WAV/MIDI file I/O
-│   └── cli/                      # Layer 4 - Basic CLI
-├── tests/                        # Test suite
-│   ├── unit/                     # Unit tests (GTest)
-│   ├── profiling/                # Performance profiling
-│   └── integration/              # Integration tests (planned)
-├── examples/                     # Example applications
-│   ├── wav-audio-player/         # WAV file playback example
-│   └── midi-device-input/        # MIDI device input example
-├── samples/                      # Sample audio/MIDI files
-├── docker/                       # Docker build scripts
-├── .github/workflows/            # CI/CD pipeline
-├── CMakeLists.txt                # Build configuration
-├── vcpkg.json                    # Dependency manifest
-└── README.md                     # This file
-```
-
-### 5.3 Threading Model
-
-#### Control Plane (Main Thread)
-- Synchronous singleton operations: `AudioStreamController::instance()`, `TrackManager::instance()`
-- Methods block until complete (e.g., `start_stream()`, `stop_stream()`)
-- Can use `std::mutex` for thread safety where needed
-
-#### Data Plane (Real-Time Callbacks)
-- Audio callback executes in RtAudio's callback thread
-- MIDI callback executes in RtMidi's callback thread
-- **Strict lock-free requirement**: No mutexes, no allocations, no blocking I/O
-- Must complete in < 1ms to avoid dropouts
-- Use `LockfreeRingBuffer` for inter-thread communication
-
-#### Framework Lock-Free Primitives
-- **LockfreeRingBuffer<T, Size>**: SPSC queue with `memory_order_acquire/release`
-- **DoubleBuffer<T>**: Atomic swap for producer/consumer patterns
-- Used for passing MIDI events, audio buffers between threads
-
-### 5.4 Key Design Patterns
-
-#### Hierarchical Track Routing
-```
-MainTrack (root, hardware output)
-├── Track 1 (virtual output → MainTrack)
-│   ├── Track 1A (virtual output → Track 1)
-│   └── Track 1B (virtual output → Track 1)
-└── Track 2 (virtual output → MainTrack)
-```
-- Tracks form tree structure with MainTrack as root
-- Each track mixes child outputs into its own output
-- Parent-child relationships managed in control plane
-- Actual mixing happens in data plane (audio callback)
-
-#### Real-Time Safety
-- Data plane: Lock-free only, no allocations
-- Use `RT_ASSERT_NO_LOCKS()`, `RT_ASSERT_NO_ALLOCATIONS()` (stubs for now)
-- Preload audio data in control plane before playback
-- Use lock-free queues for control→data communication
 
 ---
 
@@ -334,38 +249,6 @@ track->set_midi_control_change_callback([](const MidiControlMessage& msg, TrackP
 track->play();
 ```
 
-### 6.3 Hierarchical Track Routing
-```cpp
-using namespace miniaudioengine::control;
-
-auto& track_manager = TrackManager::instance();
-
-// MainTrack is the root (hardware audio output)
-auto main_track = track_manager.get_main_track();
-
-// Create parent track
-auto parent_track = track_manager.create_child_track(); // Child of MainTrack
-parent_track->set_output_gain(0.8f); // 80% volume to MainTrack
-
-// Create child tracks
-auto child_track_1 = track_manager.create_child_track(parent_track);
-child_track_1->set_output_gain(0.5f); // 50% volume to parent
-
-auto child_track_2 = track_manager.create_child_track(parent_track);
-child_track_2->set_output_gain(0.7f); // 70% volume to parent
-
-// Add audio inputs to child tracks
-auto wav1 = FileManager::instance().read_wav_file("track1.wav");
-auto wav2 = FileManager::instance().read_wav_file("track2.wav");
-
-child_track_1->add_audio_input(wav1.value());
-child_track_2->add_audio_input(wav2.value());
-
-// Play both (outputs mix to parent, then to MainTrack hardware output)
-child_track_1->play();
-child_track_2->play();
-```
-
 ---
 
 ## 7. Testing
@@ -390,15 +273,6 @@ Tested components:
 - MessageQueue (thread-safe queue)
 - Observer/Subject pattern
 
-### 7.2 Profiling Tests
-Performance tests for lock-free structures and audio processing:
-- `test_lockfree_ringbuffer_profiling.cpp`: SPSC throughput at various sample rates
-- `test_track_wav_file_profiling.cpp`: WAV file playback performance
-- Python analysis scripts for results visualization
-
-### 7.3 Integration Tests
-Planned - directory exists but not yet populated.
-
 ---
 
 ## 8. Continuous Integration (CI/CD)
@@ -408,46 +282,6 @@ The repository uses **GitHub Actions** to automate:
 3. Unit test execution
 4. Packaging of build artifacts (`.tar.gz`)
 5. Release management
-
----
-
-## 9. Current Status & Roadmap
-
-### ✅ Completed
-- Control Plane: AudioStreamController, MidiPortController, TrackManager, DeviceManager, FileManager
-- Data Plane: TrackAudioDataPlane, TrackMidiDataPlane, callback handlers
-- Framework: Lock-free primitives (LockfreeRingBuffer, DoubleBuffer), Logger
-- Hierarchical track routing with parent-child mixing
-- WAV file playback with statistics
-- MIDI device input/output
-- Unit tests for all major components
-- Profiling tests for performance analysis
-- Basic CLI implementation
-- Example applications (wav-audio-player, midi-device-input)
-
-### 🚧 In Progress
-- Processing Plane (Layer 2) for background DSP workers
-- RealtimeAssert implementation (stubs exist)
-- Refactoring Track to be control-plane only (currently uses Observer pattern and mutex)
-
-### 📋 Planned
-- Complete CLI application
-- VST3 plugin wrapper
-- Additional DSP effects and processors
-- MIDI file playback
-- Audio recording functionality
-- Plugin hosting architecture
-- Integration tests
-
----
-
-## 10. Contributing
-This is a personal learning project focused on mastering:
-- Modern C++20 features and best practices
-- Lock-free data structures and concurrent programming
-- Real-time audio processing constraints
-- Cross-platform development
-- Architectural design patterns
 
 ---
 
