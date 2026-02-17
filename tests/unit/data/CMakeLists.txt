@@ -1,6 +1,6 @@
 add_library(miniaudioengine-unit-test-data STATIC
-  test_trackaudiodataplane_unit.cpp
-  test_trackmididataplane_unit.cpp
+  test_audiodataplane_unit.cpp
+  test_mididataplane_unit.cpp
 )
 
 target_link_libraries(miniaudioengine-unit-test-data PRIVATE

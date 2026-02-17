@@ -54,6 +54,17 @@ public:
     return m_midi_input_stats;
   }
 
+  bool start() override
+  {
+    m_midi_input_stats.total_messages_processed = 0;
+    return true;
+  }
+
+  bool stop() override
+  {
+    return true;
+  }
+
 private:
   MidiInputStatistics m_midi_input_stats;
 

@@ -36,7 +36,7 @@ bool IAudioController::register_dataplanes()
   auto dataplanes = get_registered_dataplanes();
   if (dataplanes.empty())
   {
-    LOG_ERROR("AudioController: No IDataPlanes registered. Cannot register dataplanes for audio callback.");
+    LOG_ERROR("AudioController: No dataplanes registered. Cannot register dataplanes for audio callback.");
     return false;
   }
 

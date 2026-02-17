@@ -62,18 +62,21 @@ class AudioDataPlane : public core::IDataPlane
 public:
   /** @brief Start audio processing.
    */
-  void start() override
+  bool start() override
   {
-    core::IDataPlane::start();
     m_read_position.store(0, std::memory_order_release);
+    return true;
   }
 
   /** @brief Stop audio processing and clear buffers.
    */
-  void stop() override
+  bool stop() override
   {
-    core::IDataPlane::stop();
     m_preloaded_frames_buffer.clear();
+    m_output_buffer.clear();
+    m_mix_buffer.clear();
+    m_read_position.store(0, std::memory_order_release);
+    return true;
   }
 
   /** @brief Process audio data. This is called from the RtAudio callback function.

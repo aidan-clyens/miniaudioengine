@@ -12,7 +12,18 @@ namespace miniaudioengine::test
 
 class MockDataPlane : public IDataPlane
 {
+public:
+  bool start() override
+  {
+    LOG_INFO("MockDataPlane: start() called.");
+    return true;
+  }
 
+  bool stop() override
+  {
+    LOG_INFO("MockDataPlane: stop() called.");
+    return true;
+  }
 };
 
 typedef std::shared_ptr<MockDataPlane> MockDataPlanePtr;
