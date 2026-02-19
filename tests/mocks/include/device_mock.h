@@ -10,7 +10,11 @@ using namespace miniaudioengine::core;
 namespace miniaudioengine::test
 {
 
-class MockDevice : public IDevice
+/** @class MockDevice
+ *  @brief A mock implementation of the IDevice interface for testing purposes.
+ *  This class simulates an audio or MIDI device and can be configured to be an input, output, or both.
+ */
+class MockDevice : public IAudioDevice
 {
 public:
   MockDevice(bool is_input = true, bool is_output = false)
@@ -32,7 +36,18 @@ public:
   }
 };
 
-typedef std::shared_ptr<MockDevice> MockDevicePtr;
+using MockDevicePtr = std::shared_ptr<MockDevice>;
+
+/** @class MockAudioOutputDevice
+ *  @brief A mock output device that simulates an audio output device.
+ */
+class MockAudioOutputDevice : public MockDevice
+{
+public:
+  MockAudioOutputDevice() : MockDevice(false, true) {}
+};
+
+using MockAudioOutputDevicePtr = std::shared_ptr<MockAudioOutputDevice>;
 
 } // namespace miniaudioengine::test
 

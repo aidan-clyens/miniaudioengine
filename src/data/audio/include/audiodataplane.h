@@ -20,8 +20,9 @@ namespace miniaudioengine::data
 /** @struct AudioOutputStatistics
  *  @brief Statistics related to reading WAV files.
  */
-struct AudioOutputStatistics
+class AudioOutputStatistics : public core::IDataPlaneStatistics
 {
+public:
   sf_count_t total_frames_read = 0;
   double total_read_time_ms = 0.0;
   size_t batch_size_frames = 0;
@@ -38,6 +39,20 @@ struct AudioOutputStatistics
   AudioOutputStatistics& operator=(const AudioOutputStatistics&) = default;
   virtual ~AudioOutputStatistics() = default;
 
+  void reset() override
+  {
+    total_frames_read = 0;
+    total_read_time_ms = 0.0;
+    batch_size_frames = 0;
+    total_batches = 0;
+    average_batch_time_ms = 0.0;
+    max_batch_time_ms = 0.0;
+    min_batch_time_ms = 0.0;
+    throughput_frames_per_second = 0.0;
+    underrun_count = 0;
+    overrun_count = 0;
+  }
+
   std::string to_string() const
   {
     return "AudioOutputStatistics(\n  Total Frames Read = " + std::to_string(total_frames_read) +
@@ -53,6 +68,8 @@ struct AudioOutputStatistics
   }
 };
 
+using AudioOutputStatisticsPtr = std::shared_ptr<AudioOutputStatistics>;
+
 /** @class AudioDataPlane
  *  @brief Data plane for handling audio data for a Track. The Data plane is only a callback
  *  target for RtAudio and is not a producer/consumer of audio data itself.
@@ -60,23 +77,10 @@ struct AudioOutputStatistics
 class AudioDataPlane : public core::IDataPlane
 {
 public:
-  /** @brief Start audio processing.
-   */
-  bool start() override
+  AudioDataPlane(): IDataPlane()
   {
-    m_read_position.store(0, std::memory_order_release);
-    return true;
-  }
-
-  /** @brief Stop audio processing and clear buffers.
-   */
-  bool stop() override
-  {
-    m_preloaded_frames_buffer.clear();
-    m_output_buffer.clear();
-    m_mix_buffer.clear();
-    m_read_position.store(0, std::memory_order_release);
-    return true;
+    m_name = "AudioDataPlane";
+    p_statistics = std::make_shared<AudioOutputStatistics>();
   }
 
   /** @brief Process audio data. This is called from the RtAudio callback function.
@@ -93,14 +97,6 @@ public:
    *  @param wav_file Shared pointer to the WavFile to preload.
    */
   void preload_wav_file(const file::WavFilePtr& wav_file);
-
-  /** @brief Get audio output statistics.
-   *  @return AudioOutputStatistics structure containing output statistics.
-   */
-  AudioOutputStatistics get_audio_output_statistics() const
-  {
-    return m_audio_output_stats;
-  }
 
   // Mixing and routing for hierarchy
 
@@ -142,14 +138,27 @@ private:
   std::vector<float> m_output_buffer;  // Virtual output for routing to parent
   std::vector<float> m_mix_buffer;     // Temporary buffer for mixing operations
 
-  AudioOutputStatistics m_audio_output_stats;
-
   std::atomic<unsigned int> m_read_position{0};
 
   std::vector<std::shared_ptr<processing::IAudioProcessor>> m_processors;
 
 private:
   void update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time);
+
+  bool _start() override
+  {
+    m_read_position.store(0, std::memory_order_release);
+    return true;
+  }
+
+  bool _stop() override
+  {
+    m_preloaded_frames_buffer.clear();
+    m_output_buffer.clear();
+    m_mix_buffer.clear();
+    m_read_position.store(0, std::memory_order_release);
+    return true;
+  }
 };
 
 typedef std::shared_ptr<AudioDataPlane> AudioDataPlanePtr;

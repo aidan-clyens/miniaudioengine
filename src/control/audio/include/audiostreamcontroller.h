@@ -29,7 +29,7 @@ public:
   /** @brief Get Available Audio Devices
    *  @return List of available audio devices
    */
-  std::vector<AudioDevice> get_audio_devices();
+  std::vector<core::IAudioDevicePtr> get_audio_devices();
 
 private:
   RtAudio m_rtaudio;

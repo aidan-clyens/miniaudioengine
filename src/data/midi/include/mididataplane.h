@@ -19,8 +19,9 @@ namespace miniaudioengine::data
 /** @struct MidiInputStatistics
  *  @brief Statistics related to MIDI input processing.
  */
-struct MidiInputStatistics
+class MidiInputStatistics : public core::IDataPlaneStatistics
 {
+public:
   size_t total_messages_processed = 0;
 
   MidiInputStatistics() = default;
@@ -28,11 +29,18 @@ struct MidiInputStatistics
   MidiInputStatistics& operator=(const MidiInputStatistics&) = default;
   virtual ~MidiInputStatistics() = default;
 
-  std::string to_string() const
+  void reset() override
+  {
+    total_messages_processed = 0;
+  }
+
+  std::string to_string() const override
   {
     return "MidiInputStatistics(\n  Total Messages Processed = " + std::to_string(total_messages_processed) + ")";
   }
 };
+
+using MidiInputStatisticsPtr = std::shared_ptr<MidiInputStatistics>;
 
 /** @class MidiDataPlane
  *  @brief Data plane for handling MIDI messages for a track. The Data plane is only a callback
@@ -41,35 +49,29 @@ struct MidiInputStatistics
 class MidiDataPlane : public core::IDataPlane
 {
 public:
+  MidiDataPlane(): IDataPlane()
+  {
+    m_name = "MidiDataPlane";
+    p_statistics = std::make_shared<MidiInputStatistics>();
+  }
+
   /** @brief Process an incoming MIDI message. Called from the RtMidi callback function.
    *  @param midi_message The MIDI message to process.
    */  
   void process_midi_message(const control::MidiMessage& midi_message);
 
-  /** @brief Get MIDI input statistics.
-   *  @return MidiInputStatistics structure containing input statistics.
-   */
-  MidiInputStatistics get_statistics() const
-  {
-    return m_midi_input_stats;
-  }
+private:
+  void update_midi_input_statistics(const control::MidiMessage& midi_message);
 
-  bool start() override
-  {
-    m_midi_input_stats.total_messages_processed = 0;
-    return true;
-  }
-
-  bool stop() override
+  bool _start() override
   {
     return true;
   }
 
-private:
-  MidiInputStatistics m_midi_input_stats;
-
-private:
-  void update_midi_input_statistics(const control::MidiMessage& midi_message); 
+  bool _stop() override
+  {
+    return true;
+  }
 };
 
 typedef std::shared_ptr<MidiDataPlane> MidiDataPlanePtr;

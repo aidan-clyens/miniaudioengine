@@ -23,5 +23,16 @@ void MidiDataPlane::process_midi_message(const MidiMessage &midi_message)
 
 void MidiDataPlane::update_midi_input_statistics(const MidiMessage &midi_message)
 {
-  m_midi_input_stats.total_messages_processed++;
+  if (p_statistics)
+  {
+    auto midi_stats = std::dynamic_pointer_cast<MidiInputStatistics>(p_statistics);
+    if (midi_stats)
+    {
+      midi_stats->total_messages_processed++;
+    }
+  }
+  else
+  {
+    LOG_WARNING("MidiDataPlane: No statistics object available to update.");
+  }
 }

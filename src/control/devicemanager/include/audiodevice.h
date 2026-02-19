@@ -14,11 +14,11 @@ namespace miniaudioengine::control
 /** @class AudioDevice
  *  @brief Audio device
  */
-class AudioDevice : public core::IDevice
+class AudioDevice : public core::IAudioDevice
 {
 public:
   AudioDevice() = default;
-  AudioDevice(RtAudio::DeviceInfo info): core::IDevice()
+  AudioDevice(RtAudio::DeviceInfo info): core::IAudioDevice()
   {
     id = info.ID;
     name = info.name;

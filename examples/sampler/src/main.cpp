@@ -46,7 +46,7 @@ public:
       LOG_ERROR("Sampler: No default audio output device found.");
       return;
     }
-    m_track_manager.set_audio_output_device(*default_output);
+    m_track_manager.set_audio_output_device(default_output);
 
     // Set to default MIDI input device
     auto default_midi_input = m_device_manager.get_default_midi_input_device();
@@ -55,7 +55,7 @@ public:
       LOG_ERROR("Sampler: No default MIDI input device found.");
       return;
     }
-    m_track->add_midi_input(*default_midi_input);
+    m_track->add_midi_input(default_midi_input);
 
     // Add Sample Player processor to track
     m_sample_player = std::make_shared<processing::SamplePlayer>();
@@ -78,12 +78,12 @@ public:
     return wav_files;
   }
 
-  std::vector<control::MidiDevice> list_midi_devices()
+  std::vector<core::IDevicePtr> list_midi_devices()
   {
     return m_device_manager.get_midi_devices();
   }
 
-  std::vector<control::AudioDevice> list_audio_devices()
+  std::vector<core::IAudioDevicePtr> list_audio_devices()
   {
     return m_device_manager.get_audio_devices();
   }
@@ -115,7 +115,7 @@ public:
     LOG_INFO("Sampler: Loaded sample: ", *sample);
   }
 
-  void set_audio_output_device(const control::AudioDevice &device)
+  void set_audio_output_device(const core::IAudioDevicePtr &device)
   {
     try
     {
@@ -126,7 +126,7 @@ public:
     }
   }
 
-  void set_midi_input_device(const control::MidiDevice &device)
+  void set_midi_input_device(const core::IDevicePtr &device)
   {
     try
     {
@@ -217,7 +217,7 @@ int main()
       std::cout << "Available MIDI Input Devices:\n";
       for (const auto &device : midi_inputs)
       {
-        std::cout << device.to_string() << "\n";
+        std::cout << device->to_string() << "\n";
       }
       std::exit(0);
     }),
@@ -227,7 +227,7 @@ int main()
       std::cout << "Available Audio Output Devices:\n";
       for (const auto &device : audio_outputs)
       {
-        std::cout << device.to_string() << "\n";
+        std::cout << device->to_string() << "\n";
       }
       std::exit(0);
     }),
@@ -235,13 +235,13 @@ int main()
     {
       unsigned int device_id = static_cast<unsigned int>(std::stoi(arg));
       auto midi_inputs = app.list_midi_devices();
-      auto it = std::find_if(midi_inputs.begin(), midi_inputs.end(), [device_id](const control::MidiDevice &device)
+      auto it = std::find_if(midi_inputs.begin(), midi_inputs.end(), [device_id](const core::IDevicePtr &device)
       {
-        return device.id == device_id;
+        return device->id == device_id;
       });
       if (it != midi_inputs.end())
       {
-        std::cout << "Using MIDI input device: " << it->to_string() << "\n";
+        std::cout << "Using MIDI input device: " << (*it)->to_string() << "\n";
         app.set_midi_input_device(*it);
       }
       else
@@ -254,13 +254,13 @@ int main()
     {
       unsigned int device_id = static_cast<unsigned int>(std::stoi(arg));
       auto audio_outputs = app.list_audio_devices();
-      auto it = std::find_if(audio_outputs.begin(), audio_outputs.end(), [device_id](const control::AudioDevice &device)
+      auto it = std::find_if(audio_outputs.begin(), audio_outputs.end(), [device_id](const core::IAudioDevicePtr &device)
       {
-        return device.id == device_id;
+        return device->id == device_id;
       });
       if (it != audio_outputs.end())
       {
-        std::cout << "Using audio output device: " << it->to_string() << "\n";
+        std::cout << "Using audio output device: " << (*it)->to_string() << "\n";
         app.set_audio_output_device(*it);
       }
       else

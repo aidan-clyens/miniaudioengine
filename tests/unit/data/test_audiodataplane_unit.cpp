@@ -88,10 +88,13 @@ TEST_F(AudioDataPlaneTest, Action4_StartStopProcessing)
 
 TEST_F(AudioDataPlaneTest, Action5_ProcessAudioAndStatistics)
 {
-  auto stats = audio_dataplane()->get_audio_output_statistics();
-  EXPECT_EQ(stats.total_frames_read, 0) << "Total frames read should be 0 initially";
+  auto stats = audio_dataplane()->get_statistics();
+  auto audio_stats = std::dynamic_pointer_cast<AudioOutputStatistics>(stats);
+  ASSERT_NE(audio_stats, nullptr) << "Statistics object should be of type AudioOutputStatistics";
 
-  LOG_INFO("Initial AudioOutputStatistics: ", stats.to_string());
+  EXPECT_EQ(audio_stats->total_frames_read, 0) << "Total frames read should be 0 initially";
+
+  LOG_INFO("Initial AudioOutputStatistics: ", audio_stats->to_string());
 
   audio_dataplane()->start();
   EXPECT_TRUE(audio_dataplane()->is_running()) << "AudioDataPlane should be running after start()";
@@ -102,11 +105,14 @@ TEST_F(AudioDataPlaneTest, Action5_ProcessAudioAndStatistics)
   audio_dataplane()->process_audio(output_buffer.data(), nullptr, n_frames, 0.0, 0);
 
   // Get updated statistics
-  stats = audio_dataplane()->get_audio_output_statistics();
-  EXPECT_EQ(stats.total_frames_read, n_frames) << "Total frames read should equal processed frames";
-  EXPECT_EQ(stats.batch_size_frames, n_frames) << "Batch size frames should equal processed frames";
-  EXPECT_EQ(stats.total_batches, 1) << "Total batches should be 1 after one processing call";
-  LOG_INFO("Updated AudioOutputStatistics after processing: ", stats.to_string());
+  stats = audio_dataplane()->get_statistics();
+  audio_stats = std::dynamic_pointer_cast<AudioOutputStatistics>(stats);
+  ASSERT_NE(audio_stats, nullptr) << "Statistics object should be of type AudioOutputStatistics";
+
+  EXPECT_EQ(audio_stats->total_frames_read, n_frames) << "Total frames read should equal processed frames";
+  EXPECT_EQ(audio_stats->batch_size_frames, n_frames) << "Batch size frames should equal processed frames";
+  EXPECT_EQ(audio_stats->total_batches, 1) << "Total batches should be 1 after one processing call";
+  LOG_INFO("Updated AudioOutputStatistics after processing: ", audio_stats->to_string());
 }
 
 TEST_F(AudioDataPlaneTest, Action6_DoNotProcessAudioWhenStopped)
@@ -114,8 +120,11 @@ TEST_F(AudioDataPlaneTest, Action6_DoNotProcessAudioWhenStopped)
   audio_dataplane()->stop();
   EXPECT_FALSE(audio_dataplane()->is_running()) << "AudioDataPlane should not be running after stop()";
 
-  auto stats = audio_dataplane()->get_audio_output_statistics();
-  EXPECT_EQ(stats.total_frames_read, 0) << "Total frames read should be 0 initially";
+  auto stats = audio_dataplane()->get_statistics();
+  auto audio_stats = std::dynamic_pointer_cast<AudioOutputStatistics>(stats);
+  ASSERT_NE(audio_stats, nullptr) << "Statistics object should be of type AudioOutputStatistics";
+
+  EXPECT_EQ(audio_stats->total_frames_read, 0) << "Total frames read should be 0 initially";
 
   // Process a dummy audio buffer
   const unsigned int n_frames = 512;
@@ -123,8 +132,12 @@ TEST_F(AudioDataPlaneTest, Action6_DoNotProcessAudioWhenStopped)
   audio_dataplane()->process_audio(output_buffer.data(), nullptr, n_frames, 0.0, 0);
 
   // Get updated statistics
-  stats = audio_dataplane()->get_audio_output_statistics();
-  EXPECT_EQ(stats.total_frames_read, 0) << "Total frames read should remain 0 when stopped";
-  EXPECT_EQ(stats.total_batches, 0) << "Total batches should remain 0 when stopped";
-  LOG_INFO("AudioOutputStatistics after processing while stopped: ", stats.to_string());
+  stats = audio_dataplane()->get_statistics();
+  audio_stats = std::dynamic_pointer_cast<AudioOutputStatistics>(stats);
+  ASSERT_NE(audio_stats, nullptr) << "Statistics object should be of type AudioOutputStatistics";
+
+  EXPECT_EQ(audio_stats->total_frames_read, 0) << "Total frames read should remain 0 when stopped";
+  EXPECT_EQ(audio_stats->total_batches, 0) << "Total batches should remain 0 when stopped";
+
+  LOG_INFO("AudioOutputStatistics after processing while stopped: ", audio_stats->to_string());
 }

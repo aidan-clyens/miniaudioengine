@@ -14,7 +14,7 @@ class IDevice
 {
 public:
   IDevice() = default;
-  ~IDevice() = default;
+  virtual ~IDevice() = default;
 
   IDevice(const IDevice &) = default;
   IDevice &operator=(const IDevice &) = default;
@@ -44,6 +44,37 @@ public:
 };
 
 using IDevicePtr = std::shared_ptr<IDevice>;
+
+/** @class AudioDevice
+ *  @brief Represents an audio device with specific properties.
+ */
+class IAudioDevice : public IDevice
+{
+public:
+  IAudioDevice() = default;
+  ~IAudioDevice() override = default;
+
+  IAudioDevice(const IAudioDevice &) = default;
+  IAudioDevice &operator=(const IAudioDevice &) = default;
+
+  unsigned int output_channels;
+  unsigned int input_channels;
+  unsigned int duplex_channels;
+  std::vector<unsigned int> sample_rates;
+  unsigned int preferred_sample_rate;
+
+  bool is_input() const override
+  {
+    return input_channels > 0 || duplex_channels > 0;
+  }
+
+  bool is_output() const override
+  {
+    return output_channels > 0 || duplex_channels > 0;
+  }
+};
+
+using IAudioDevicePtr = std::shared_ptr<IAudioDevice>;
 
 } // namespace miniaudioengine::core
 

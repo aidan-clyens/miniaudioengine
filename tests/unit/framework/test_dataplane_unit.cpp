@@ -5,7 +5,7 @@
 
 using namespace miniaudioengine::test;
 
-class IDataplaneUnitTest : public ::testing::Test
+class IDataPlaneUnitTest : public ::testing::Test
 {
 public:
   MockDataPlanePtr dataplane() const { return p_dataplane; }
@@ -24,7 +24,7 @@ private:
   MockDataPlanePtr p_dataplane;
 };
 
-TEST_F(IDataplaneUnitTest, Action1_SetInputChannels)
+TEST_F(IDataPlaneUnitTest, Action1_SetInputChannels)
 {
   for (size_t i = 0; i < 10; ++i)
   {
@@ -34,7 +34,7 @@ TEST_F(IDataplaneUnitTest, Action1_SetInputChannels)
   }
 }
 
-TEST_F(IDataplaneUnitTest, Action2_SetOutputChannels)
+TEST_F(IDataPlaneUnitTest, Action2_SetOutputChannels)
 {
   for (size_t i = 0; i < 10; ++i)
   {
@@ -44,29 +44,48 @@ TEST_F(IDataplaneUnitTest, Action2_SetOutputChannels)
   }
 }
 
-TEST_F(IDataplaneUnitTest, Action3_Start)
+TEST_F(IDataPlaneUnitTest, Action3_Start)
 {
   // Check running state
   EXPECT_FALSE(dataplane()->is_running());
 
   // Request start and check state
-  dataplane()->request_start();
+  dataplane()->start();
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   EXPECT_TRUE(dataplane()->is_running());
 }
 
-TEST_F(IDataplaneUnitTest, Action4_Stop)
+TEST_F(IDataPlaneUnitTest, Action4_Stop)
 {
   // Check running state
   EXPECT_FALSE(dataplane()->is_running());
 
   // Request start and check state
-  dataplane()->request_start();
+  dataplane()->start();
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   EXPECT_TRUE(dataplane()->is_running());
 
   // Request stop and check state
-  dataplane()->request_stop();
+  dataplane()->stop();
   std::this_thread::sleep_for(std::chrono::milliseconds(100));
   EXPECT_FALSE(dataplane()->is_running());
+}
+
+TEST_F(IDataPlaneUnitTest, Action5_GetStatistics)
+{
+  auto stats = dataplane()->get_statistics();
+  ASSERT_NE(stats, nullptr);
+
+  // Cast to derived class MockDataStatistics
+  auto mock_stats = std::dynamic_pointer_cast<MockDataStatistics>(stats);
+  ASSERT_NE(mock_stats, nullptr);
+  EXPECT_EQ(mock_stats->frame_counter, 0);
+
+  // Modify statistics and check if it reflects in the data plane
+  mock_stats->frame_counter = 42;
+
+  auto mock_status_2 = std::dynamic_pointer_cast<MockDataStatistics>(dataplane()->get_statistics());
+  ASSERT_NE(mock_status_2, nullptr);
+
+  EXPECT_EQ(mock_status_2->frame_counter, 42);
 }

@@ -10,6 +10,24 @@
 namespace miniaudioengine::core
 {
 
+class IDataPlaneStatistics
+{
+public:
+  IDataPlaneStatistics() = default;
+  IDataPlaneStatistics(const IDataPlaneStatistics&) = default;
+  IDataPlaneStatistics& operator=(const IDataPlaneStatistics&) = default;
+  virtual ~IDataPlaneStatistics() = default;
+
+  virtual void reset() = 0;
+
+  virtual std::string to_string() const
+  {
+    return "IDataPlaneStatistics";
+  }
+};
+
+using IDataPlaneStatisticsPtr = std::shared_ptr<IDataPlaneStatistics>;
+
 /** @class IDataPlane
  *  @brief Abstract base class for data planes in the framework.
  *  Data planes handle the processing and management of data streams,
@@ -19,16 +37,21 @@ namespace miniaudioengine::core
 class IDataPlane
 {
 public:
-  virtual ~IDataPlane()
-  {
-    stop();
-  }
+  IDataPlane() = default;
+  IDataPlane(const IDataPlane&) = delete; // Disable copy constructor
+  IDataPlane& operator=(const IDataPlane&) = delete; // Disable copy assignment
+
+  virtual ~IDataPlane() = default;
 
   /** @brief Set the number of input channels of the audio input.
    *  @param channels Number of input channels.
    */
   void set_input_channels(unsigned int channels)
   {
+    if (static_cast<int>(channels) < 0)
+    {
+      throw std::invalid_argument("Input channels cannot be negative");
+    }
     m_input_channels = channels;
   }
 
@@ -37,6 +60,10 @@ public:
    */
   void set_output_channels(unsigned int channels)
   {
+    if (static_cast<int>(channels) < 0)
+    {
+      throw std::invalid_argument("Output channels cannot be negative");
+    }
     m_output_channels = channels;
   }
 
@@ -61,23 +88,43 @@ public:
    */
   bool is_running() const
   {
-    return !m_stop_command.load(std::memory_order_acquire);
+    return m_is_running.load(std::memory_order_acquire);
   }
 
   /** @brief Start audio processing.
+   *  @return True if started successfully, false otherwise.
    */
-  virtual void start()
+  bool start()
   {
-    LOG_DEBUG("DataPlane: Sent Start command.");
+    LOG_DEBUG(m_name, ": Requested Start.");
+
+    if (p_statistics)
+    {
+      p_statistics->reset();
+    }
+
     m_stop_command.store(false, std::memory_order_release);
+    m_is_running.store(true, std::memory_order_release);
+    return _start();
   }
 
   /** @brief Stop audio processing and clear buffers.
+   *  @return True if stopped successfully, false otherwise.
    */
-  virtual void stop()
+  bool stop()
   {
-    LOG_DEBUG("DataPlane: Sent Stop command.");
+    LOG_DEBUG(m_name, ": Requested Stop.");
     m_stop_command.store(true, std::memory_order_release);
+    m_is_running.store(false, std::memory_order_release);
+    return _stop();
+  }
+
+  /** @brief Get the statistics object for this data plane.
+   *  @return Shared pointer to the statistics object.
+   */
+  virtual IDataPlaneStatisticsPtr get_statistics() const
+  {
+    return p_statistics;
   }
 
   std::string to_string() const
@@ -88,11 +135,17 @@ public:
 
 protected:
   std::atomic<bool> m_stop_command{true};
+  std::atomic<bool> m_is_running{false};
 
   std::string m_name{"IDataPlane"};
 
+  IDataPlaneStatisticsPtr p_statistics;
+
   unsigned int m_input_channels{0};
   unsigned int m_output_channels{0};
+
+  virtual bool _start() = 0;
+  virtual bool _stop() = 0;
 };
 
 } // namespace miniaudioengine::core

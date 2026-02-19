@@ -41,9 +41,9 @@ static miniaudioengine::CommandList commands = {
     [](const char *arg){
       LOG_INFO("Listing available MIDI input devices...");
       auto midi_devices = miniaudioengine::control::DeviceManager::instance().get_midi_devices();
-      for (const auto& device : midi_devices)
+      for (const auto &device : midi_devices)
       {
-        std::cout << device.to_string() << std::endl;
+        std::cout << device->to_string() << std::endl;
       }
       std::exit(0);
     }
@@ -60,13 +60,13 @@ static miniaudioengine::CommandList commands = {
       }
       unsigned int device_id = std::stoi(arg);
       auto midi_device = miniaudioengine::control::DeviceManager::instance().get_midi_device(device_id);
-      if (midi_device.id != device_id)
+      if (midi_device->id != device_id)
       {
         LOG_ERROR("MIDI input device with ID " + std::to_string(device_id) + " not found.");
         return;
       }
-      LOG_INFO("MIDI input device set to: " + midi_device.to_string());
-      std::cout << "MIDI input device set to: " << midi_device.to_string() << std::endl;
+      LOG_INFO("MIDI input device set to: " + midi_device->to_string());
+      std::cout << "MIDI input device set to: " << midi_device->to_string() << std::endl;
       midi_input_device_id = device_id;
     }
   ),
@@ -120,9 +120,9 @@ int main(int argc, char* argv[])
     miniaudioengine::control::DeviceManager::instance().get_midi_device(midi_input_device_id.value()) :
     miniaudioengine::control::DeviceManager::instance().get_default_midi_input_device();
 
-  if (midi_input_device.has_value())
+  if (midi_input_device)
   {
-    track->add_midi_input(midi_input_device.value());
+    track->add_midi_input(midi_input_device);
     std::cout << "Using MIDI input device: " << midi_input_device->to_string() << std::endl;
   }
   else 

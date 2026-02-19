@@ -1,26 +1,28 @@
 #include <gtest/gtest.h>
 #include <thread>
 #include <chrono>
+
 #include "devicemanager.h"
-#include "audiostreamcontroller.h"
-#include "audiodevice.h"
+
+// Mocks
 #include "audiocontroller_mock.h"
+#include "device_mock.h"
 
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::test;
 
-class AudioStreamControllerTest : public ::testing::Test
+class AudioControllerTest : public ::testing::Test
 {
 public:
-  AudioStreamControllerTest() = default;
-  ~AudioStreamControllerTest() override = default;
+  AudioControllerTest() = default;
+  ~AudioControllerTest() override = default;
 
-  AudioControllerMockPtr get_audio_controller_mock() const
+  MockAudioControllerPtr get_audio_controller_mock() const
   {
     return p_audio_controller;
   }
 
-  AudioDevicePtr get_default_audio_output_device() const
+  MockAudioOutputDevicePtr get_default_audio_output_device() const
   {
     return p_audio_output_device;
   }
@@ -28,10 +30,10 @@ public:
   void SetUp() override
   {
     // Initialize mock audio controller
-    p_audio_controller = std::make_shared<AudioControllerMock>();
+    p_audio_controller = std::make_shared<MockAudioController>();
 
     // Get audio output device
-    p_audio_output_device = std::make_shared<AudioDevice>(p_audio_controller->get_audio_output_device_mock());
+    p_audio_output_device = p_audio_controller->get_audio_output_device_mock();
     EXPECT_TRUE(p_audio_output_device != nullptr);
     EXPECT_TRUE(p_audio_output_device->is_output());
   }
@@ -58,13 +60,13 @@ public:
   }
 
 private:
-  AudioDevicePtr p_audio_output_device;
-  AudioControllerMockPtr p_audio_controller;
+  MockAudioOutputDevicePtr p_audio_output_device;
+  MockAudioControllerPtr p_audio_controller;
 };
 
 /** @brief Get Audio Devices
  */
-TEST_F(AudioStreamControllerTest, GetAudioDevices)
+TEST_F(AudioControllerTest, GetAudioDevices)
 {
   auto devices = get_audio_controller_mock()->get_audio_devices();
   EXPECT_NE(devices.size(), 0) << "Expected to find at least 1 audio device";
@@ -72,7 +74,7 @@ TEST_F(AudioStreamControllerTest, GetAudioDevices)
 
 /** @brief Audio Callback Context Set
  */
-TEST_F(AudioStreamControllerTest, AudioCallbackContextSet)
+TEST_F(AudioControllerTest, AudioCallbackContextSet)
 {
   auto callback_context = get_audio_controller_mock()->get_callback_context();
   EXPECT_NE(callback_context, nullptr) << "Expected AudioCallbackContext to be set";
@@ -81,7 +83,7 @@ TEST_F(AudioStreamControllerTest, AudioCallbackContextSet)
 
 /** @brief Set Audio Output Device
  */
-TEST_F(AudioStreamControllerTest, SetAudioOutputDevice)
+TEST_F(AudioControllerTest, SetAudioOutputDevice)
 {
   auto device = get_default_audio_output_device();
   EXPECT_TRUE(device != nullptr) << "Expected to find a default audio output device";
@@ -100,21 +102,21 @@ TEST_F(AudioStreamControllerTest, SetAudioOutputDevice)
 
 /** @brief Set Audio Output Device - Not an Output Device
  */
-TEST_F(AudioStreamControllerTest, SetAudioOutputDevice_NotAnOutput)
+TEST_F(AudioControllerTest, SetAudioOutputDevice_NotAnOutput)
 {
   // Create a fake input-only device
-  AudioDevice input_only_device;
-  input_only_device.id = 9999;
-  input_only_device.name = "Input Only Device";
-  input_only_device.input_channels = 2;
-  input_only_device.output_channels = 0;
-  input_only_device.is_default_input = false;
-  input_only_device.is_default_output = false;
+  MockAudioOutputDevicePtr input_only_device = std::make_shared<MockAudioOutputDevice>();
+  input_only_device->id = 9999;
+  input_only_device->name = "Input Only Device";
+  input_only_device->input_channels = 2;
+  input_only_device->output_channels = 0;
+  input_only_device->is_default_input = false;
+  input_only_device->is_default_output = false;
 
   // Attempt to set the input-only device as the output device
   try
   {
-    get_audio_controller_mock()->set_output_device(std::make_shared<AudioDevice>(input_only_device));
+    get_audio_controller_mock()->set_output_device(input_only_device);
     FAIL() << "Expected std::invalid_argument exception";
   }
   catch (const std::invalid_argument& e)
@@ -129,7 +131,7 @@ TEST_F(AudioStreamControllerTest, SetAudioOutputDevice_NotAnOutput)
 
 /** @brief Start Stream - No Active Tracks
  */
-TEST_F(AudioStreamControllerTest, StartStream_NoActiveTracks)
+TEST_F(AudioControllerTest, StartStream_NoActiveTracks)
 {
   set_default_audio_output_device();
 
@@ -140,7 +142,7 @@ TEST_F(AudioStreamControllerTest, StartStream_NoActiveTracks)
 
 /** @brief Start Stream
  */
-TEST_F(AudioStreamControllerTest, StartStream)
+TEST_F(AudioControllerTest, StartStream)
 {
   set_default_audio_output_device();
 
@@ -156,7 +158,7 @@ TEST_F(AudioStreamControllerTest, StartStream)
 
 /** @brief Stop Stream
  */
-TEST_F(AudioStreamControllerTest, StopStream)
+TEST_F(AudioControllerTest, StopStream)
 {
   set_default_audio_output_device();
 
@@ -179,7 +181,7 @@ TEST_F(AudioStreamControllerTest, StopStream)
 
 /** @brief Set Audio Output Device - Stream Open
  */
-TEST_F(AudioStreamControllerTest, SetAudioOutputDevice_StreamOpen)
+TEST_F(AudioControllerTest, SetAudioOutputDevice_StreamOpen)
 {
   set_default_audio_output_device();
 

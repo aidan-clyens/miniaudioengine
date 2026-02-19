@@ -126,29 +126,42 @@ void AudioDataPlane::preload_wav_file(const WavFilePtr& wav_file)
 void AudioDataPlane::update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time)
 {
   // Update statistics
-  m_audio_output_stats.total_frames_read += n_frames;
-  m_audio_output_stats.total_batches++;
-  m_audio_output_stats.total_read_time_ms += batch_time_ms;
-  m_audio_output_stats.batch_size_frames = n_frames;
+  if (!p_statistics)
+  {
+    LOG_WARNING("AudioDataPlane: No statistics object available to update.");
+    return;
+  }
+
+  auto audio_stats = std::dynamic_pointer_cast<AudioOutputStatistics>(p_statistics);
+  if (!audio_stats)
+  {
+    LOG_WARNING("AudioDataPlane: Statistics object is not of type AudioOutputStatistics.");
+    return;
+  }
+
+  audio_stats->total_frames_read += n_frames;
+  audio_stats->total_batches++;
+  audio_stats->total_read_time_ms += batch_time_ms;
+  audio_stats->batch_size_frames = n_frames;
 
   // Calculate instantaneous throughput for this batch
-  double current_throughput = static_cast<double>(m_audio_output_stats.total_frames_read) /
+  double current_throughput = static_cast<double>(audio_stats->total_frames_read) /
     (stream_time > 0.0 ? stream_time : 1.0);
 
   // Update min/max throughput
-  if (m_audio_output_stats.total_batches == 1)
+  if (audio_stats->total_batches == 1)
   {
-    m_audio_output_stats.min_batch_time_ms = batch_time_ms;
-    m_audio_output_stats.max_batch_time_ms = batch_time_ms;
+    audio_stats->min_batch_time_ms = batch_time_ms;
+    audio_stats->max_batch_time_ms = batch_time_ms;
   }
   else
   {
-    m_audio_output_stats.min_batch_time_ms = std::min(m_audio_output_stats.min_batch_time_ms, batch_time_ms);
-    m_audio_output_stats.max_batch_time_ms = std::max(m_audio_output_stats.max_batch_time_ms, batch_time_ms);
+    audio_stats->min_batch_time_ms = std::min(audio_stats->min_batch_time_ms, batch_time_ms);
+    audio_stats->max_batch_time_ms = std::max(audio_stats->max_batch_time_ms, batch_time_ms);
   }
 
   // Update average throughput (cumulative moving average)
-  m_audio_output_stats.throughput_frames_per_second = current_throughput;
+  audio_stats->throughput_frames_per_second = current_throughput;
 }
 
 // ============================================================================

@@ -12,6 +12,8 @@
 #include "device.h"
 #include "logger.h"
 
+#include "device_mock.h"
+
 using namespace miniaudioengine::core;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
@@ -26,57 +28,64 @@ enum RtAudioErrorType
   RTAUDIO_ERROR,
 };
 
-class AudioControllerMock : public IAudioController
+class MockAudioController : public IAudioController
 {
 public:
-  explicit AudioControllerMock()
+  explicit MockAudioController()
   {
-    m_audio_output_device.id = 0;
-    m_audio_output_device.name = "Mock Output Device";
-    m_audio_output_device.is_default_output = true;
-    m_audio_output_device.is_default_input = false;
-    m_audio_output_device.output_channels = 2;
-    m_audio_output_device.input_channels = 0;
-    m_audio_output_device.duplex_channels = 0;
-    m_audio_output_device.sample_rates = {44100, 48000};
-    m_audio_output_device.preferred_sample_rate = 44100;
+    p_audio_output_device = std::make_shared<MockAudioOutputDevice>();
+    p_audio_input_device = std::make_shared<MockAudioOutputDevice>();
 
-    m_audio_input_device.id = 1;
-    m_audio_input_device.name = "Mock Input Device";
-    m_audio_input_device.is_default_output = false;
-    m_audio_input_device.is_default_input = true;
-    m_audio_input_device.output_channels = 0;
-    m_audio_input_device.input_channels = 2;
-    m_audio_input_device.duplex_channels = 0;
-    m_audio_input_device.sample_rates = {44100, 48000};
-    m_audio_input_device.preferred_sample_rate = 44100;
+    auto audio_output = std::dynamic_pointer_cast<MockAudioOutputDevice>(p_audio_output_device);
+    auto audio_input = std::dynamic_pointer_cast<MockAudioOutputDevice>(p_audio_input_device);
+
+    audio_output->id = 0;
+    audio_output->name = "Mock Output Device";
+    audio_output->is_default_output = true;
+    audio_output->is_default_input = false;
+    audio_output->output_channels = 2;
+    audio_output->input_channels = 0;
+    audio_output->duplex_channels = 0;
+    audio_output->sample_rates = {44100, 48000};
+    audio_output->preferred_sample_rate = 44100;
+
+    audio_input->id = 1;
+    audio_input->name = "Mock Input Device";
+    audio_input->is_default_output = false;
+    audio_input->is_default_input = true;
+    audio_input->output_channels = 0;
+    audio_input->input_channels = 2;
+    audio_input->duplex_channels = 0;
+    audio_input->sample_rates = {44100, 48000};
+    audio_input->preferred_sample_rate = 44100;
   }
 
-  ~AudioControllerMock() = default;
+  ~MockAudioController() = default;
 
-  std::vector<AudioDevice> get_audio_devices() override
+  std::vector<core::IAudioDevicePtr> get_audio_devices() override
   {
-    return {
-      m_audio_output_device,
-      m_audio_input_device
+    return
+    {
+      p_audio_output_device,
+      p_audio_input_device
     };
   }
 
-  AudioDevice get_audio_output_device_mock() const
+  MockAudioOutputDevicePtr get_audio_output_device_mock() const
   {
-    return m_audio_output_device;
+    return std::dynamic_pointer_cast<MockAudioOutputDevice>(p_audio_output_device);
   }
 
-  AudioDevice get_audio_input_device_mock() const
+  MockAudioOutputDevicePtr get_audio_input_device_mock() const
   {
-    return m_audio_input_device;
+    return std::dynamic_pointer_cast<MockAudioOutputDevice>(p_audio_input_device);
   }
 
 private:
   bool m_is_stream_running{false};
 
-  AudioDevice m_audio_output_device;
-  AudioDevice m_audio_input_device;
+  MockAudioOutputDevicePtr p_audio_output_device;
+  MockAudioOutputDevicePtr p_audio_input_device;
 
   bool _start() override
   {
@@ -92,7 +101,7 @@ private:
     }
 
     // Simulate successful stream start
-    LOG_INFO("AudioControllerMock: RtAudio stream started successfully.");
+    LOG_INFO("MockAudioController: RtAudio stream started successfully.");
     m_stream_state = eStreamState::Playing;
     m_is_stream_running = true;
 
@@ -103,11 +112,11 @@ private:
   {
     if (m_stream_state != eStreamState::Playing)
     {
-      LOG_WARNING("AudioControllerMock: Stream is not running. No action taken.");
+      LOG_WARNING("MockAudioController: Stream is not running. No action taken.");
       return false;
     }
 
-    LOG_INFO("AudioControllerMock: RtAudio stream stopped successfully.");
+    LOG_INFO("MockAudioController: RtAudio stream stopped successfully.");
     m_stream_state = eStreamState::Stopped;
     m_is_stream_running = false;
 
@@ -115,7 +124,7 @@ private:
   }
 };
 
-using AudioControllerMockPtr = std::shared_ptr<AudioControllerMock>;
+using MockAudioControllerPtr = std::shared_ptr<MockAudioController>;
 
 } // namespace miniaudioengine::test
 

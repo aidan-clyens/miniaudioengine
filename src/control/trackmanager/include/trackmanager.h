@@ -26,15 +26,15 @@ public:
   /** @brief Set the audio output device for the MainTrack.
    *  @param device The audio output device to use.
    */
-  void set_audio_output_device(const AudioDevice& device)
+  void set_audio_output_device(core::IDevicePtr device)
   {
-    m_audio_output_device = device;
-    p_audio_controller->set_output_device(std::make_shared<AudioDevice>(device));
+    p_audio_output_device = device;
+    p_audio_controller->set_output_device(device);
   }
 
-  void open_midi_input_port(const MidiDevice& device)
+  void open_midi_input_port(const MidiDevicePtr device)
   {
-    p_midi_controller->open_input_port(device.id);
+    p_midi_controller->open_input_port(device->id);
   }
 
   void register_audio_dataplane(data::AudioDataPlanePtr data_plane)
@@ -61,7 +61,7 @@ public:
   bool is_playing() const;
 
 private:
-  AudioDevice m_audio_output_device;
+  core::IDevicePtr p_audio_output_device;
   std::shared_ptr<IAudioController> p_audio_controller; // Only MainTrack owns the controller
   std::shared_ptr<IMidiController> p_midi_controller; // Only MainTrack owns the controller
 };
@@ -128,7 +128,7 @@ public:
   /** @brief Set the audio output device for the main track.
    *  @param device The audio output device to use.
    */
-  void set_audio_output_device(const AudioDevice& device);
+  void set_audio_output_device(core::IDevicePtr device);
 
   // Legacy compatibility methods
 

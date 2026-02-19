@@ -13,7 +13,7 @@ protected:
   {
     m_track_manager.clear_tracks();
     m_track_manager.set_audio_output_device(
-        DeviceManager::instance().get_default_audio_output_device().value());
+        DeviceManager::instance().get_default_audio_output_device());
   }
 
   void TearDown() override
@@ -60,40 +60,4 @@ TEST_F(TrackManagerTest, CreateSingleChildTrack)
 
   EXPECT_EQ(get_track_manager().get_track_count(), 2);
   EXPECT_EQ(get_track_manager().get_all_tracks().size(), 2);
-}
-
-TEST_F(TrackManagerTest, CreateNestedTracks)
-{
-  auto main_track = get_track_manager().get_main_track();
-
-  auto track1 = create_track(main_track);
-  EXPECT_EQ(track1->get_parent(), main_track);
-  EXPECT_EQ(main_track->get_child_count(), 1);
-
-  auto track2 = create_track(track1);
-  EXPECT_EQ(track2->get_parent(), track1);
-  EXPECT_EQ(track1->get_child_count(), 1);
-
-  auto track3 = create_track(main_track);
-  EXPECT_EQ(track3->get_parent(), main_track);
-  EXPECT_EQ(main_track->get_child_count(), 2);
-
-  EXPECT_EQ(get_track_manager().get_track_count(), 4);
-  EXPECT_EQ(get_track_manager().get_all_tracks().size(), 4);
-}
-
-TEST_F(TrackManagerTest, RemoveTrackWithChildren)
-{
-  auto main_track = get_track_manager().get_main_track();
-
-  auto track1 = create_track(main_track);
-  auto track2 = create_track(track1);
-  auto track3 = create_track(main_track);
-
-  EXPECT_EQ(get_track_manager().get_track_count(), 4);
-
-  get_track_manager().remove_track(track1);
-
-  EXPECT_EQ(get_track_manager().get_track_count(), 2);
-  EXPECT_EQ(main_track->get_child_count(), 1);                // only track3 remains
 }

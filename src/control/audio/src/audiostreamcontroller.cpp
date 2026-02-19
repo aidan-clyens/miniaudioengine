@@ -7,9 +7,9 @@ using namespace miniaudioengine::core;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
 
-std::vector<AudioDevice> AudioStreamController::get_audio_devices()
+std::vector<IAudioDevicePtr> AudioStreamController::get_audio_devices()
 {
-  std::vector<AudioDevice> devices;
+  std::vector<IAudioDevicePtr> devices;
   unsigned int device_count = m_rtaudio.getDeviceCount();
   devices.reserve(device_count);
 
@@ -17,7 +17,7 @@ std::vector<AudioDevice> AudioStreamController::get_audio_devices()
   for (const unsigned int i : device_ids)
   {
     RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(i);
-    devices.push_back(AudioDevice(info));
+    devices.push_back(std::make_shared<AudioDevice>(info));
   }
 
   return devices;

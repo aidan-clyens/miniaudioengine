@@ -32,8 +32,8 @@ class MainTrack;
 
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
-typedef std::variant<AudioDevice, file::WavFilePtr, std::nullopt_t> AudioIOVariant;
-typedef std::variant<MidiDevice, file::MidiFilePtr, std::nullopt_t> MidiIOVariant;
+typedef std::variant<core::IDevicePtr, file::WavFilePtr, std::nullopt_t> SourceVariant;
+typedef std::variant<core::IDevicePtr, file::MidiFilePtr, std::nullopt_t> MidiIOVariant; // TODO - Rename to SourceVariant
 
 typedef std::function<void(const MidiNoteMessage&, TrackPtr)> MidiNoteOnCallbackFunc;
 typedef std::function<void(const MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;
@@ -153,17 +153,17 @@ public:
   /** @brief Add an audio input to the track. 
    *  @param device The audio input device or file retrieved from DeviceManager or FileManager.
    */
-  void add_audio_input(const AudioIOVariant &input);
+  void add_audio_input(SourceVariant input);
 
   /** @brief Add a MIDI input to the track.
    *  @param device The MIDI input device or file retrieved from DeviceManager or FileManager.
    */
-  void add_midi_input(const MidiIOVariant &input);
+  void add_midi_input(MidiIOVariant input);
 
   /** @brief Add a MIDI output to the track.
    *  @param device The MIDI output device or file retrieved from DeviceManager or FileManager.
    */
-  void add_midi_output(const MidiIOVariant &output);
+  void add_midi_output(MidiIOVariant output);
 
   /** @brief Remove the audio input from the track. */
   void remove_audio_input();
@@ -192,7 +192,7 @@ public:
   /** @brief Gets the audio input of the track.
    *  @return An audio input variant type (AudioDevice, WavFilePtr, std::nullopt_t).
    */
-  AudioIOVariant get_audio_input() const;
+  SourceVariant get_audio_input() const;
 
   /** @brief Gets the MIDI input of the track.
    *  @return A MIDI input variant type (MidiDevice, MidiFilePtr, std::nullopt_t).
@@ -246,8 +246,8 @@ public:
   TrackStatistics get_statistics() const
   {
     TrackStatistics stats;
-    stats.audio_output_stats = p_audio_dataplane->get_audio_output_statistics();
-    stats.midi_input_stats = p_midi_dataplane->get_statistics();
+    stats.audio_output_stats = *std::dynamic_pointer_cast<data::AudioOutputStatistics>(p_audio_dataplane->get_statistics());
+    stats.midi_input_stats = *std::dynamic_pointer_cast<data::MidiInputStatistics>(p_midi_dataplane->get_statistics());
     return stats;
   }
 
@@ -317,7 +317,7 @@ protected:
 
   TrackEventCallback m_event_callback;
 
-  AudioIOVariant m_audio_input;
+  SourceVariant m_audio_input;
   MidiIOVariant m_midi_input;
   MidiIOVariant m_midi_output; // Will be deprecated in favor of parent routing
 

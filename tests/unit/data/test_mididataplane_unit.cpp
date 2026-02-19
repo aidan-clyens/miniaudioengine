@@ -10,38 +10,39 @@ using namespace miniaudioengine;
 using namespace miniaudioengine::control;
 using namespace miniaudioengine::data;
 
-class TrackMidiDataPlaneTest : public ::testing::Test
+class MidiDataPlaneTest : public ::testing::Test
 { 
 public:
-  MidiDataPlanePtr track_midi_data_plane;
+  MidiDataPlanePtr midi_data_plane;
 
   void SetUp() override
   {
-    track_midi_data_plane = std::make_shared<MidiDataPlane>();
+    midi_data_plane = std::make_shared<MidiDataPlane>();
   }
 
   void TearDown() override
   {
-    track_midi_data_plane->stop();
+    midi_data_plane->stop();
+    midi_data_plane.reset();
   }
 };
 
-TEST_F(TrackMidiDataPlaneTest, Setup)
+TEST_F(MidiDataPlaneTest, Setup)
 {
-  EXPECT_NE(track_midi_data_plane, nullptr) << "MidiDataPlane should be initialized.";
-  EXPECT_FALSE(track_midi_data_plane->is_running()) << "MidiDataPlane should be stopped initially.";
+  EXPECT_NE(midi_data_plane, nullptr) << "MidiDataPlane should be initialized.";
+  EXPECT_FALSE(midi_data_plane->is_running()) << "MidiDataPlane should be stopped initially.";
 }
 
-TEST_F(TrackMidiDataPlaneTest, StartStop)
+TEST_F(MidiDataPlaneTest, StartStop)
 {
-  track_midi_data_plane->start();
-  EXPECT_TRUE(track_midi_data_plane->is_running()) << "MidiDataPlane should be running after start().";
+  midi_data_plane->start();
+  EXPECT_TRUE(midi_data_plane->is_running()) << "MidiDataPlane should be running after start().";
 
-  track_midi_data_plane->stop();
-  EXPECT_FALSE(track_midi_data_plane->is_running()) << "MidiDataPlane should be stopped after stop().";
+  midi_data_plane->stop();
+  EXPECT_FALSE(midi_data_plane->is_running()) << "MidiDataPlane should be stopped after stop().";
 }
 
-TEST_F(TrackMidiDataPlaneTest, ProcessMidiMessageAndStatistics)
+TEST_F(MidiDataPlaneTest, ProcessMidiMessageAndStatistics)
 {
   MidiMessage message;
   message.deltatime = 0;
@@ -53,21 +54,27 @@ TEST_F(TrackMidiDataPlaneTest, ProcessMidiMessageAndStatistics)
   message.type_name = "Note On";
 
   // Start the data plane
-  track_midi_data_plane->start();
-  EXPECT_TRUE(track_midi_data_plane->is_running()) << "MidiDataPlane should be running after start().";
+  midi_data_plane->start();
+  EXPECT_TRUE(midi_data_plane->is_running()) << "MidiDataPlane should be running after start().";
 
   // Get MIDI input statistics
-  MidiInputStatistics stats = track_midi_data_plane->get_statistics();
-  EXPECT_EQ(stats.total_messages_processed, 0) << "Total messages processed should be 0 before processing.";
+  auto stats = midi_data_plane->get_statistics();
+  auto midi_stats = std::dynamic_pointer_cast<MidiInputStatistics>(stats);
+  ASSERT_NE(midi_stats, nullptr) << "Statistics object should be of type MidiInputStatistics";
 
-  EXPECT_NO_THROW(track_midi_data_plane->process_midi_message(message));
+  EXPECT_EQ(midi_stats->total_messages_processed, 0) << "Total messages processed should be 0 before processing.";
+
+  EXPECT_NO_THROW(midi_data_plane->process_midi_message(message));
 
   // Get updated MIDI input statistics
-  stats = track_midi_data_plane->get_statistics();
-  EXPECT_EQ(stats.total_messages_processed, 1) << "Total messages processed should be 1 after processing one message.";
+  stats = midi_data_plane->get_statistics();
+  midi_stats = std::dynamic_pointer_cast<MidiInputStatistics>(stats);
+
+  ASSERT_NE(midi_stats, nullptr) << "Statistics object should be of type MidiInputStatistics";
+  EXPECT_EQ(midi_stats->total_messages_processed, 1) << "Total messages processed should be 1 after processing one message.";
 }
 
-TEST_F(TrackMidiDataPlaneTest, DoNotProcessMidiMessageWhenStopped)
+TEST_F(MidiDataPlaneTest, DoNotProcessMidiMessageWhenStopped)
 {
   MidiMessage message;
   message.deltatime = 0;
@@ -79,16 +86,22 @@ TEST_F(TrackMidiDataPlaneTest, DoNotProcessMidiMessageWhenStopped)
   message.type_name = "Note On";
 
   // Ensure the data plane is stopped
-  track_midi_data_plane->stop();
-  EXPECT_FALSE(track_midi_data_plane->is_running()) << "MidiDataPlane should be stopped.";
+  midi_data_plane->stop();
+  EXPECT_FALSE(midi_data_plane->is_running()) << "MidiDataPlane should be stopped.";
 
   // Get MIDI input statistics
-  MidiInputStatistics stats = track_midi_data_plane->get_statistics();
-  EXPECT_EQ(stats.total_messages_processed, 0) << "Total messages processed should be 0 before processing.";
+  auto stats = midi_data_plane->get_statistics();
+  auto midi_stats = std::dynamic_pointer_cast<MidiInputStatistics>(stats);
+  ASSERT_NE(midi_stats, nullptr) << "Statistics object should be of type MidiInputStatistics";
 
-  EXPECT_NO_THROW(track_midi_data_plane->process_midi_message(message));
+  EXPECT_EQ(midi_stats->total_messages_processed, 0) << "Total messages processed should be 0 before processing.";
+
+  EXPECT_NO_THROW(midi_data_plane->process_midi_message(message));
 
   // Get updated MIDI input statistics
-  stats = track_midi_data_plane->get_statistics();
-  EXPECT_EQ(stats.total_messages_processed, 0) << "Total messages processed should remain 0 when stopped.";
+  stats = midi_data_plane->get_statistics();
+  midi_stats = std::dynamic_pointer_cast<MidiInputStatistics>(stats);
+  ASSERT_NE(midi_stats, nullptr) << "Statistics object should be of type MidiInputStatistics";
+
+  EXPECT_EQ(midi_stats->total_messages_processed, 0) << "Total messages processed should remain 0 when stopped.";
 }

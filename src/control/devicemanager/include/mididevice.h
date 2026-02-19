@@ -1,6 +1,9 @@
 #ifndef __MIDI_DEVICE_H__
 #define __MIDI_DEVICE_H__
 
+#include <memory>
+#include <string>
+
 #include "device.h"
 
 namespace miniaudioengine::control
@@ -44,6 +47,8 @@ public:
   }
 
 };
+
+using MidiDevicePtr = std::shared_ptr<MidiDevice>;
 
 } // namespace miniaudioengine::control
 

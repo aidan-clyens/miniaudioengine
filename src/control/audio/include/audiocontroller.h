@@ -25,13 +25,14 @@ namespace miniaudioengine::control
  *  This class provides common state management and validation logic
  *  for all audio-related controllers. Concrete implementations handle
  *  hardware-specific operations.
+ *  @deprecated This class is deprecated and will be removed in a future release. Please use AudioStreamController instead.
  */
 class IAudioController : public core::IController
 {
 public:
   virtual ~IAudioController() = default;
 
-  virtual std::vector<AudioDevice> get_audio_devices() = 0;
+  virtual std::vector<core::IAudioDevicePtr> get_audio_devices() = 0;
 
   virtual std::shared_ptr<data::AudioCallbackContext> get_callback_context() const
   {
