@@ -7,11 +7,38 @@
 
 using namespace miniaudioengine::control;
 
-static unsigned int audio_device_id = 0;
-
-TEST(DeviceManagerTest, GetAudioDevices)
+class DeviceManagerTest : public ::testing::Test
 {
-  auto devices = DeviceManager::instance().get_audio_devices();
+public:
+  void SetUp() override
+  {
+    // This will run before each test
+  }
+
+  void TearDown() override
+  {
+    // This will run after each test
+  }
+
+  void set_audio_device_id(unsigned int id)
+  {
+    audio_device_id = id;
+  }
+
+  unsigned int get_audio_device_id() const
+  {
+    return audio_device_id;
+  }
+
+  DeviceManager &device_manager = DeviceManager::instance();
+
+private:
+  unsigned int audio_device_id = 0; // Assuming the first audio device has ID 0
+};
+
+TEST_F(DeviceManagerTest, Action1_GetAudioDevices)
+{
+  auto devices = device_manager.get_audio_devices();
   EXPECT_GE(devices.size(), 0);
 
   for (const auto &device : devices)
@@ -19,13 +46,21 @@ TEST(DeviceManagerTest, GetAudioDevices)
     LOG_INFO(device->id, " - ", device->name);
   }
 
-  audio_device_id = devices.empty() ? 0 : devices[0]->id;
+  for (const auto &device : devices)
+  {
+    LOG_INFO(device->to_string());
+  }
+
+  if (!devices.empty())
+  {
+    set_audio_device_id(devices[0]->id);
+  }
 }
 
-TEST(DeviceManagerTest, GetAudioDevice)
+TEST_F(DeviceManagerTest, Action2_GetAudioDevice)
 {
-  auto devices = DeviceManager::instance().get_audio_devices();
-  auto device = DeviceManager::instance().get_audio_device(audio_device_id);
+  auto devices = device_manager.get_audio_devices();
+  auto device = device_manager.get_audio_device(get_audio_device_id());
 
   // Attempt to cast to AudioDevice to access specific properties
   auto audio_device = std::dynamic_pointer_cast<AudioDevice>(device);
@@ -33,7 +68,7 @@ TEST(DeviceManagerTest, GetAudioDevice)
 
   LOG_INFO(audio_device->id, " - ", audio_device->name);
 
-  EXPECT_EQ(audio_device->id, audio_device_id);
+  EXPECT_EQ(audio_device->id, get_audio_device_id());
   EXPECT_EQ(audio_device->id, devices[0]->id);
   EXPECT_EQ(audio_device->name, devices[0]->name);
   EXPECT_EQ(audio_device->input_channels, devices[0]->input_channels);
@@ -45,16 +80,16 @@ TEST(DeviceManagerTest, GetAudioDevice)
   EXPECT_EQ(audio_device->preferred_sample_rate, devices[0]->preferred_sample_rate);
 }
 
-TEST(DeviceManagerTest, GetAudioDeviceInvalid)
+TEST_F(DeviceManagerTest, Action3_GetAudioDeviceInvalid)
 {
   EXPECT_ANY_THROW({
-    auto device = DeviceManager::instance().get_audio_device(2);
+    auto device = device_manager.get_audio_device(2);
   });
 }
 
-TEST(DeviceManagerTest, GetMidiDevices)
+TEST_F(DeviceManagerTest, Action4_GetMidiDevices)
 {
-  auto devices = DeviceManager::instance().get_midi_devices();
+  auto devices = device_manager.get_midi_devices();
   EXPECT_GE(devices.size(), 0);
 
   for (const auto &device : devices)
@@ -63,11 +98,10 @@ TEST(DeviceManagerTest, GetMidiDevices)
   }
 }
 
-TEST(DeviceManagerTest, GetMidiDevice)
+TEST_F(DeviceManagerTest, Action5_GetMidiDevice)
 {
-  auto devices = DeviceManager::instance().get_midi_devices();
-
-  auto device = DeviceManager::instance().get_midi_device(0);
+  auto devices = device_manager.get_midi_devices();
+  auto device = device_manager.get_midi_device(0);
 
   LOG_INFO(device->id, " - ", device->name);
 
@@ -75,9 +109,9 @@ TEST(DeviceManagerTest, GetMidiDevice)
   EXPECT_EQ(device->name, devices[0]->name);
 }
 
-TEST(DeviceManagerTest, GetMidiDeviceInvalid)
+TEST_F(DeviceManagerTest, Action6_GetMidiDeviceInvalid)
 {
   EXPECT_ANY_THROW({
-     auto device = DeviceManager::instance().get_midi_device(2);
+     auto device = device_manager.get_midi_device(2);
   });
 }
