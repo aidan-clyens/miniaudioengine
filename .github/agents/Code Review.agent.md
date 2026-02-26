@@ -25,8 +25,9 @@ This agent performs comprehensive code reviews for the Minimal Audio Engine proj
 - **DSP Code Quality**: Ensure audio processing code is efficient, numerically stable, and properly buffered
 
 ### Architecture Compliance
-- **Module Boundaries**: Verify code respects the layered architecture (CLI → Control Plane → Processing Plane → Data Plane → Framework)
-- **Component Isolation**: Ensure proper separation between control plane components (audiostreamcontroller, midiportcontroller, trackmanager, devicemanager, filemanager) and data plane components (audiodataplane, mididataplane, callback handlers)
+- **Module Boundaries**: Verify code respects the layered architecture (Framework → Data Plane → Processing Plane → Control Plane → CLI/Examples)
+- **Component Isolation**: Ensure proper separation between control plane components (AudioStreamController, MidiPortController, TrackManager, DeviceManager, FileManager) and data plane components (AudioDataPlane, MidiDataPlane, callback handlers)
+- **Processing Plane Status**: The processing plane is partial/experimental (IAudioProcessor, SamplePlayer, Sample) and should not own threads yet
 - **Dependency Management**: Check that dependencies are properly declared in CMakeLists.txt and vcpkg.json
 
 ### Cross-Platform Considerations

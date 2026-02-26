@@ -15,7 +15,7 @@ This agent analyzes C++ code in the Minimal Audio Engine project and generates P
 - Creating architecture documentation
 - Visualizing class relationships and dependencies
 - Understanding data flow between components
-- Documenting the 3-plane architecture (control, processing, data planes)
+- Documenting the layered architecture (framework, data, processing, control, cli/examples)
 - Generating diagrams for README or design documents
 - Analyzing threading patterns and callback flows
 
@@ -45,14 +45,14 @@ This agent analyzes C++ code in the Minimal Audio Engine project and generates P
 - **Minimize external dependencies**: Show only project classes, not std:: or third-party types as separate entities
 
 ### 2. Sequence Diagram Generation
-- Trace method call flows from entry points (e.g., `Track::play()` → `AudioStreamController::start_stream()`)
+- Trace method call flows from entry points (e.g., `Track::play()` → `AudioStreamController::start()`)
 - Show interactions between control and data planes
-- Illustrate callback patterns (RtAudio callback → `TrackAudioDataPlane::process_audio()`)
+- Illustrate callback patterns (RtAudio callback → `AudioDataPlane::process_audio()`)
 - Display message passing via `MessageQueue` or `LockfreeRingBuffer`
 - Annotate real-time safety boundaries
 
 ### 3. Component Diagram Generation
-- Show library dependencies (framework → data → processing → control)
+- Show library dependencies (framework → data → processing → control → cli/examples)
 - Illustrate external dependencies (RtAudio, RtMidi, libsndfile)
 - Display CMake target relationships
 - Highlight layer violations or architectural concerns
@@ -119,10 +119,10 @@ skinparam monochrome false
 class LockfreeRingBuffer <<framework>> #lightblue
 
 ' Data Plane (Layer 1) - green  
-class TrackAudioDataPlane <<data>> #lightgreen
+class AudioDataPlane <<data>> #lightgreen
 
 ' Processing Plane (Layer 2) - yellow
-class AudioProcessorWorker <<processing>> #lightyellow
+class IAudioProcessor <<processing>> #lightyellow
 
 ' Control Plane (Layer 3) - orange
 class AudioStreamController <<control>> #lightsalmon
@@ -147,28 +147,28 @@ class Track <<synchronous>> #lightgray
 
 ## Example Interactions
 
-### User Request: "Create a class diagram for TrackAudioDataPlane and its dependencies"
+### User Request: "Create a class diagram for AudioDataPlane and its dependencies"
 **Agent Response:**
 1. Read `src/data/audio/include/audiodataplane.h`
 2. Identify member types (WavFilePtr, AudioOutputStatistics, std::atomic<bool>)
 3. Search for base classes or interfaces (if any)
-4. Find classes that use TrackAudioDataPlane (AudioCallbackHandler, Track)
+4. Find classes that use AudioDataPlane (AudioCallbackHandler, Track)
 5. Generate PlantUML showing composition relationships and usage
 
 ### User Request: "Show me the sequence diagram for audio playback"
 **Agent Response:**
 1. Start from `Track::play()`
-2. Trace to `AudioStreamController::start_stream()`
+2. Trace to `AudioStreamController::start()`
 3. Show RtAudio initialization
 4. Show callback registration (AudioCallbackHandler::audio_callback)
-5. Show callback invocation → TrackAudioDataPlane::process_audio()
+5. Show callback invocation → AudioDataPlane::process_audio()
 6. Annotate thread boundaries and lock-free operations
 
 ### User Request: "Generate component diagram for the entire architecture"
 **Agent Response:**
 1. Read `src/CMakeLists.txt` to identify subdirectories
 2. Map directories to architectural layers
-3. Show dependencies: framework → data → processing → control
+3. Show dependencies: framework → data → processing → control → cli/examples
 4. Include external dependencies from vcpkg.json
 5. Add layer annotations (Layer 0-4)
 
@@ -207,14 +207,14 @@ Given this is the Minimal Audio Engine:
 ```plantuml
 @startuml
 class Track {
-  - m_audio_input : AudioIOVariant
-  - p_audio_dataplane : TrackAudioDataPlanePtr
+  - m_audio_input : SourceVariant
+  - p_audio_dataplane : AudioDataPlanePtr
   + play() : void
   + stop() : void
-  + add_audio_input(input : AudioIOVariant) : void
+  + add_audio_input(input : SourceVariant) : void
 }
 
-class TrackAudioDataPlane {
+class AudioDataPlane {
   - m_preloaded_frames_buffer : vector<float>
   - m_stop_command : atomic<bool>
   + process_audio() : void
@@ -222,9 +222,9 @@ class TrackAudioDataPlane {
   + stop() : void
 }
 
-Track *-- TrackAudioDataPlane : owns
+Track *-- AudioDataPlane : owns
 
-note right of TrackAudioDataPlane
+note right of AudioDataPlane
   Standard library types like vector<float>
   and atomic<bool> are shown inline,
   not as separate class boxes

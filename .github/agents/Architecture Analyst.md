@@ -47,7 +47,7 @@ class IEngine {
 - Thread readiness signaling with timeout protection
 - Cooperative shutdown via `std::jthread` stop tokens
 
-**Note**: This pattern is legacy and being phased out. New control plane components (AudioStreamController, MidiPortController) use synchronous singleton pattern without dedicated threads. Data plane components (AudioCallbackHandler, MidiCallbackHandler) are pure callback functions without threads.
+**Note**: This pattern is legacy and being phased out. New control plane components (AudioStreamController, MidiPortController) use synchronous singleton pattern without dedicated threads. Data plane components (AudioCallbackHandler, MidiCallbackHandler) are pure callback functions without threads. The processing plane exists as interfaces (IAudioProcessor, SamplePlayer, Sample) but has no worker orchestration yet.
 
 #### Singleton Pattern
 Core control plane components use thread-safe singleton pattern:
@@ -93,7 +93,7 @@ std::variant<MidiDevice, MidiFilePtr, std::nullopt_t> midi_input;
 - `std::visit` for variant processing (not shown in codebase, but recommended)
 
 #### Message Queue Pattern
-Lock-free push, blocking pop with cooperative cancellation:
+Mutex-protected push, blocking pop with cooperative cancellation:
 ```cpp
 template <typename T>
 class MessageQueue {
@@ -107,7 +107,7 @@ class MessageQueue {
   std::optional<T> try_pop();        // Non-blocking pop
 };
 ```
-- `push()` is lock-free from producer perspective (no blocking)
+- `push()` uses a mutex and notifies one waiting consumer
 - `pop()` blocks consumer until message arrives or queue stops
 - `stop()` unblocks all waiting consumers for graceful shutdown
 - Returns `std::optional<T>` to signal empty queue after stop
@@ -273,15 +273,22 @@ Review these files for architectural understanding:
 - **[framework/include/input.h](../src/framework/include/input.h)** - Input abstraction
 
 **Data Plane (Layer 1)**:
-- **[data/audio/include/audiodataplane.h](../src/data/audio/include/audiodataplane.h)** - Per-track audio rendering
+- **[data/audio/include/audiodataplane.h](../src/data/audio/include/audiodataplane.h)** - AudioDataPlane callback target and per-track mixing
 - **[data/audio/include/audiocallbackhandler.h](../src/data/audio/include/audiocallbackhandler.h)** - RtAudio callback wrapper
-- **[data/midi/include/mididataplane.h](../src/data/midi/include/mididataplane.h)** - Per-track MIDI processing
+- **[data/midi/include/mididataplane.h](../src/data/midi/include/mididataplane.h)** - MidiDataPlane callback target for track MIDI input
 - **[data/midi/include/midicallbackhandler.h](../src/data/midi/include/midicallbackhandler.h)** - RtMidi callback wrapper
+
+**Processing Plane (Layer 2)**:
+- **[processing/audio/include/audioprocessor.h](../src/processing/audio/include/audioprocessor.h)** - IAudioProcessor interface
+- **[processing/audio/include/sample.h](../src/processing/audio/include/sample.h)** - Sample data model
+- **[processing/sampleplayer/include/sampleplayer.h](../src/processing/sampleplayer/include/sampleplayer.h)** - Sample-based processor
 
 **Control Plane (Layer 3)**:
 - **[control/audio/include/audiostreamcontroller.h](../src/control/audio/include/audiostreamcontroller.h)** - Synchronous audio device control
 - **[control/midi/include/midiportcontroller.h](../src/control/midi/include/midiportcontroller.h)** - Synchronous MIDI port control
-- **[control/trackmanager/include/track.h](../src/control/trackmanager/include/track.h)** - Variant-based track routing
+- **[control/devicemanager/include/devicemanager.h](../src/control/devicemanager/include/devicemanager.h)** - Audio/MIDI device enumeration
+- **[control/filemanager/include/filemanager.h](../src/control/filemanager/include/filemanager.h)** - Audio/MIDI file IO coordination
+- **[control/trackmanager/include/track.h](../src/control/trackmanager/include/track.h)** - Track routing and IO variants
 - **[control/trackmanager/include/trackmanager.h](../src/control/trackmanager/include/trackmanager.h)** - Track collection management
 
 ## Guidance Philosophy
