@@ -34,6 +34,8 @@ enum class eStreamState
 class IController
 {
 public:
+  IController(const std::string &name) : m_name(name) {}
+  IController(const IController &) = delete; // Disable copy constructor
   virtual ~IController() = default;
 
   /** @brief Register a data plane with the controller.
@@ -78,60 +80,37 @@ public:
   /** @brief Start the controller's processing.
    *  @return True if the controller started successfully, false otherwise.
    */
-  bool start()
-  {
-    if (m_stream_state == eStreamState::Playing)
-    {
-      LOG_WARNING("Controller is already playing. Start command ignored.");
-      return false;
-    }
-
-    if (_start())
-    {
-      m_stream_state = eStreamState::Playing;
-      LOG_DEBUG("Controller started successfully.");
-      return true;
-    }
-    else
-    {
-      LOG_ERROR("Failed to start the controller.");
-      return false;
-    }
-  }
+  bool start();
 
   /** @brief Stop the controller's processing.
    *  @return True if the controller stopped successfully, false otherwise.
    */
-  bool stop()
-  {
-    if (m_stream_state == eStreamState::Stopped)
-    {
-      LOG_WARNING("Controller is already stopped. Stop command ignored.");
-      return false;
-    }
-
-    if (_stop())
-    {
-      m_stream_state = eStreamState::Stopped;
-      LOG_DEBUG("Controller stopped successfully.");
-      return true;
-    }
-    else
-    {
-      LOG_ERROR("Failed to stop the controller.");
-      return false;
-    }
-  }
+  bool stop();
 
 protected:
   eStreamState m_stream_state{eStreamState::Stopped};
 
+  /** @brief Start the controller's processing.
+   *  This is a pure virtual function that must be implemented by derived classes to define
+   *  the specific behavior for starting the controller.
+   *  @return True if the controller started successfully, false otherwise.
+   *  @throws std::exception if an error occurs during startup.
+   */
   virtual bool _start() = 0;
+
+  /** @brief Stop the controller's processing.
+   *  This is a pure virtual function that must be implemented by derived classes to define
+   *  the specific behavior for stopping the controller.
+   *  @return True if the controller stopped successfully, false otherwise.
+   *  @throws std::exception if an error occurs during shutdown.
+   */
   virtual bool _stop() = 0;
 
 private:
   std::vector<IDataPlanePtr> p_data_planes;
   IDevicePtr p_device{nullptr};
+
+  std::string m_name{"IController"};
 };
 
 } // namespace miniaudioengine::core

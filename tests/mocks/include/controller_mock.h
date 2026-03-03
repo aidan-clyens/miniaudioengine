@@ -12,6 +12,9 @@ namespace miniaudioengine::test
 
 class MockController : public IController
 {
+public:
+  MockController() : IController("MockController") {}
+
 private:
   bool _start() override
   {

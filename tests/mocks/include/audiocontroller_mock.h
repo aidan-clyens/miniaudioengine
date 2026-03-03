@@ -15,8 +15,8 @@
 #include "device_mock.h"
 
 using namespace miniaudioengine::core;
-using namespace miniaudioengine::control;
-using namespace miniaudioengine::data;
+using namespace miniaudioengine;
+using namespace miniaudioengine::audio;
 
 namespace miniaudioengine::test
 {

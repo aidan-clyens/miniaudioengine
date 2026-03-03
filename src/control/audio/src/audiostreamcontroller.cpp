@@ -4,8 +4,7 @@
 #include "logger.h"
 
 using namespace miniaudioengine::core;
-using namespace miniaudioengine::control;
-using namespace miniaudioengine::data;
+using namespace miniaudioengine::audio;
 
 std::vector<IAudioDevicePtr> AudioStreamController::get_audio_devices()
 {

@@ -3,8 +3,7 @@
 #include "audiodataplane.h"
 
 using namespace miniaudioengine::core;
-using namespace miniaudioengine::control;
-using namespace miniaudioengine::data;
+using namespace miniaudioengine::audio;
 
 bool IAudioController::validate_start_preconditions() const
 {

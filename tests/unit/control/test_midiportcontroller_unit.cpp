@@ -4,7 +4,7 @@
 #include "logger.h"
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::control;
+using namespace miniaudioengine::midi;
 
 class MidiPortControllerTest : public ::testing::Test
 {

@@ -14,13 +14,13 @@
 #include "wavfile.h"
 #include "logger.h"
 
-namespace miniaudioengine::data
+namespace miniaudioengine::core
 {
 
 /** @struct AudioOutputStatistics
  *  @brief Statistics related to reading WAV files.
  */
-class AudioOutputStatistics : public core::IDataPlaneStatistics
+class AudioOutputStatistics : public IDataPlaneStatistics
 {
 public:
   sf_count_t total_frames_read = 0;
@@ -74,7 +74,7 @@ using AudioOutputStatisticsPtr = std::shared_ptr<AudioOutputStatistics>;
  *  @brief Data plane for handling audio data for a Track. The Data plane is only a callback
  *  target for RtAudio and is not a producer/consumer of audio data itself.
  */
-class AudioDataPlane : public core::IDataPlane
+class AudioDataPlane : public IDataPlane
 {
 public:
   AudioDataPlane(): IDataPlane()
@@ -92,11 +92,11 @@ public:
    */
   void process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
                      double stream_time, RtAudioStreamStatus status) noexcept;
-  
+
   /** @brief Preload WAV file data into the audio data plane. Called from the Track control plane before playback.
    *  @param wav_file Shared pointer to the WavFile to preload.
    */
-  void preload_wav_file(const file::WavFilePtr& wav_file);
+  void preload_wav_file(const WavFilePtr& wav_file);
 
   // Mixing and routing for hierarchy
 
@@ -123,7 +123,7 @@ public:
   /** @brief Add an audio processor to the data plane.
    *  @param processor Shared pointer to the audio processor to add.
    */
-  void add_processor(std::shared_ptr<processing::IAudioProcessor> processor)
+  void add_processor(std::shared_ptr<audio::IAudioProcessor> processor)
   {
     m_processors.push_back(processor);
   }
@@ -140,7 +140,7 @@ private:
 
   std::atomic<unsigned int> m_read_position{0};
 
-  std::vector<std::shared_ptr<processing::IAudioProcessor>> m_processors;
+  std::vector<std::shared_ptr<audio::IAudioProcessor>> m_processors;
 
 private:
   void update_audio_output_statistics(unsigned int n_frames, double batch_time_ms, double stream_time);
@@ -163,6 +163,6 @@ private:
 
 typedef std::shared_ptr<AudioDataPlane> AudioDataPlanePtr;
 
-} // namespace miniaudioengine::data
+} // namespace miniaudioengine::core
 
 #endif // __TRACK_AUDIO_DATA_PLANE_H__

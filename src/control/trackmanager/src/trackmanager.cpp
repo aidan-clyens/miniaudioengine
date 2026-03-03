@@ -1,8 +1,9 @@
 #include "trackmanager.h"
 
 using namespace miniaudioengine::core;
-using namespace miniaudioengine::control;
-using namespace miniaudioengine::data;
+using namespace miniaudioengine;
+using namespace miniaudioengine::audio;
+using namespace miniaudioengine::midi;
 
 bool MainTrack::is_playing() const
 {

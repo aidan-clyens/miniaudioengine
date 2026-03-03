@@ -28,6 +28,6 @@ private:
   eInputType m_input_type = eInputType::None;
 };
 
-} // namespace miniaudioengine
+} // namespace miniaudioengine::core
 
 #endif // __INPUT_H__

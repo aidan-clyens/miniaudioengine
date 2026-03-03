@@ -4,8 +4,7 @@
 #include "miditypes.h"
 #include "logger.h"
 
-using namespace miniaudioengine::data;
-using namespace miniaudioengine::control;
+using namespace miniaudioengine::midi;
 using namespace miniaudioengine::core;
 
 /** @brief Callback function to handle incoming MIDI messages.

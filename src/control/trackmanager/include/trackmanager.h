@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace miniaudioengine::control
+namespace miniaudioengine
 {
 
 /** @class MainTrack
@@ -19,8 +19,8 @@ class MainTrack : public Track
 {
 public:
   MainTrack() : Track(true),
-                p_audio_controller(std::make_shared<AudioStreamController>()),
-                p_midi_controller(std::make_shared<MidiPortController>()) {} // is_main_track = true
+                p_audio_controller(std::make_shared<audio::AudioStreamController>()),
+                p_midi_controller(std::make_shared<midi::MidiPortController>()) {} // is_main_track = true
   ~MainTrack() override = default;
 
   /** @brief Set the audio output device for the MainTrack.
@@ -32,17 +32,17 @@ public:
     p_audio_controller->set_output_device(device);
   }
 
-  void open_midi_input_port(const MidiDevicePtr device)
+  void open_midi_input_port(const midi::MidiDevicePtr device)
   {
     p_midi_controller->open_input_port(device->id);
   }
 
-  void register_audio_dataplane(data::AudioDataPlanePtr data_plane)
+  void register_audio_dataplane(core::AudioDataPlanePtr data_plane)
   {
     p_audio_controller->register_dataplane(data_plane);
   }
 
-  void register_midi_dataplane(data::MidiDataPlanePtr midi_dataplane)
+  void register_midi_dataplane(core::MidiDataPlanePtr midi_dataplane)
   {
     p_midi_controller->register_dataplane(midi_dataplane);
   }
@@ -62,8 +62,8 @@ public:
 
 private:
   core::IDevicePtr p_audio_output_device;
-  std::shared_ptr<IAudioController> p_audio_controller; // Only MainTrack owns the controller
-  std::shared_ptr<IMidiController> p_midi_controller; // Only MainTrack owns the controller
+  std::shared_ptr<audio::IAudioController> p_audio_controller; // Only MainTrack owns the controller
+  std::shared_ptr<midi::IMidiController> p_midi_controller; // Only MainTrack owns the controller
 };
 
 /** @class TrackManager
@@ -160,6 +160,6 @@ private:
   mutable std::mutex m_manager_mutex;
 };
 
-}  // namespace miniaudioengine::control
+}  // namespace miniaudioengine
 
 #endif  // __TRACK_MANAGER_H_

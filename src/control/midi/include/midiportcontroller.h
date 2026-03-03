@@ -7,7 +7,7 @@
 
 #include <rtmidi/RtMidi.h>
 
-namespace miniaudioengine::control
+namespace miniaudioengine::midi
 {
 
 class MidiPortController : public IMidiController
@@ -39,12 +39,12 @@ public:
 private:
   RtMidiIn m_rtmidi_in;
 
-  bool _start() override { return false; }
-  bool _stop() override { return false; }
+  bool _start() override { throw std::runtime_error("MidiPortController start/stop operations not implemented."); }
+  bool _stop() override { throw std::runtime_error("MidiPortController start/stop operations not implemented."); }
 };
 
 using MidiPortControllerPtr = std::shared_ptr<MidiPortController>;
 
-} // namespace miniaudioengine::control
+} // namespace miniaudioengine::midi
 
 #endif // __MIDI_PORT_CONTROLLER_H__

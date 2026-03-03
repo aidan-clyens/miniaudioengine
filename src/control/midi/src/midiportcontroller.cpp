@@ -3,8 +3,8 @@
 #include "mididataplane.h"
 #include "logger.h"
 
-using namespace miniaudioengine::control;
-using namespace miniaudioengine::data;
+using namespace miniaudioengine::midi;
+using namespace miniaudioengine::core;
 
 /** @brief Lists all available MIDI input ports.
  *  This function retrieves and prints the names of all available MIDI input ports.

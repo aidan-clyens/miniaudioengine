@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-namespace miniaudioengine::data
+namespace miniaudioengine::core
 {
 
 typedef std::shared_ptr<class MidiDataPlane> TrackMidiDataplanePtr;
@@ -34,6 +34,6 @@ public:
   static void midi_callback(double deltatime, std::vector<unsigned char> *message, void *user_data);
 };
 
-} // namespace miniaudioengine::data
+} // namespace miniaudioengine::core
 
 #endif // __MIDI_CALLBACK_HANDLER_H__

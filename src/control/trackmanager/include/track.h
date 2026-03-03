@@ -22,22 +22,20 @@
 #include "miditypes.h"
 #include "audioprocessor.h"
 
-namespace miniaudioengine::control
+namespace miniaudioengine
 {
 
 // Forward declarations
-class WavFile;
-class MidiFile;
 class MainTrack;
 
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
-typedef std::variant<core::IDevicePtr, file::WavFilePtr, std::nullopt_t> SourceVariant;
-typedef std::variant<core::IDevicePtr, file::MidiFilePtr, std::nullopt_t> MidiIOVariant; // TODO - Rename to SourceVariant
+typedef std::variant<core::IDevicePtr, WavFilePtr, std::nullopt_t> SourceVariant;
+typedef std::variant<core::IDevicePtr, MidiFilePtr, std::nullopt_t> MidiIOVariant; // TODO - Rename to SourceVariant
 
-typedef std::function<void(const MidiNoteMessage&, TrackPtr)> MidiNoteOnCallbackFunc;
-typedef std::function<void(const MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;
-typedef std::function<void(const MidiControlMessage&, TrackPtr)> MidiControlCallbackFunc;
+typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOnCallbackFunc;
+typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;
+typedef std::function<void(const midi::MidiControlMessage&, TrackPtr)> MidiControlCallbackFunc;
 
 /** @enum eTrackEvent
  *  @brief Track events to handle in callbacks.
@@ -54,8 +52,8 @@ typedef std::function<void(eTrackEvent)> TrackEventCallback;
  */
 struct TrackStatistics
 {
-  data::AudioOutputStatistics audio_output_stats;
-  data::MidiInputStatistics midi_input_stats;
+  core::AudioOutputStatistics audio_output_stats;
+  core::MidiInputStatistics midi_input_stats;
 
   std::string to_string() const
   {
@@ -78,8 +76,8 @@ public:
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt),
-    p_audio_dataplane(std::make_shared<data::AudioDataPlane>()),
-    p_midi_dataplane(std::make_shared<data::MidiDataPlane>())
+    p_audio_dataplane(std::make_shared<core::AudioDataPlane>()),
+    p_midi_dataplane(std::make_shared<core::MidiDataPlane>())
   {}
 
   virtual ~Track() = default;
@@ -207,7 +205,7 @@ public:
   /** @brief Add an audio processor to the track's audio data plane.
    *  @param processor Shared pointer to the audio processor to add.
    */
-  void add_audio_processor(std::shared_ptr<processing::IAudioProcessor> processor)
+  void add_audio_processor(std::shared_ptr<audio::IAudioProcessor> processor)
   {
     p_audio_dataplane->add_processor(processor);
   }
@@ -227,7 +225,7 @@ public:
   /** @brief Get the audio dataplane for this track.
    *  @return Shared pointer to the audio dataplane.
    */
-  data::AudioDataPlanePtr get_audio_dataplane() const
+  core::AudioDataPlanePtr get_audio_dataplane() const
   {
     return p_audio_dataplane;
   }
@@ -235,7 +233,7 @@ public:
   /** @brief Get the MIDI dataplane for this track.
    *  @return Shared pointer to the MIDI dataplane.
    */
-  data::MidiDataPlanePtr get_midi_dataplane() const
+  core::MidiDataPlanePtr get_midi_dataplane() const
   {
     return p_midi_dataplane;
   }
@@ -246,8 +244,8 @@ public:
   TrackStatistics get_statistics() const
   {
     TrackStatistics stats;
-    stats.audio_output_stats = *std::dynamic_pointer_cast<data::AudioOutputStatistics>(p_audio_dataplane->get_statistics());
-    stats.midi_input_stats = *std::dynamic_pointer_cast<data::MidiInputStatistics>(p_midi_dataplane->get_statistics());
+    stats.audio_output_stats = *std::dynamic_pointer_cast<core::AudioOutputStatistics>(p_audio_dataplane->get_statistics());
+    stats.midi_input_stats = *std::dynamic_pointer_cast<core::MidiInputStatistics>(p_midi_dataplane->get_statistics());
     return stats;
   }
 
@@ -296,7 +294,7 @@ protected:
    */
   std::shared_ptr<class MainTrack> get_main_track() const;
 
-  void handle_midi_message(const MidiMessage& message); // TODO - Remove
+  void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
 
   // Hierarchy
   std::weak_ptr<Track> m_parent;
@@ -309,11 +307,11 @@ protected:
   std::atomic<bool> m_output_enabled;
 
   // Legacy members
-  std::queue<MidiMessage> m_message_queue; // TODO - Remove?
+  std::queue<midi::MidiMessage> m_message_queue; // TODO - Remove?
   std::mutex m_queue_mutex; // TODO - Remove?
 
-  data::AudioDataPlanePtr p_audio_dataplane;
-  data::MidiDataPlanePtr p_midi_dataplane;
+  core::AudioDataPlanePtr p_audio_dataplane;
+  core::MidiDataPlanePtr p_midi_dataplane;
 
   TrackEventCallback m_event_callback;
 
@@ -326,6 +324,6 @@ protected:
   MidiControlCallbackFunc m_control_change_callback;
 };
 
-}  // namespace miniaudioengine::control
+}  // namespace miniaudioengine
 
 #endif  // __TRACK_H__

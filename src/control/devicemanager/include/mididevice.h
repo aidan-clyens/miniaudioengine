@@ -6,7 +6,7 @@
 
 #include "device.h"
 
-namespace miniaudioengine::control
+namespace miniaudioengine::midi
 {
 
 /** @class MidiDevice
@@ -50,6 +50,6 @@ public:
 
 using MidiDevicePtr = std::shared_ptr<MidiDevice>;
 
-} // namespace miniaudioengine::control
+} // namespace miniaudioengine::midi
 
 #endif // __MIDI_DEVICE_H__

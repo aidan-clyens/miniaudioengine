@@ -19,13 +19,17 @@
 #define VERSION "1.0.0"
 #endif
 
+using namespace miniaudioengine;
+using namespace miniaudioengine::core;
+using namespace miniaudioengine::midi;
+
 static bool running = false;
 
 static std::optional<unsigned int> midi_input_device_id = std::nullopt;
 static std::optional<unsigned int> audio_output_device_id = std::nullopt;
 
-static miniaudioengine::CommandList commands = {
-  miniaudioengine::Command(
+static CommandList commands = {
+  Command(
     "start",
     "-s",
     "Open the MIDI input device and start receiving MIDI messages",
@@ -34,13 +38,13 @@ static miniaudioengine::CommandList commands = {
       running = true;
     }
   ),
-  miniaudioengine::Command(
+  Command(
     "--list-midi-devices",
     "-lmd",
     "List available MIDI input devices",
     [](const char *arg){
       LOG_INFO("Listing available MIDI input devices...");
-      auto midi_devices = miniaudioengine::control::DeviceManager::instance().get_midi_devices();
+      auto midi_devices = DeviceManager::instance().get_midi_devices();
       for (const auto &device : midi_devices)
       {
         std::cout << device->to_string() << std::endl;
@@ -48,7 +52,7 @@ static miniaudioengine::CommandList commands = {
       std::exit(0);
     }
   ),
-  miniaudioengine::Command(
+  Command(
     "--set-midi-input",
     "-i",
     "Set the MIDI input device by ID",
@@ -59,7 +63,7 @@ static miniaudioengine::CommandList commands = {
         return;
       }
       unsigned int device_id = std::stoi(arg);
-      auto midi_device = miniaudioengine::control::DeviceManager::instance().get_midi_device(device_id);
+      auto midi_device = DeviceManager::instance().get_midi_device(device_id);
       if (midi_device->id != device_id)
       {
         LOG_ERROR("MIDI input device with ID " + std::to_string(device_id) + " not found.");
@@ -70,12 +74,12 @@ static miniaudioengine::CommandList commands = {
       midi_input_device_id = device_id;
     }
   ),
-  miniaudioengine::Command(
+  Command(
     "--verbose",
     "-vb",
     "Enable verbose logging output",
     [](const char *arg){
-      miniaudioengine::core::Logger::instance().enable_console_output(true);
+      Logger::instance().enable_console_output(true);
       LOG_INFO("Verbose logging enabled.");
     }
   )
@@ -85,11 +89,11 @@ static miniaudioengine::CommandList commands = {
 int main(int argc, char* argv[])
 {
   // Setup logger
-  miniaudioengine::core::Logger::instance().set_log_file("midi_device_input.log");
-  miniaudioengine::core::Logger::instance().enable_console_output(false);
+  Logger::instance().set_log_file("midi_device_input.log");
+  Logger::instance().enable_console_output(false);
 
   // Setup CLI
-  miniaudioengine::CLI cli(
+  CLI cli(
     PROGRAM_NAME,
     "A MIDI input example program using the miniaudioengine library.",
     VERSION,
@@ -107,8 +111,8 @@ int main(int argc, char* argv[])
   });
 
   // Add one track
-  size_t track_id = miniaudioengine::control::TrackManager::instance().add_track();
-  auto track = miniaudioengine::control::TrackManager::instance().get_track(track_id);
+  size_t track_id = TrackManager::instance().add_track();
+  auto track = TrackManager::instance().get_track(track_id);
   if (!track)
   {
     LOG_ERROR("Failed to create track.");
@@ -117,8 +121,8 @@ int main(int argc, char* argv[])
 
   // Set default MIDI input device if none specified
   auto midi_input_device = (midi_input_device_id.has_value()) ?
-    miniaudioengine::control::DeviceManager::instance().get_midi_device(midi_input_device_id.value()) :
-    miniaudioengine::control::DeviceManager::instance().get_default_midi_input_device();
+    DeviceManager::instance().get_midi_device(midi_input_device_id.value()) :
+    DeviceManager::instance().get_default_midi_input_device();
 
   if (midi_input_device)
   {
@@ -132,26 +136,26 @@ int main(int argc, char* argv[])
   }
 
   // Set MIDI message callback functions
-  track->set_midi_note_on_callback([](const miniaudioengine::control::MidiNoteMessage &message, miniaudioengine::control::TrackPtr _track)
+  track->set_midi_note_on_callback([](const MidiNoteMessage &message, TrackPtr _track)
   {
-    miniaudioengine::data::eMidiNoteValues note_value = static_cast<miniaudioengine::data::eMidiNoteValues>(message.note_number());
+    eMidiNoteValues note_value = static_cast<eMidiNoteValues>(message.note_number());
     std::cout << "MIDI Note Off: " << note_value << std::endl; 
   });
 
-  track->set_midi_note_off_callback([](const miniaudioengine::control::MidiNoteMessage& message, miniaudioengine::control::TrackPtr _track) {
-    miniaudioengine::data::eMidiNoteValues note_value = static_cast<miniaudioengine::data::eMidiNoteValues>(message.note_number());
+  track->set_midi_note_off_callback([](const MidiNoteMessage& message, TrackPtr _track) {
+    eMidiNoteValues note_value = static_cast<eMidiNoteValues>(message.note_number());
     std::cout << "MIDI Note Off: " << note_value << std::endl;
   });
 
-  track->set_midi_control_change_callback([](const miniaudioengine::control::MidiControlMessage& message, miniaudioengine::control::TrackPtr _track) {
-    if (message.controller_value() == static_cast<int>(miniaudioengine::data::eMidiControllerValues::Released))
+  track->set_midi_control_change_callback([](const MidiControlMessage& message, TrackPtr _track) {
+    if (message.controller_value() == static_cast<int>(eMidiControllerValues::Released))
     {
       // Ignore released events
       return;
     }
 
-    miniaudioengine::data::eMidiController controller_number = static_cast<miniaudioengine::data::eMidiController>(message.controller_number());
-    miniaudioengine::data::eMidiControllerValues controller_value = static_cast<miniaudioengine::data::eMidiControllerValues>(message.controller_value());
+    eMidiController controller_number = static_cast<eMidiController>(message.controller_number());
+    eMidiControllerValues controller_value = static_cast<eMidiControllerValues>(message.controller_value());
 
     std::cout << "MIDI Control Change: " << controller_number << " Value=" << controller_value << std::endl;
   });

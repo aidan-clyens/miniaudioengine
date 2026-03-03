@@ -9,8 +9,8 @@
 #define TEST_WAV_FILE_PATH "C:\\Projects\\miniaudioengine\\examples\\wav-audio-player\\samples\\test2.wav"
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::data;
-using namespace miniaudioengine::file;
+using namespace miniaudioengine::audio;
+using namespace miniaudioengine::core;
 
 class AudioDataPlaneTest : public ::testing::Test
 {

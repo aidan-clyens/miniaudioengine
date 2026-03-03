@@ -7,10 +7,10 @@
 
 #include "wavfile.h"
 
-namespace miniaudioengine::processing
+namespace miniaudioengine::audio
 {
 
-/** @struct Sample 
+/** @struct Sample
  *  @brief Represents an audio sample in the processing module.
  */
 struct Sample
@@ -22,7 +22,7 @@ struct Sample
   unsigned int channels;
   unsigned int total_frames;
 
-  Sample(const file::WavFilePtr &wav_file):
+  Sample(const WavFilePtr &wav_file):
     name(wav_file->get_filename()),
     filepath(wav_file->get_filepath()),
     sample_rate(wav_file->get_sample_rate()),
@@ -52,6 +52,6 @@ std::ostream& operator<<(std::ostream& os, const Sample& sample)
 
 using SamplePtr = std::shared_ptr<Sample>;
 
-} // namespace miniaudioengine::processing
+} // namespace miniaudioengine::audio
 
 #endif // __SAMPLE_H__

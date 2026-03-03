@@ -7,12 +7,12 @@
 #include "audioprocessor.h"
 
 // Forward declaration
-namespace miniaudioengine::data
+namespace miniaudioengine::midi
 {
   enum class eMidiNoteValues : int;
-} // namespace miniaudioengine::data
+} // namespace miniaudioengine::midi
 
-namespace miniaudioengine::processing
+namespace miniaudioengine::audio
 {
 
 // Forward declaration
@@ -32,7 +32,7 @@ public:
    *  @param sample Shared pointer to the Sample object
    *  @param note MIDI note value associated with the sample
    */
-  void add_sample(const SamplePtr &sample, const data::eMidiNoteValues note)
+  void add_sample(const SamplePtr &sample, const midi::eMidiNoteValues note)
   {
     m_samples[note] = sample;
   }
@@ -40,7 +40,7 @@ public:
   std::string to_string() const override;
 
 private:
-  std::unordered_map<data::eMidiNoteValues, SamplePtr> m_samples;
+  std::unordered_map<midi::eMidiNoteValues, SamplePtr> m_samples;
 
 private:
   void process() override
@@ -51,6 +51,6 @@ private:
 
 using SamplePlayerPtr = std::shared_ptr<SamplePlayer>;
 
-} // namespace miniaudioengine::processing
+} // namespace miniaudioengine::audio
 
 #endif // __SAMPLER_PLAYER_H__

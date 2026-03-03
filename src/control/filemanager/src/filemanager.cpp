@@ -3,7 +3,7 @@
 #include "midifile.h"
 #include "logger.h"
 
-using namespace miniaudioengine::file;
+using namespace miniaudioengine;
 
 /** @brief Lists the contents of a directory.
  *  @param path The path to the directory to list.

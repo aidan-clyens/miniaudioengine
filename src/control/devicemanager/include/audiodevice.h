@@ -8,7 +8,7 @@
 #include <memory>
 #include <rtaudio/RtAudio.h>
 
-namespace miniaudioengine::control
+namespace miniaudioengine::audio
 {
 
 /** @class AudioDevice
@@ -78,6 +78,6 @@ public:
 
 using AudioDevicePtr = std::shared_ptr<AudioDevice>;
 
-} // namespace miniaudioengine::control
+} // namespace miniaudioengine::audio
 
 #endif // __AUDIO_DEVICE_H__

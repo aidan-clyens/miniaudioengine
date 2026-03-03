@@ -17,9 +17,8 @@
 
 #define TEST_WAV_FILE_PATH "C:\\Projects\\miniaudioengine\\samples\\test.wav"
 
-using namespace miniaudioengine::control;
-using namespace miniaudioengine::data;
-using namespace miniaudioengine::file;
+using namespace miniaudioengine;
+using namespace miniaudioengine::core;
 using namespace miniaudioengine::test;
 
 class TrackTest : public ::testing::Test

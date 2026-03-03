@@ -5,7 +5,8 @@
 #include "device.h"
 #include "logger.h"
 
-using namespace miniaudioengine::control;
+using namespace miniaudioengine;
+using namespace miniaudioengine::audio;
 
 class DeviceManagerTest : public ::testing::Test
 {

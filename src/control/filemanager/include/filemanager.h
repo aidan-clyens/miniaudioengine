@@ -10,7 +10,7 @@
 #include <memory>
 #include <optional>
 
-namespace miniaudioengine::file
+namespace miniaudioengine
 {
 
 // Forward declaration
@@ -22,7 +22,7 @@ typedef std::shared_ptr<WavFile> WavFilePtr;
 typedef std::shared_ptr<MidiFile> MidiFilePtr;
 
 /** @class File
- *  @brief Base class for various file types 
+ *  @brief Base class for various file types
  */
 class File : public core::IInput
 {
@@ -157,6 +157,6 @@ private:
   FileManager& operator=(const FileManager&) = delete;
 };
 
-}  // namespace miniaudioengine::file
+}  // namespace miniaudioengine
 
 #endif  // __FILE_SYSTEM_H__

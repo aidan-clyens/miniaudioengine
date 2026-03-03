@@ -10,7 +10,7 @@
 #include <vector>
 #include <memory>
 
-namespace miniaudioengine::control
+namespace miniaudioengine::audio
 {
 
 /** @class AudioStreamController
@@ -47,6 +47,6 @@ private:
 
 using AudioStreamControllerPtr = std::shared_ptr<AudioStreamController>;
 
-} // namespace miniaudioengine::control
+} // namespace miniaudioengine::audio
 
 #endif // __AUDIO_STREAM_CONTROLLER_H__

@@ -3,7 +3,7 @@
 
 #include <rtaudio/RtAudio.h>
 
-namespace miniaudioengine::data
+namespace miniaudioengine::core
 {
 // Forward declaration
 typedef std::shared_ptr<class AudioDataPlane> AudioDataPlanePtr;
@@ -21,6 +21,6 @@ public:
                     double stream_time, RtAudioStreamStatus status, void *user_data) noexcept;
 };
 
-} // namespace miniaudioengine::data
+} // namespace miniaudioengine::core
 
 #endif // __AUDIO_CALLBACK_HANDLER_H__

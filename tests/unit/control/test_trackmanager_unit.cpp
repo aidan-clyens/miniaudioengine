@@ -3,7 +3,7 @@
 
 #include "trackmanager.h"
 
-using namespace miniaudioengine::control;
+using namespace miniaudioengine;
 
 // Configure test setup and teardown
 class TrackManagerTest : public ::testing::Test

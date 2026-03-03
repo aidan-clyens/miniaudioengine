@@ -5,7 +5,7 @@
 
 #include <algorithm>
 
-using namespace miniaudioengine::data;
+using namespace miniaudioengine::audio;
 using namespace miniaudioengine::core;
 
 int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,

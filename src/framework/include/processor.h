@@ -52,6 +52,6 @@ private:
   std::atomic<bool> m_running{false};
 };
 
-};
+} // namespace miniaudioengine::core
 
 #endif // __PROCESSOR_H__

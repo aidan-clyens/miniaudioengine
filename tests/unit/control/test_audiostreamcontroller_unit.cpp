@@ -8,7 +8,7 @@
 #include "audiocontroller_mock.h"
 #include "device_mock.h"
 
-using namespace miniaudioengine::control;
+using namespace miniaudioengine::core;
 using namespace miniaudioengine::test;
 
 class AudioControllerTest : public ::testing::Test

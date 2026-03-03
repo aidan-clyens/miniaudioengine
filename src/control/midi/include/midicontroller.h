@@ -7,7 +7,7 @@
 
 #include <vector>
 
-namespace miniaudioengine::control
+namespace miniaudioengine::midi
 {
 
 /** @class IMidiController
@@ -25,18 +25,20 @@ public:
   virtual void open_input_port(unsigned int port_number = 0) = 0;
   virtual void close_input_port() = 0;
 
-  virtual std::shared_ptr<data::MidiCallbackContext> get_callback_context() const
+  virtual std::shared_ptr<core::MidiCallbackContext> get_callback_context() const
   {
     return m_callback_context;
   }
 
 protected:
-  IMidiController() : m_callback_context(std::make_shared<data::MidiCallbackContext>()) {}
+  IMidiController() : 
+    core::IController("IMidiController"),
+    m_callback_context(std::make_shared<core::MidiCallbackContext>()) {}
 
   // Common state shared by all implementations
-  std::shared_ptr<data::MidiCallbackContext> m_callback_context;
+  std::shared_ptr<core::MidiCallbackContext> m_callback_context;
 };
 
-} // namespace miniaudioengine::control
+} // namespace miniaudioengine::midi
 
 #endif // __MIDI_CONTROLLER_H__

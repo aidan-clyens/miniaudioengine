@@ -1,3 +1,3 @@
 #include "audioprocessor.h"
 
-using namespace miniaudioengine::processing;
+using namespace miniaudioengine::audio;

@@ -1,7 +1,7 @@
 #include "audiodataplane.h"
 
-using namespace miniaudioengine::data;
-using namespace miniaudioengine::file;
+using namespace miniaudioengine::audio;
+using namespace miniaudioengine;
 using namespace miniaudioengine::core;
 
 void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,

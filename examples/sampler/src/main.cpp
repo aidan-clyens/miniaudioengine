@@ -18,6 +18,9 @@
 static const std::filesystem::path SAMPLE_FOLDER = "C:\\Projects\\miniaudioengine\\samples\\drums";
 
 using namespace miniaudioengine;
+using namespace miniaudioengine::core;
+using namespace miniaudioengine::audio;
+using namespace miniaudioengine::midi;
 
 namespace sampler
 {
@@ -31,13 +34,14 @@ class Sampler
 {
 public:
   Sampler():
-    m_track_manager(control::TrackManager::instance()),
-    m_device_manager(control::DeviceManager::instance()),
-    m_file_manager(file::FileManager::instance()),
-    m_logger(core::Logger::instance())
+    m_track_manager(TrackManager::instance()),
+    m_device_manager(DeviceManager::instance()),
+    m_file_manager(FileManager::instance()),
+    m_logger(Logger::instance())
   {
     // Create main track
     m_track = m_track_manager.create_child_track();
+    m_sample_player = std::make_shared<SamplePlayer>();
 
     // Set to default audio output device
     auto default_output = m_device_manager.get_default_audio_output_device();
@@ -58,7 +62,6 @@ public:
     m_track->add_midi_input(default_midi_input);
 
     // Add Sample Player processor to track
-    m_sample_player = std::make_shared<processing::SamplePlayer>();
     m_track->add_audio_processor(m_sample_player);
   }
 
@@ -78,12 +81,12 @@ public:
     return wav_files;
   }
 
-  std::vector<core::IDevicePtr> list_midi_devices()
+  std::vector<IDevicePtr> list_midi_devices()
   {
     return m_device_manager.get_midi_devices();
   }
 
-  std::vector<core::IAudioDevicePtr> list_audio_devices()
+  std::vector<IAudioDevicePtr> list_audio_devices()
   {
     return m_device_manager.get_audio_devices();
   }
@@ -92,7 +95,7 @@ public:
    *  @param sample_path The filesystem path to the WAV sample file.
    *  @param note The MIDI note value to map the sample to.
    */
-  void add_sample(const std::filesystem::path &sample_path, const data::eMidiNoteValues note)
+  void add_sample(const std::filesystem::path &sample_path, const eMidiNoteValues note)
   {
     if (!m_file_manager.is_wav_file(sample_path))
     {
@@ -108,14 +111,14 @@ public:
       return;
     }
 
-    processing::SamplePtr sample = std::make_shared<processing::Sample>(*wav_file);
+    SamplePtr sample = std::make_shared<Sample>(*wav_file);
 
     // Add to sample map
     m_sample_player->add_sample(sample, note);
     LOG_INFO("Sampler: Loaded sample: ", *sample);
   }
 
-  void set_audio_output_device(const core::IAudioDevicePtr &device)
+  void set_audio_output_device(const IAudioDevicePtr &device)
   {
     try
     {
@@ -126,7 +129,7 @@ public:
     }
   }
 
-  void set_midi_input_device(const core::IDevicePtr &device)
+  void set_midi_input_device(const IDevicePtr &device)
   {
     try
     {
@@ -170,14 +173,14 @@ public:
   }
 
 private:
-  control::TrackManager &m_track_manager;
-  control::DeviceManager &m_device_manager;
-  file::FileManager &m_file_manager;
+  TrackManager &m_track_manager;
+  DeviceManager &m_device_manager;
+  FileManager &m_file_manager;
 
-  control::TrackPtr m_track;
-  processing::SamplePlayerPtr m_sample_player;
+  TrackPtr m_track;
+  SamplePlayerPtr m_sample_player;
 
-  core::Logger &m_logger;
+  Logger &m_logger;
 };
 
 } // namespace sampler
@@ -193,10 +196,10 @@ int main()
     sampler::g_running.store(false);
   });
 
-  core::Logger &logger = core::Logger::instance();
+  Logger &logger = Logger::instance();
   logger.enable_console_output(false);
   logger.set_log_file("Sampler.log");
-  core::set_thread_name("Sampler");
+  set_thread_name("Sampler");
 
   sampler::Sampler app;
 
@@ -235,7 +238,7 @@ int main()
     {
       unsigned int device_id = static_cast<unsigned int>(std::stoi(arg));
       auto midi_inputs = app.list_midi_devices();
-      auto it = std::find_if(midi_inputs.begin(), midi_inputs.end(), [device_id](const core::IDevicePtr &device)
+      auto it = std::find_if(midi_inputs.begin(), midi_inputs.end(), [device_id](const IDevicePtr &device)
       {
         return device->id == device_id;
       });
@@ -254,7 +257,7 @@ int main()
     {
       unsigned int device_id = static_cast<unsigned int>(std::stoi(arg));
       auto audio_outputs = app.list_audio_devices();
-      auto it = std::find_if(audio_outputs.begin(), audio_outputs.end(), [device_id](const core::IAudioDevicePtr &device)
+      auto it = std::find_if(audio_outputs.begin(), audio_outputs.end(), [device_id](const IAudioDevicePtr &device)
       {
         return device->id == device_id;
       });
@@ -279,12 +282,12 @@ int main()
   cli.parse_command_line_arguments(__argc, __argv);
 
   auto wav_files = app.list_samples(SAMPLE_FOLDER);
-  data::eMidiNoteValues note = data::eMidiNoteValues::C_4;
+  eMidiNoteValues note = eMidiNoteValues::C_4;
   for (const auto &file : wav_files)
   {
     std::cout << "Mapping sample file: " << file.filename() << " to " << note << std::endl;
     app.add_sample(file, note);
-    note = static_cast<data::eMidiNoteValues>(static_cast<int>(note) + 1);
+    note = static_cast<eMidiNoteValues>(static_cast<int>(note) + 1);
   }
 
   std::cout << std::endl;

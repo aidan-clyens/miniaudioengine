@@ -1,7 +1,9 @@
 #include "devicemanager.h"
 
 using namespace miniaudioengine::core;
-using namespace miniaudioengine::control;
+using namespace miniaudioengine;
+using namespace miniaudioengine::audio;
+using namespace miniaudioengine::midi;
 
 std::vector<IAudioDevicePtr> DeviceManager::get_audio_devices() const
 {

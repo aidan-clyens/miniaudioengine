@@ -9,7 +9,7 @@
 // Forward declaration from rtaudio library
 typedef unsigned int RtAudioStreamStatus;
 
-namespace miniaudioengine::processing
+namespace miniaudioengine::audio
 {
 
 /** @brief Interface for audio processors. Real application or test mock */
@@ -58,6 +58,6 @@ private:
   std::atomic<bool> m_bypass{false};
 };
 
-};
+} // namespace miniaudioengine::audio
 
 #endif // __AUDIO_PROCESSOR_H__

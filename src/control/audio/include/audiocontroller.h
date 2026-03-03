@@ -10,14 +10,7 @@
 #include <optional>
 #include <memory>
 
-// Forward declarations from data namespace
-namespace miniaudioengine::data
-{
-  class AudioCallbackContext;
-  typedef std::shared_ptr<class AudioDataPlane> AudioDataPlanePtr;
-}
-
-namespace miniaudioengine::control
+namespace miniaudioengine::audio
 {
 
 /** @class IAudioController
@@ -34,13 +27,15 @@ public:
 
   virtual std::vector<core::IAudioDevicePtr> get_audio_devices() = 0;
 
-  virtual std::shared_ptr<data::AudioCallbackContext> get_callback_context() const
+  virtual std::shared_ptr<core::AudioCallbackContext> get_callback_context() const
   {
     return m_callback_context;
   }
 
 protected:
-  IAudioController() : m_callback_context(std::make_shared<data::AudioCallbackContext>()) {}
+  IAudioController():
+    core::IController("IAudioController"),
+    m_callback_context(std::make_shared<core::AudioCallbackContext>()) {}
 
   /** @brief Validates preconditions before starting the audio stream.
    *  @return true if all preconditions are met, false otherwise.
@@ -53,9 +48,9 @@ protected:
   bool register_dataplanes();
 
   // Common state shared by all implementations
-  std::shared_ptr<data::AudioCallbackContext> m_callback_context;
+  std::shared_ptr<core::AudioCallbackContext> m_callback_context;
 };
 
-} // namespace miniaudioengine::control
+} // namespace miniaudioengine::audio
 
 #endif // __AUDIO_CONTROLLER_H__

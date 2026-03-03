@@ -7,7 +7,7 @@
 #include <string_view>
 #include <ostream>
 
-namespace miniaudioengine::data
+namespace miniaudioengine::midi
 {
 
 /** @enum eMidiController
@@ -295,7 +295,7 @@ static inline const std::map<eMidiNoteValues, std::string_view> midi_note_names 
  *  @return The name of the MIDI controller.
  *  @throws std::out_of_range if the controller is invalid.
  */
-std::string get_midi_controller_name(eMidiController controller)
+inline std::string get_midi_controller_name(eMidiController controller)
 {
   std::string name;
   try
@@ -315,7 +315,7 @@ std::string get_midi_controller_name(eMidiController controller)
  *  @return The name of the MIDI note.
  *  @throws std::out_of_range if the note value is invalid.
  */
-std::string get_midi_note_name(eMidiNoteValues note_value)
+inline std::string get_midi_note_name(eMidiNoteValues note_value)
 {
   std::string name;
   try
@@ -363,6 +363,6 @@ inline std::ostream& operator<<(std::ostream& os, const eMidiNoteValues& note_va
   return os;
 }
 
-} // namespace miniaudioengine::data
+} // namespace miniaudioengine::midi
 
 #endif // __MIDI_CONTROLLER_TYPES_H__

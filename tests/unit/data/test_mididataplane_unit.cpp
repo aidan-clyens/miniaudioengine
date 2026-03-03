@@ -7,8 +7,8 @@
 #include "logger.h"
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::control;
-using namespace miniaudioengine::data;
+using namespace miniaudioengine::midi;
+using namespace miniaudioengine::core;
 
 class MidiDataPlaneTest : public ::testing::Test
 { 
