@@ -108,6 +108,49 @@ When writing or modifying any code that executes inside a callback (`AudioDataPl
 - Singleton tests call `TrackManager::instance().clear_tracks()` before each test to reset state
 - Platform guards: `#ifdef PLATFORM_WINDOWS` / `#elif defined(PLATFORM_LINUX)`
 
+### Naming
+
+| Element | Convention | Example |
+|---|---|---|
+| Classes | PascalCase | `AudioDataPlane`, `FileManager` |
+| Interfaces/abstract bases | `I` prefix + PascalCase | `IController`, `IDataPlane` |
+| Methods | snake_case | `get_output_device()`, `is_running()` |
+| Data members | `m_` prefix | `m_running`, `m_stream_state` |
+| Pointer members | `p_` prefix | `p_device`, `p_statistics` |
+| Enum types | `e` prefix + PascalCase | `eStreamState`, `eMidiMessageType` |
+| Enum values | PascalCase | `eStreamState::Playing` |
+| `shared_ptr` type aliases | `Ptr` suffix | `IDataPlanePtr`, `AudioDataPlanePtr` |
+| Boolean getters | `is_` / `has_` prefix | `is_running()`, `has_audio_input()` |
+
+### Specifiers & Attributes
+- `override` on every derived virtual method
+- `noexcept` on real-time callbacks and methods that must not throw
+- `explicit` on single-parameter constructors
+- `const` on all getters and read-only parameters
+- `constexpr` / `inline constexpr` for compile-time constants and lookup tables
+
+### Special Member Functions
+- Non-copyable types: explicitly `= delete` copy constructor and copy assignment operator
+- Base/interface destructors: `virtual ~IFoo() = default`
+- Prefer in-class member initializers over constructor body assignment
+- `std::make_shared` for all `shared_ptr` construction
+
+### Smart Pointers
+- `std::shared_ptr` is the primary ownership type; always alias as `FooPtr`
+- `std::weak_ptr` for parent/back references to avoid cycles
+- Raw pointers only for non-owning references (e.g., RtAudio callback buffers, `std::ostream*` in Logger)
+
+### Modern C++ Idioms
+- `std::optional<T>` for fallible return values instead of out-parameters or sentinel values
+- `std::variant` for type-safe discriminated unions (e.g., `SourceVariant`)
+- Range-based `for` loops throughout; avoid raw index loops unless index is needed
+- `alignas(64)` on `std::atomic` members that occupy hot cache lines
+- `thread_local` for per-thread state (e.g., thread name in Logger)
+
+### Comments & Documentation
+- All public API declarations use Doxygen: `@brief`, `@param`, `@return`, `@throws`, `@deprecated`
+- Inline comments only for non-obvious logic; do not comment self-evident code
+
 ## Key Pending Work
 
 - **Processing Plane Orchestration**: `core::IProcessor` uses per-processor threads, but there is no global DSP scheduler yet

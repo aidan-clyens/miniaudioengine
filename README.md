@@ -6,16 +6,6 @@
 
 ---
 
-# Contents
-
----
-
-# Introduction
-
-This specification documents the software design process used to create the  `miniaudioengine` C++ library.
-
----
-
 # Requirements
 
 ## Functional Requirements
@@ -242,6 +232,44 @@ LOG_INFO("Playback statistics:\n", stats.to_string());
 ### MIDI Controller Interface
 
 ### Sampler
+
+## C++ Coding Conventions
+
+### **Naming Conventions**
+
+| Element | Convention | Example |
+| --- | --- | --- |
+| Classes | PascalCase | `AudioDataPlane`, `FileManager` |
+| Interfaces | `I` prefix + PascalCase | `IController`, `IDataPlane` |
+| Methods | snake_case | `get_output_device()`, `is_running()` |
+| Data members | `m_` prefix | `m_running`, `m_stream_state` |
+| Pointer members | `p_` prefix | `p_device`, `p_statistics` |
+| Enums | `e` prefix + PascalCase type, PascalCase values | `eStreamState::Playing` |
+| `shared_ptr` aliases | `Ptr` suffix | `IDataPlanePtr`, `AudioDataPlanePtr` |
+
+### **Specifiers & Attributes**
+
+- `override` used consistently on all derived virtual methods
+- `noexcept` on real-time audio callbacks and time-critical methods
+- `explicit` on single-parameter constructors
+- `const` extensively applied to getters and parameters
+- `constexpr` for compile-time constants/mappings
+
+### **Smart Pointers**
+
+- `std::shared_ptr` is the primary ownership mechanism
+- `std::weak_ptr` for parent references (avoiding cycles)
+- Raw pointers only for non-owning references (e.g., RtAudio callback buffers)
+- `std::make_shared` used for allocation
+
+### **Singletons**
+
+- Thread-safe Meyers singleton via `static T& instance()` with private constructor and deleted copy
+
+### **Comments**
+
+- Doxygen format (`@brief`, `@param`, `@return`, `@throws`, `@deprecated`) on all public APIs
+- Brief inline comments for non-obvious logic only
 
 ---
 
