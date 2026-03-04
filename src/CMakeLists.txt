@@ -1,5 +1,5 @@
 add_subdirectory(framework)
-add_subdirectory(cli)
 add_subdirectory(control)
 add_subdirectory(data)
 add_subdirectory(processing)
+add_subdirectory(public)
