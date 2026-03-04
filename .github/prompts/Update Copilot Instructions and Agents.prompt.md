@@ -1,6 +1,8 @@
 ---
 agent: agent
 description: Updates the custom Copilot instructions and agent documentation in .github directory to reflect current codebase architecture and completed refactors
+name: update-instructions-and-agents
+model: GPT-5.2-Codex
 ---
 
 # Update Copilot Instructions and Agents
@@ -27,7 +29,7 @@ This prompt updates all custom Copilot instructions and agent documentation file
    - Critical files reference section
 
 2. **`.github/agents/Architecture Analyst.md`** - Architecture analysis agent
-   - Design pattern descriptions (Engine, Singleton, Observer)
+   - Design pattern descriptions (Controller, Processor, Singleton)
    - Threading model explanations
    - Key architecture files by layer
    - Analysis framework and review checklists
@@ -47,21 +49,21 @@ This prompt updates all custom Copilot instructions and agent documentation file
 ## Key Areas to Check
 
 ### Architecture Updates
-- [ ] Layer diagrams show current structure (Framework → Data Plane → Processing Plane → Control Plane → CLI)
+- [ ] Layer diagrams show current structure (Framework → Data Plane → Processing Plane → Control Plane → Public/CLI/Examples)
 - [ ] Control Plane components listed accurately (AudioStreamController, MidiPortController, TrackManager, DeviceManager, FileManager)
 - [ ] Data Plane components listed accurately (AudioDataPlane, MidiDataPlane, callback handlers)
-- [ ] Legacy patterns marked as deprecated (IEngine<T> pattern being phased out)
+- [ ] Deprecated items listed accurately (e.g., `IAudioController` is deprecated)
 
 ### Component Organization
 - [ ] File structure matches actual src/ directory layout
-- [ ] Namespace organization is correct (miniaudioengine::control, Data, Core)
+- [ ] Namespace organization is correct (`miniaudioengine::core`, `miniaudioengine::audio`, `miniaudioengine::midi`, root `miniaudioengine`)
 - [ ] Include paths reference actual file locations
 
 ### Threading & Concurrency
 - [ ] Control plane described as synchronous singletons (no dedicated threads)
 - [ ] Data plane described as callback-based (RtAudio/RtMidi threads)
-- [ ] Processing plane marked as NOT YET IMPLEMENTED
-- [ ] Legacy IEngine<T> pattern marked as deprecated
+- [ ] Processing plane described as partial/experimental with per-processor threads only
+- [ ] No references to removed engine/observer patterns
 
 ### Dependencies
 - [ ] vcpkg.json dependencies match actual requirements
@@ -81,12 +83,12 @@ This prompt updates all custom Copilot instructions and agent documentation file
 ## Process
 
 1. **Scan codebase for current structure:**
-   - List directories in src/ (framework, data, control, cli)
+   - List directories in src/ (framework, data, control, processing, public)
    - Check what files exist in each component
    - Identify singleton classes and their patterns
 
 2. **Identify completed refactors:**
-   - Search for deprecated classes (AudioEngine, MidiEngine)
+   - Search for deprecated classes (AudioEngine, MidiEngine, legacy controller types)
    - Verify replacement components exist (AudioStreamController, MidiPortController)
    - Check if legacy patterns are still in use
 
@@ -111,7 +113,7 @@ This prompt updates all custom Copilot instructions and agent documentation file
 When MidiEngine is replaced with MidiPortController + MidiDataPlane:
 
 **Before:**
-- Data Plane: MidiEngine (legacy IEngine pattern - needs refactor)
+- Data Plane: MidiEngine (legacy engine pattern - needs refactor)
 - TODO: Refactor MidiEngine to control plane synchronous pattern
 
 **After:**

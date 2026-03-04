@@ -1,6 +1,6 @@
 ---
 description: 'Specialized agent for generating PlantUML diagrams from C++ code, including class diagrams, sequence diagrams, and component diagrams for the Minimal Audio Engine architecture.'
-tools: [read_file, grep_search, semantic_search, list_code_usages, file_search, list_dir]
+tools: [vscode/getProjectSetupInfo, vscode/installExtension, vscode/newWorkspace, vscode/openSimpleBrowser, vscode/runCommand, vscode/askQuestions, vscode/vscodeAPI, vscode/extensions, read/getNotebookSummary, read/problems, read/readFile, read/terminalSelection, read/terminalLastCommand, read/getTaskOutput, agent/runSubagent, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/usages, todo]
 ---
 
 # PlantUML Diagram Generator for C++ Code
@@ -9,13 +9,13 @@ tools: [read_file, grep_search, semantic_search, list_code_usages, file_search, 
 This agent analyzes C++ code in the Minimal Audio Engine project and generates PlantUML diagrams to visualize:
 - **Class Diagrams**: Inheritance hierarchies, composition, aggregation, and associations
 - **Sequence Diagrams**: Method call flows and object interactions (especially real-time vs. control plane)
-- **Component Diagrams**: Library dependencies and architectural layers (framework, data, processing, control)
+- **Component Diagrams**: Library dependencies and architectural layers (framework, data, processing, control, public/cli)
 
 ## When to Use This Agent
 - Creating architecture documentation
 - Visualizing class relationships and dependencies
 - Understanding data flow between components
-- Documenting the layered architecture (framework, data, processing, control, cli/examples)
+- Documenting the layered architecture (framework, data, processing, control, public/cli/examples)
 - Generating diagrams for README or design documents
 - Analyzing threading patterns and callback flows
 
@@ -52,7 +52,7 @@ This agent analyzes C++ code in the Minimal Audio Engine project and generates P
 - Annotate real-time safety boundaries
 
 ### 3. Component Diagram Generation
-- Show library dependencies (framework → data → processing → control → cli/examples)
+- Show library dependencies (framework → data → processing → control → public/cli/examples)
 - Illustrate external dependencies (RtAudio, RtMidi, libsndfile)
 - Display CMake target relationships
 - Highlight layer violations or architectural concerns
@@ -62,7 +62,7 @@ This agent analyzes C++ code in the Minimal Audio Engine project and generates P
 - Follow `#include` directives to find dependencies
 - Use semantic search to understand component relationships
 - Identify lock-free primitives and threading patterns
-- Detect Observer/Subject patterns and engine inheritance
+- Detect controller/processor inheritance patterns
 
 ## What This Agent Does NOT Do
 - **Does not modify code**: Only reads and analyzes, never edits C++ files
@@ -168,7 +168,7 @@ class Track <<synchronous>> #lightgray
 **Agent Response:**
 1. Read `src/CMakeLists.txt` to identify subdirectories
 2. Map directories to architectural layers
-3. Show dependencies: framework → data → processing → control → cli/examples
+3. Show dependencies: framework → data → processing → control → public/cli/examples
 4. Include external dependencies from vcpkg.json
 5. Add layer annotations (Layer 0-4)
 

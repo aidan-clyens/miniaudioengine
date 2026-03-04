@@ -38,7 +38,7 @@ Use this agent when working on:
 - **Synthesis**: Subtractive, additive, FM, wavetable, granular
 
 ### Concurrency & Threading
-- **Layered architecture**: Framework (utilities), data plane (callbacks), processing plane (experimental), control plane (synchronous)
+- **Layered architecture**: Framework (utilities), data plane (callbacks), processing plane (experimental), control plane (synchronous), public/CLI (application entrypoints)
 - **Lock-free patterns**: SPSC queues, atomic flags, compare-and-swap operations
 - **Memory ordering**: `memory_order_acquire`, `memory_order_release`, `memory_order_seq_cst`
 - **Thread coordination**: Producer-consumer patterns, worker pools, task queues
@@ -151,7 +151,7 @@ The agent will:
 ## Integration with Project
 
 This agent is specifically tuned for the **Minimal Audio Engine** architecture:
-- Understands the 3-plane architecture (control, processing, data)
+- Understands the layered architecture (framework, data, processing, control, public/CLI)
 - Familiar with `LockfreeRingBuffer`, `AudioStreamController`, `AudioDataPlane`, `MidiDataPlane`
 - Knows RtAudio/RtMidi integration patterns used in the project
 - Aware of the threading model (synchronous control, worker threads, audio callbacks)

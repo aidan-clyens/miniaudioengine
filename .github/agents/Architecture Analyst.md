@@ -27,27 +27,22 @@ You are an Architecture Analyst specializing in modern C++20 software engineerin
 
 ### Project-Specific Architecture
 
-#### Engine Pattern (`IEngine<T>`)
-The codebase uses a templated engine base class for concurrent components:
+#### Processor Pattern (`core::IProcessor`)
+The codebase provides a lightweight processor base class for background work:
 ```cpp
-template <typename T>
-class IEngine {
-  - std::jthread m_thread;           // Cooperative thread management
-  - MessageQueue<T> m_message_queue; // Thread-safe communication
-  - std::atomic<bool> m_running;     // Lock-free state flag
-  
-  // Lifecycle: start_thread() blocks until ready, stop_thread() signals shutdown
-  // Derived classes implement run() and handle_messages()
+class IProcessor {
+  - std::jthread m_thread;
+  - std::atomic<bool> m_running;
+
+  // start() launches process() in a jthread
+  // stop() requests cooperative shutdown
 };
 ```
 
 **Key patterns**:
-- Each engine runs in its own thread with independent message queue
-- No shared state between engines - communication via message passing
-- Thread readiness signaling with timeout protection
-- Cooperative shutdown via `std::jthread` stop tokens
-
-**Note**: This pattern is legacy and being phased out. New control plane components (AudioStreamController, MidiPortController) use synchronous singleton pattern without dedicated threads. Data plane components (AudioCallbackHandler, MidiCallbackHandler) are pure callback functions without threads. The processing plane exists as interfaces (IAudioProcessor, SamplePlayer, Sample) but has no worker orchestration yet.
+- Processing threads are per-processor (no global scheduler yet)
+- Control plane components are synchronous singletons (no dedicated threads)
+- Data plane components run inside RtAudio/RtMidi callbacks (no threads owned)
 
 #### Singleton Pattern
 Core control plane components use thread-safe singleton pattern:
@@ -61,23 +56,6 @@ Core control plane components use thread-safe singleton pattern:
 - Singletons enable global access but can hinder testability
 - Static initialization order is deterministic with function-local statics (C++11+)
 - Thread-safe initialization guaranteed by C++11 magic statics
-
-#### Observer Pattern (`Observer<T>` / `Subject<T>`)
-Thread-safe observer implementation with weak pointer semantics:
-```cpp
-template <typename T>
-class Subject {
-  std::vector<std::weak_ptr<Observer<T>>> m_observers;
-  std::mutex m_mutex;  // Protects observer list mutations
-  
-  void notify(const T& data) {
-    // Locks mutex, iterates observers, calls update()
-  }
-};
-```
-- `std::weak_ptr` avoids circular references and dangling pointers
-- Observers are removed automatically when their shared ownership expires
-- Mutex protects attach/detach/notify operations
 
 #### Input Abstraction (`IInput` / `std::variant`)
 Polymorphic input routing using type-safe unions:
@@ -118,7 +96,7 @@ class MessageQueue {
 When reviewing code or proposing changes, evaluate:
 
 1. **Threading Model**
-   - [ ] Are threads created via `IEngine<T>` pattern or standalone?
+  - [ ] Are threads created via `core::IProcessor` or explicit `std::jthread`?
    - [ ] Is there a clear ownership model for thread lifecycle?
    - [ ] Are threads started with readiness checks and stopped cooperatively?
    - [ ] Are thread names set for debugging (`set_thread_name()`)?
@@ -131,7 +109,7 @@ When reviewing code or proposing changes, evaluate:
    - [ ] Are there potential deadlocks (lock ordering issues)?
 
 3. **Design Patterns**
-   - [ ] Does the component fit the engine/observer/singleton patterns?
+  - [ ] Does the component fit the controller/processor/singleton patterns?
    - [ ] Are ownership semantics clear (unique vs shared vs weak)?
    - [ ] Is the abstraction level appropriate (not over-engineered)?
    - [ ] Are interfaces minimal and cohesive?
@@ -145,7 +123,7 @@ When reviewing code or proposing changes, evaluate:
 5. **Testability**
    - [ ] Can components be tested in isolation?
    - [ ] Are singleton dependencies injected or mockable?
-   - [ ] Do engines expose state for verification?
+  - [ ] Do processors expose state for verification?
    - [ ] Are message types easily constructible for tests?
 
 ### Common Anti-Patterns to Avoid
@@ -153,7 +131,7 @@ When reviewing code or proposing changes, evaluate:
 #### 1. Shared Mutable State Without Protection
 ```cpp
 // BAD: Race condition
-class BadEngine {
+class BadProcessor {
   int shared_counter; // Multiple threads access without protection
   
   void thread1() { shared_counter++; }
@@ -161,15 +139,11 @@ class BadEngine {
 };
 
 // GOOD: Use atomic or message passing
-class GoodEngine : public IEngine<Command> {
+class GoodProcessor {
   std::atomic<int> shared_counter;
   
-  void handle_messages() {
-    if (auto msg = pop_message()) {
-      if (msg->type == INCREMENT) {
-        shared_counter.fetch_add(1, std::memory_order_relaxed);
-      }
-    }
+  void increment() {
+    shared_counter.fetch_add(1, std::memory_order_relaxed);
   }
 };
 ```
@@ -193,48 +167,21 @@ void good_function() {
 }
 ```
 
-#### 3. Forgetting Thread Readiness Signaling
+#### 3. Starting Threads Without Shutdown Paths
 ```cpp
-// BAD: Race - thread may not be ready when start_thread() returns
-void IEngine::bad_start_thread() {
-  m_thread = std::jthread(&IEngine::_run, this);
-  // Returns immediately, thread may not have started
-}
-
-// GOOD: Block until thread signals readiness
-void IEngine::start_thread() {
-  m_running.store(true, std::memory_order_release);
-  m_thread = std::jthread(&IEngine::_run, this);
-  
-  auto start_time = std::chrono::steady_clock::now();
-  while (!m_running.load(std::memory_order_acquire)) {
-    if (std::chrono::steady_clock::now() - start_time > timeout) {
-      throw std::runtime_error("Thread failed to start");
-    }
-    std::this_thread::yield();
+// BAD: Thread has no stop condition and never exits
+void process() {
+  while (true) {
+    do_work();
   }
 }
-```
 
-#### 4. Circular References in Observer Pattern
-```cpp
-// BAD: Subject holds shared_ptr, creates reference cycle
-class BadSubject {
-  std::vector<std::shared_ptr<Observer>> observers; // Never released!
-};
-
-// GOOD: Use weak_ptr to break cycle
-class Subject {
-  std::vector<std::weak_ptr<Observer>> m_observers;
-  
-  void notify(const T& data) {
-    for (auto& weak_obs : m_observers) {
-      if (auto obs = weak_obs.lock()) { // Check if still alive
-        obs->update(data);
-      }
-    }
+// GOOD: Check an atomic or stop token for cooperative shutdown
+void process(std::stop_token token) {
+  while (!token.stop_requested()) {
+    do_work();
   }
-};
+}
 ```
 
 ## Evaluation Criteria
@@ -250,7 +197,6 @@ class Subject {
 ### Performance Characteristics
 - **Audio Callback**: Must be lock-free, deterministic, no allocations
 - **Message Queues**: Lock-free push, blocking pop acceptable
-- **Observer Notifications**: Brief under lock, copy data if needed
 - **State Queries**: `std::memory_order_relaxed` atomics for counters
 
 ### Maintainability
@@ -264,13 +210,17 @@ class Subject {
 Review these files for architectural understanding:
 
 **Framework (Layer 0)**:
-- **[framework/include/engine.h](../src/framework/include/engine.h)** - Legacy threading model (`IEngine<T>` template)
+- **[framework/include/controller.h](../src/framework/include/controller.h)** - `core::IController` base
+- **[framework/include/dataplane.h](../src/framework/include/dataplane.h)** - `core::IDataPlane` base
+- **[framework/include/processor.h](../src/framework/include/processor.h)** - `core::IProcessor` base
+- **[framework/include/manager.h](../src/framework/include/manager.h)** - `core::IManager` base
+- **[framework/include/device.h](../src/framework/include/device.h)** - `core::IDevice` / `core::IAudioDevice`
+- **[framework/include/input.h](../src/framework/include/input.h)** - Input abstraction
 - **[framework/include/messagequeue.h](../src/framework/include/messagequeue.h)** - Thread-safe message queue
 - **[framework/include/lockfree_ringbuffer.h](../src/framework/include/lockfree_ringbuffer.h)** - Lock-free SPSC queue
 - **[framework/include/doublebuffer.h](../src/framework/include/doublebuffer.h)** - Atomic double-buffer
-- **[framework/include/observer.h](../src/framework/include/observer.h)** - Observer interface
-- **[framework/include/subject.h](../src/framework/include/subject.h)** - Event broadcasting
-- **[framework/include/input.h](../src/framework/include/input.h)** - Input abstraction
+- **[framework/include/logger.h](../src/framework/include/logger.h)** - Logging macros and logger
+- **[framework/include/realtime_assert.h](../src/framework/include/realtime_assert.h)** - RealtimeAssert stubs
 
 **Data Plane (Layer 1)**:
 - **[data/audio/include/audiodataplane.h](../src/data/audio/include/audiodataplane.h)** - AudioDataPlane callback target and per-track mixing
@@ -286,10 +236,10 @@ Review these files for architectural understanding:
 **Control Plane (Layer 3)**:
 - **[control/audio/include/audiostreamcontroller.h](../src/control/audio/include/audiostreamcontroller.h)** - Synchronous audio device control
 - **[control/midi/include/midiportcontroller.h](../src/control/midi/include/midiportcontroller.h)** - Synchronous MIDI port control
-- **[control/devicemanager/include/devicemanager.h](../src/control/devicemanager/include/devicemanager.h)** - Audio/MIDI device enumeration
-- **[control/filemanager/include/filemanager.h](../src/control/filemanager/include/filemanager.h)** - Audio/MIDI file IO coordination
-- **[control/trackmanager/include/track.h](../src/control/trackmanager/include/track.h)** - Track routing and IO variants
-- **[control/trackmanager/include/trackmanager.h](../src/control/trackmanager/include/trackmanager.h)** - Track collection management
+- **[public/io/devicemanager/include/devicemanager.h](../src/public/io/devicemanager/include/devicemanager.h)** - Audio/MIDI device enumeration
+- **[public/io/filemanager/include/filemanager.h](../src/public/io/filemanager/include/filemanager.h)** - Audio/MIDI file IO coordination
+- **[public/trackmanager/include/track.h](../src/public/trackmanager/include/track.h)** - Track routing and IO variants
+- **[public/trackmanager/include/trackmanager.h](../src/public/trackmanager/include/trackmanager.h)** - Track collection management
 
 ## Guidance Philosophy
 
@@ -320,7 +270,7 @@ When asked to review architecture:
 
 When asked to design new components:
 1. Define interfaces first (message types, public API)
-2. Choose appropriate pattern (engine, observer, singleton)
+2. Choose appropriate pattern (controller, processor, singleton)
 3. Design thread-safe state management
 4. Plan for testing and error handling
 5. Document assumptions and invariants

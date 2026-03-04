@@ -32,49 +32,50 @@ cmake --build build --config Release
 
 VS Code tasks in `.vscode/tasks.json` provide "CMake Configure", "CMake Build", and "Run Unit Tests" shortcuts.
 
-## Architecture: Strict 3-Plane Layered System
+## Architecture: Strict Layered System
 
 Each layer is a **static library**. Dependencies flow upward only — lower layers must never depend on upper layers.
 
 ```
-Layer 4: cli / examples           (application interface)
+Layer 4: public / cli / examples  (application interface)
 Layer 3: control                  (synchronous, main thread only)
-Layer 2: processing               (NOT YET IMPLEMENTED — future background DSP workers)
+Layer 2: processing               (audio processors; per-processor threading only)
 Layer 1: data                     (real-time lock-free callbacks)
 Layer 0: framework                (lock-free primitives, logging, utilities)
 ```
 
-### Layer 3 — Control Plane (`src/control/`)
+### Layer 3 — Control Plane
 Synchronous singletons called from the main thread. `std::mutex` is allowed here.
-- `AudioStreamController` — audio device management (`start_stream`, `stop_stream`, `set_output_device`)
-- `MidiPortController` — MIDI port management (`open_input_port`, `close_input_port`)
-- `TrackManager` — track lifecycle; owns the `MainTrack` root
-- `DeviceManager` — enumerates audio/MIDI hardware via RtAudio/RtMidi
-- `FileManager` — reads/writes WAV and MIDI files via libsndfile
+- `AudioStreamController` (`src/control/audio/`) — audio device management
+- `MidiPortController` (`src/control/midi/`) — MIDI port management
+- `TrackManager` (`src/public/trackmanager/`) — track lifecycle; owns the `MainTrack` root
+- `DeviceManager` (`src/public/io/devicemanager/`) — enumerates audio/MIDI hardware via RtAudio/RtMidi
+- `FileManager` (`src/public/io/filemanager/`) — reads/writes WAV and MIDI files via libsndfile
 
 Access all singletons via `::instance()` (e.g., `TrackManager::instance()`).
 
 ### Layer 1 — Data Plane (`src/data/`)
 Executes inside RtAudio/RtMidi callback threads. Must be **completely lock-free** and finish in **< 1ms**.
-- `TrackAudioDataPlane` — per-track audio rendering in RtAudio callback
-- `AudioCallbackHandler` — pure RtAudio callback function + `AudioCallbackContext` struct
-- `TrackMidiDataPlane` — per-track MIDI processing in RtMidi callback
-- `MidiCallbackHandler` — pure RtMidi callback function + context struct
+- `AudioDataPlane` — per-track audio rendering in RtAudio callback
+- `AudioCallbackHandler` — RtAudio callback function + `AudioCallbackContext` struct
+- `MidiDataPlane` — per-track MIDI processing in RtMidi callback
+- `MidiCallbackHandler` — RtMidi callback function + context struct
 
 ### Layer 0 — Framework (`src/framework/include/`)
 - `LockfreeRingBuffer<T, Size>` — SPSC lock-free queue; `try_push`/`try_pop`; `memory_order_release`/`acquire`
 - `DoubleBuffer<T>` — atomic double-buffer for producer/consumer swap
 - `Logger` — thread-safe singleton; use macros `LOG_INFO()`, `LOG_WARNING()`, `LOG_ERROR()`, `LOG_DEBUG()`
-- `MessageQueue<T>` — lock-based blocking queue (legacy pattern, being phased out)
-- `IEngine<T>` — legacy threading base class using `std::jthread` (new components do NOT use this)
-- `Subject<T>` / `Observer<T>` — observer pattern with `std::weak_ptr` to avoid cycles
+- `MessageQueue<T>` — lock-based blocking queue (not used in real-time paths)
+- `IController`, `IDataPlane`, `IProcessor`, `IManager` — base interfaces for control/data/processing
+- `IInput`, `IDevice`, `IAudioDevice` — shared data models for routing and device metadata
+- `RealtimeAssert` — header stub present but not implemented yet
 
 ### Track Hierarchy
 `MainTrack` is always the root. Regular tracks are direct children of MainTrack (single-level hierarchy). Audio output mixes upward from children to parent.
 
 ```
 MainTrack (root — owns AudioStreamController, MidiPortController)
-├── Track (child — owns TrackAudioDataPlane + TrackMidiDataPlane)
+├── Track (child — owns AudioDataPlane + MidiDataPlane)
 └── Track (child)
 ```
 
@@ -84,15 +85,14 @@ Each `Track` supports audio/MIDI input from either a hardware device or a file (
 
 | Namespace | Layer |
 |-----------|-------|
-| `miniaudioengine::core` | Framework (Layer 0) |
-| `miniaudioengine::data` | Data Plane (Layer 1) |
-| `miniaudioengine::control` | Control Plane (Layer 3) |
-| `miniaudioengine::processing` | Processing Plane (Layer 2) |
-| `miniaudioengine::file` | File I/O |
+| `miniaudioengine::core` | Framework + Data Plane (Layers 0-1) |
+| `miniaudioengine::audio` | Audio control + processing (Layers 2-3) |
+| `miniaudioengine::midi` | MIDI control (Layer 3) |
+| `miniaudioengine` | Public API managers + CLI (Layer 4) |
 
 ## Real-Time Safety Rules (Data Plane)
 
-When writing or modifying any code that executes inside a callback (`TrackAudioDataPlane`, `TrackMidiDataPlane`, callback handlers):
+When writing or modifying any code that executes inside a callback (`AudioDataPlane`, `MidiDataPlane`, callback handlers):
 
 1. **No mutexes** — no `std::mutex`, `std::lock_guard`, or any blocking primitive
 2. **No heap allocation** — no `new`, `malloc`, `std::vector::push_back`, or any dynamic allocation
@@ -110,7 +110,7 @@ When writing or modifying any code that executes inside a callback (`TrackAudioD
 
 ## Key Pending Work
 
-- **Processing Plane (Layer 2)**: Not yet implemented — planned for background DSP worker threads
+- **Processing Plane Orchestration**: `core::IProcessor` uses per-processor threads, but there is no global DSP scheduler yet
 - **RealtimeAssert**: Header stubs exist in `framework/include/realtime_assert.h` but not yet implemented
 - **CLI application**: Basic implementation exists but is not yet a finished application
 
