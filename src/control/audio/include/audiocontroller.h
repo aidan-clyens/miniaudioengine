@@ -1,55 +1,51 @@
 #ifndef __AUDIO_CONTROLLER_H__
 #define __AUDIO_CONTROLLER_H__
 
-#include "controller.h"
-#include "audiodevice.h"
+#include "audiocontroller_interface.h"
 #include "audiocallbackhandler.h"
-#include "logger.h"
+#include "audiodevice.h"
 
-#include <vector>
+#include <rtaudio/RtAudio.h>
 #include <optional>
+#include <vector>
 #include <memory>
 
 namespace miniaudioengine::audio
 {
 
-/** @class IAudioController
- *  @brief Abstract base class for audio controllers in the framework.
- *  This class provides common state management and validation logic
- *  for all audio-related controllers. Concrete implementations handle
- *  hardware-specific operations.
- *  @deprecated This class is deprecated and will be removed in a future release. Please use AudioStreamController instead.
+/** @class AudioController
+ *  @brief This class managers the device audio hardware interfaces.
+ *  It is responsible for initializing, configuring, and controlling audio inputs and outputs.
+ *  The AudioController provides methods to start and stop audio streams, as well as to
+ *  adjust parameters such as volume, sample rate, and buffer size.
+ *  @note This class is part of the control plane. Operations are synchronous and called from the main thread.
  */
-class IAudioController : public core::IController
+class AudioController : public IAudioController
 {
 public:
-  virtual ~IAudioController() = default;
+  explicit AudioController() = default;
+  ~AudioController() override = default;
 
-  virtual std::vector<core::IAudioDevicePtr> get_audio_devices() = 0;
-
-  virtual std::shared_ptr<core::AudioCallbackContext> get_callback_context() const
-  {
-    return m_callback_context;
-  }
-
-protected:
-  IAudioController():
-    core::IController("IAudioController"),
-    m_callback_context(std::make_shared<core::AudioCallbackContext>()) {}
-
-  /** @brief Validates preconditions before starting the audio stream.
-   *  @return true if all preconditions are met, false otherwise.
+  /** @brief Get Available Audio Devices
+   *  @return List of available audio devices
    */
-  bool validate_start_preconditions() const;
+  std::vector<core::IAudioDevicePtr> get_audio_devices();
 
-  /** @brief Registers active tracks from TrackManager for audio callbacks.
-   *  @return true if tracks were successfully registered, false if no active tracks.
+private:
+  RtAudio m_rtaudio;
+
+  /** @brief Start Audio Stream
+   *  @return true if the audio stream was started successfully, false otherwise
    */
-  bool register_dataplanes();
+  bool _start() override;
 
-  // Common state shared by all implementations
-  std::shared_ptr<core::AudioCallbackContext> m_callback_context;
+  /** @brief Stop Audio Stream
+   *  @return true if the audio stream was stopped successfully, false otherwise
+   */
+  bool _stop() override;
 };
+
+using AudioControllerPtr = std::shared_ptr<AudioController>;
 
 } // namespace miniaudioengine::audio
 

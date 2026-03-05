@@ -3,7 +3,7 @@
 
 #include "wavfile.h"
 #include "midifile.h"
-#include "midiportcontroller.h"
+#include "midicontroller.h"
 #include "logger.h"
 
 #include <iostream>

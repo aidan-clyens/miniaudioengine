@@ -6,14 +6,14 @@ target_sources(control-midi
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
+      include/midicontroller_interface.h
       include/midicontroller.h
-      include/midiportcontroller.h
       include/miditypes.h
 )
 
 target_sources(control-midi
   PRIVATE
-    src/midiportcontroller.cpp
+    src/midicontroller.cpp
 )
 
 target_include_directories(control-midi

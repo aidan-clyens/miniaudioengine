@@ -8,7 +8,7 @@
 #include "trackmanager.h"
 #include "devicemanager.h"
 #include "track.h"
-#include "audiostreamcontroller.h"
+#include "audiocontroller.h"
 #include "filemanager.h"
 #include "wavfile.h"
 

@@ -3,8 +3,8 @@
 
 #include "manager.h"
 #include "track.h"
-#include "audiostreamcontroller.h"
-#include "midiportcontroller.h"
+#include "audiocontroller.h"
+#include "midicontroller.h"
 
 #include <memory>
 #include <vector>
@@ -19,8 +19,8 @@ class MainTrack : public Track
 {
 public:
   MainTrack() : Track(true),
-                p_audio_controller(std::make_shared<audio::AudioStreamController>()),
-                p_midi_controller(std::make_shared<midi::MidiPortController>()) {} // is_main_track = true
+                p_audio_controller(std::make_shared<audio::AudioController>()),
+                p_midi_controller(std::make_shared<midi::MidiController>()) {} // is_main_track = true
   ~MainTrack() override = default;
 
   /** @brief Set the audio output device for the MainTrack.

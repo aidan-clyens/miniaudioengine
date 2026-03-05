@@ -1,43 +1,55 @@
 #ifndef __MIDI_CONTROLLER_H__
 #define __MIDI_CONTROLLER_H__
 
-#include "controller.h"
+#include "midicontroller_interface.h"
 #include "midicallbackhandler.h"
 #include "miditypes.h"
 
-#include <vector>
+#include <rtmidi/RtMidi.h>
 
 namespace miniaudioengine::midi
 {
 
-/** @class IMidiController
- *  @brief Interface for MIDI controllers in the framework.
- *  This class serves as a base for all MIDI-related controllers,
- *  providing a common interface and shared functionality.
+/** @class MidiController
+ *  @brief This class manages the MIDI hardware interfaces.
+ *  It is responsible for initializing, configuring, and controlling MIDI inputs.
+ *  The MidiController provides methods to open and close MIDI input ports.
+ *  @note This class is part of the control plane. Operations are synchronous and called from the main thread.
  */
-class IMidiController : public core::IController
+class MidiController : public IMidiController
 {
 public:
-  virtual ~IMidiController() = default;
+  explicit MidiController() = default;
 
-  virtual std::vector<MidiPort> get_ports() = 0;
-
-  virtual void open_input_port(unsigned int port_number = 0) = 0;
-  virtual void close_input_port() = 0;
-
-  virtual std::shared_ptr<core::MidiCallbackContext> get_callback_context() const
+  ~MidiController() override
   {
-    return m_callback_context;
+    close_input_port();
   }
 
-protected:
-  IMidiController() : 
-    core::IController("IMidiController"),
-    m_callback_context(std::make_shared<core::MidiCallbackContext>()) {}
+  /** @brief Gets the list of available MIDI input ports.
+   *  @return A vector of MidiPort structures representing the available MIDI ports.
+   */
+  std::vector<MidiPort> get_ports() override;
 
-  // Common state shared by all implementations
-  std::shared_ptr<core::MidiCallbackContext> m_callback_context;
+  /** @brief Opens a MIDI input device port.
+   *  @param port_number The MIDI device port number to open (default is 0).
+   *  @throws std::out_of_range if the port number is invalid.
+   *  @throws std::runtime_error if the port cannot be opened.
+   */
+  void open_input_port(unsigned int port_number = 0) override;
+
+  /** @brief Closes the currently opened MIDI input device port.
+   */
+  void close_input_port() override;
+
+private:
+  RtMidiIn m_rtmidi_in;
+
+  bool _start() override { throw std::runtime_error("MidiController start/stop operations not implemented."); }
+  bool _stop() override { throw std::runtime_error("MidiController start/stop operations not implemented."); }
 };
+
+using MidiControllerPtr = std::shared_ptr<MidiController>;
 
 } // namespace miniaudioengine::midi
 
