@@ -6,5 +6,8 @@
         "functional": "cpp",
         "optional": "cpp",
         "string": "cpp"
-    }
+    },
+    "markdown-pdf.plantumlOpenMarker": "```plantuml",
+    "markdown-pdf.plantumlCloseMarker": "```",
+    "markdown-pdf.plantumlServer": "https://www.plantuml.com/plantuml"
 }
