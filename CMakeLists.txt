@@ -77,7 +77,7 @@ add_subdirectory(src)
 
 option(BUILD_EXAMPLES "Build examples" ON)
 if (BUILD_EXAMPLES)
-    add_subdirectory(examples)
+    add_subdirectory(examples)  
 endif()
 
 option(BUILD_TESTS "Build unit tests" ON)
@@ -107,7 +107,7 @@ install(
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/miniaudioengine
+    FILE_SET HEADERS DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 # Export targets

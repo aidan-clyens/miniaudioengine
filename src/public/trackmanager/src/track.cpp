@@ -1,8 +1,8 @@
-#include "track.h"
-#include "trackmanager.h"
+#include "miniaudioengine/track.h"
+#include "miniaudioengine/trackmanager.h"
 
-#include "wavfile.h"
-#include "midifile.h"
+#include "miniaudioengine/wavfile.h"
+#include "miniaudioengine/midifile.h"
 #include "midicontroller.h"
 #include "logger.h"
 

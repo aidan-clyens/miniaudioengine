@@ -1,6 +1,6 @@
-#include "filemanager.h"
-#include "wavfile.h"
-#include "midifile.h"
+#include "miniaudioengine/filemanager.h"
+#include "miniaudioengine/wavfile.h"
+#include "miniaudioengine/midifile.h"
 #include "logger.h"
 
 using namespace miniaudioengine;

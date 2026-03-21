@@ -1,4 +1,4 @@
-#include "wavfile.h"
+#include "miniaudioengine/wavfile.h"
 
 using namespace miniaudioengine;
 using namespace miniaudioengine::core;

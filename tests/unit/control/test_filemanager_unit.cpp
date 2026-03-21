@@ -2,16 +2,16 @@
 #include <iostream>
 #include <memory>
 
-#include "filemanager.h"
-#include "wavfile.h"
-#include "midifile.h"
+#include "miniaudioengine/filemanager.h"
+#include "miniaudioengine/wavfile.h"
+#include "miniaudioengine/midifile.h"
 #include "logger.h"
 
 using namespace miniaudioengine;
 
-static const std::filesystem::path PROJECT_ROOT_PATH("../../../../");
+static const std::filesystem::path PROJECT_ROOT_PATH(PROJECT_ROOT_DIR);
 
-TEST(FileSystemTest, ListDirectory)
+TEST(FileSystemTest, Action1_ListDirectory)
 {
   std::filesystem::path path = PROJECT_ROOT_PATH;
 
@@ -38,7 +38,7 @@ TEST(FileSystemTest, ListDirectory)
   ASSERT_NE(contents.size(), contents_count) << "Contents count should not be equal after filtering by files.";
 }
 
-TEST(FileSystemTest, PathExists)
+TEST(FileSystemTest, Action2_PathExists)
 {
   std::filesystem::path existing_path = PROJECT_ROOT_PATH / "examples";
   ASSERT_TRUE(FileManager::instance().path_exists(existing_path)) << "Existing path '" + existing_path.string() + "' should return true.";
@@ -47,7 +47,7 @@ TEST(FileSystemTest, PathExists)
   ASSERT_FALSE(FileManager::instance().path_exists(non_existing_path)) << "Non-existing path '" + non_existing_path.string() + "' should return false.";
 }
 
-TEST(FileSystemTest, IsFile)
+TEST(FileSystemTest, Action3_IsFile)
 {
   std::filesystem::path file_path = PROJECT_ROOT_PATH / "README.md";
   ASSERT_TRUE(FileManager::instance().is_file(file_path)) << "Path '" + file_path.string() + "' should be recognized as a file.";
@@ -56,7 +56,7 @@ TEST(FileSystemTest, IsFile)
   ASSERT_FALSE(FileManager::instance().is_file(directory_path)) << "Path '" + directory_path.string() + "' should not be recognized as a file.";
 }
 
-TEST(FileSystemTest, IsWavFile)
+TEST(FileSystemTest, Action4_IsWavFile)
 {
   std::filesystem::path wav_file_path = PROJECT_ROOT_PATH / "samples/test.wav";
   ASSERT_TRUE(FileManager::instance().is_wav_file(wav_file_path)) << "Path '" + wav_file_path.string() + "' should be recognized as a WAV file.";
@@ -65,7 +65,7 @@ TEST(FileSystemTest, IsWavFile)
   ASSERT_FALSE(FileManager::instance().is_wav_file(non_wav_file_path)) << "Path '" + non_wav_file_path.string() + "' should not be recognized as a WAV file.";
 }
 
-TEST(FileSystemTest, IsMidiFile)
+TEST(FileSystemTest, Action5_IsMidiFile)
 {
   std::filesystem::path midi_file_path = PROJECT_ROOT_PATH / "samples/midi_c_major_monophonic.mid";
   ASSERT_TRUE(FileManager::instance().is_midi_file(midi_file_path)) << "Path '" + midi_file_path.string() + "' should be recognized as a MIDI file.";
@@ -74,7 +74,7 @@ TEST(FileSystemTest, IsMidiFile)
   ASSERT_FALSE(FileManager::instance().is_midi_file(non_midi_file_path)) << "Path '" + non_midi_file_path.string() + "' should not be recognized as a MIDI file.";
 }
 
-TEST(FileSystemTest, IsDirectory)
+TEST(FileSystemTest, Action6_IsDirectory)
 {
   std::filesystem::path directory_path = PROJECT_ROOT_PATH / "src";
   ASSERT_TRUE(FileManager::instance().is_directory(directory_path)) << "Path '" + directory_path.string() + "' should be recognized as a directory.";
@@ -83,7 +83,7 @@ TEST(FileSystemTest, IsDirectory)
   ASSERT_FALSE(FileManager::instance().is_directory(file_path)) << "Path '" + file_path.string() + "' should not be recognized as a directory.";
 }
 
-TEST(FileSystemTest, ListWavFilesInDirectory)
+TEST(FileSystemTest, Action7_ListWavFilesInDirectory)
 {
   std::filesystem::path path = PROJECT_ROOT_PATH / "samples";
 
@@ -99,7 +99,7 @@ TEST(FileSystemTest, ListWavFilesInDirectory)
   }
 }
 
-TEST(FileSystemTest, ListMidiFilesInDirectory)
+TEST(FileSystemTest, Action8_ListMidiFilesInDirectory)
 {
   std::filesystem::path path = PROJECT_ROOT_PATH / "samples";
 
@@ -115,12 +115,12 @@ TEST(FileSystemTest, ListMidiFilesInDirectory)
   }
 }
 
-TEST(FileSystemTest, SaveToWavFile)
+TEST(FileSystemTest, Action9_SaveToWavFile)
 {
   ASSERT_EQ(1, 0) << "This is a placeholder test for saving to a WAV file.";
 }
 
-TEST(FileSystemTest, LoadWavFile)
+TEST(FileSystemTest, Action10_LoadWavFile)
 {
   // Get a WAV file path
   std::vector<std::filesystem::path> samples = FileManager::instance().list_wav_files_in_directory(PROJECT_ROOT_PATH / "samples");
@@ -143,12 +143,12 @@ TEST(FileSystemTest, LoadWavFile)
   ASSERT_TRUE(FileManager::instance().is_wav_file(file_ptr->get_filepath())) << "Loaded file '" + file_ptr->get_filepath().string() + "' should be a WAV file.";
 }
 
-TEST(FileSystemTest, LoadMidiFile)
+TEST(FileSystemTest, Action11_LoadMidiFile)
 {
   ASSERT_EQ(1, 0) << "This is a placeholder test for loading a MIDI file.";
 }
 
-TEST(FileSystemTest, CreateDirectory)
+TEST(FileSystemTest, Action12_CreateDirectory)
 {
   const std::string dir_name = "test_directory";
 
@@ -159,7 +159,7 @@ TEST(FileSystemTest, CreateDirectory)
   ASSERT_TRUE(FileManager::instance().is_directory(created_dir_path)) << "Created path '" + created_dir_path.string() + "' should be a directory.";
 }
 
-TEST(FileSystemTest, CreateSubDirectory)
+TEST(FileSystemTest, Action13_CreateSubDirectory)
 {
   const std::string parent_dir_name = "test_parent_directory";
   const std::string sub_dir_name = "test_sub_directory";

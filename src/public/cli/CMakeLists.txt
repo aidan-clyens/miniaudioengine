@@ -4,9 +4,9 @@ target_sources(cli
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
-      ${CMAKE_CURRENT_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/include
     FILES
-      include/cli.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/cli.h
 )
 
 target_sources(cli PRIVATE
@@ -15,7 +15,7 @@ target_sources(cli PRIVATE
 
 target_include_directories(cli
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
 set_target_properties(cli PROPERTIES LINKER_LANGUAGE CXX)

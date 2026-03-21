@@ -5,12 +5,12 @@
 // miniaudioengine::core
 #include "logger.h"
 // miniaudioengine::control
-#include "trackmanager.h"
-#include "devicemanager.h"
-#include "track.h"
+#include "miniaudioengine/trackmanager.h"
+#include "miniaudioengine/devicemanager.h"
+#include "miniaudioengine/track.h"
 #include "audiocontroller.h"
-#include "filemanager.h"
-#include "wavfile.h"
+#include "miniaudioengine/filemanager.h"
+#include "miniaudioengine/wavfile.h"
 
 // Mocks
 #include "device_mock.h"

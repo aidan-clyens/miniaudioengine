@@ -4,11 +4,11 @@ target_sources(devicemanager
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
-      ${CMAKE_CURRENT_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/include
     FILES
-      include/devicemanager.h
-      include/audiodevice.h
-      include/mididevice.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/devicemanager.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/audiodevice.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/mididevice.h
 )
 
 target_sources(devicemanager PRIVATE
@@ -17,7 +17,7 @@ target_sources(devicemanager PRIVATE
 
 target_include_directories(devicemanager
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
 target_link_libraries(devicemanager

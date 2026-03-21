@@ -2,7 +2,7 @@
 #define __AUDIO_CONTROLLER_INTERFACE_H__
 
 #include "controller.h"
-#include "audiodevice.h"
+#include "miniaudioengine/audiodevice.h"
 #include "audiocallbackhandler.h"
 #include "logger.h"
 

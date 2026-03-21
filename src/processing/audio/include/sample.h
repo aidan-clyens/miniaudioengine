@@ -5,7 +5,7 @@
 #include <memory>
 #include <filesystem>
 
-#include "wavfile.h"
+#include "miniaudioengine/wavfile.h"
 
 namespace miniaudioengine::audio
 {

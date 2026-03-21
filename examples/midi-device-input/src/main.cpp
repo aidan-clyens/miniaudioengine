@@ -6,9 +6,9 @@
 #include <map>
 
 #include <logger.h>
-#include <cli.h>
-#include <devicemanager.h>
-#include <trackmanager.h>
+#include <miniaudioengine/cli.h>
+#include <miniaudioengine/devicemanager.h>
+#include <miniaudioengine/trackmanager.h>
 #include <midicontroltypes.h>
 
 #ifndef PROGRAM_NAME

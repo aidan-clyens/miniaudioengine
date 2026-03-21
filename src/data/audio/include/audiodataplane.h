@@ -11,7 +11,7 @@
 
 #include "dataplane.h"
 #include "audioprocessor.h"
-#include "wavfile.h"
+#include "miniaudioengine/wavfile.h"
 #include "logger.h"
 
 namespace miniaudioengine::core

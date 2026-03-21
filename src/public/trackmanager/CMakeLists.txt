@@ -4,10 +4,10 @@ target_sources(trackmanager
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
-      ${CMAKE_CURRENT_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/include
     FILES
-      include/track.h
-      include/trackmanager.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/track.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/trackmanager.h
 )
 
 target_sources(trackmanager
@@ -18,7 +18,7 @@ target_sources(trackmanager
 
 target_include_directories(trackmanager
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
 target_link_libraries(trackmanager PUBLIC

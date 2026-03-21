@@ -3,7 +3,7 @@
 
 #include "audiocontroller_interface.h"
 #include "audiocallbackhandler.h"
-#include "audiodevice.h"
+#include "miniaudioengine/audiodevice.h"
 
 #include <rtaudio/RtAudio.h>
 #include <optional>

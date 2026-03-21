@@ -2,7 +2,7 @@
 #include <thread>
 #include <chrono>
 
-#include "devicemanager.h"
+#include "miniaudioengine/devicemanager.h"
 
 // Mocks
 #include "audiocontroller_mock.h"

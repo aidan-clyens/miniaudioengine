@@ -8,7 +8,7 @@
 
 #include "audiocontroller.h"
 #include "audiocallbackhandler.h"
-#include "trackmanager.h"
+#include "miniaudioengine/trackmanager.h"
 #include "device.h"
 #include "logger.h"
 

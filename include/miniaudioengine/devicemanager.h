@@ -11,7 +11,9 @@
 #include "audiodevice.h"
 #include "mididevice.h"
 #include "audiocontroller.h"
+#include "audiocontroller_interface.h"
 #include "midicontroller.h"
+#include "midicontroller_interface.h"
 
 namespace miniaudioengine
 {
@@ -73,6 +75,16 @@ public:
    */
   core::IDevicePtr get_default_midi_output_device();
 
+  /** @brief Replace the audio controller. Intended for unit testing only.
+   *  @param controller The controller to use in place of the default AudioController.
+   */
+  void set_audio_controller(std::shared_ptr<audio::IAudioController> controller);
+
+  /** @brief Replace the MIDI controller. Intended for unit testing only.
+   *  @param controller The controller to use in place of the default MidiController.
+   */
+  void set_midi_controller(std::shared_ptr<midi::IMidiController> controller);
+
 private:
   DeviceManager():
     p_audio_controller(std::make_shared<audio::AudioController>()),
@@ -84,8 +96,8 @@ private:
   DeviceManager& operator=(const DeviceManager&) = delete;
 
 private:
-  audio::AudioControllerPtr p_audio_controller;
-  midi::MidiControllerPtr p_midi_controller;
+  std::shared_ptr<audio::IAudioController> p_audio_controller;
+  std::shared_ptr<midi::IMidiController> p_midi_controller;
 };
 
 } // namespace miniaudioengine

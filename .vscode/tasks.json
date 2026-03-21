@@ -50,6 +50,22 @@
                 "isDefault": false
             },
             "dependsOn": "Minimal Audio Engine: CMake Build"
+        },
+        {
+            "label": "AWS: Start Instance",
+            "type": "shell",
+            "command": "aws ec2 start-instances --instance-ids i-00b5319ac43a780e6",
+            "windows": {
+                "command": "aws ec2 start-instances --instance-ids i-00b5319ac43a780e6"
+            }
+        },
+        {
+            "label": "AWS: Stop Instance",
+            "type": "shell",
+            "command": "aws ec2 stop-instances --instance-ids i-00b5319ac43a780e6",
+            "windows": {
+                "command": "aws ec2 stop-instances --instance-ids i-00b5319ac43a780e6"
+            }
         }
     ]
 }

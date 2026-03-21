@@ -4,11 +4,11 @@ target_sources(filemanager
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
-      ${CMAKE_CURRENT_SOURCE_DIR}/include
+      ${CMAKE_SOURCE_DIR}/include
     FILES
-      include/filemanager.h
-      include/wavfile.h
-      include/midifile.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/filemanager.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/wavfile.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/midifile.h
 )
 
 target_sources(filemanager PRIVATE
@@ -18,7 +18,7 @@ target_sources(filemanager PRIVATE
 
 target_include_directories(filemanager
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
 target_link_libraries(filemanager

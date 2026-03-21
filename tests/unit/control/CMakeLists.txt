@@ -7,6 +7,10 @@ add_library(miniaudioengine-unit-test-control STATIC
   test_devicemanager_unit.cpp
 )
 
+target_compile_definitions(miniaudioengine-unit-test-control PRIVATE
+  PROJECT_ROOT_DIR="${CMAKE_SOURCE_DIR}"
+)
+
 target_link_libraries(miniaudioengine-unit-test-control PRIVATE
   GTest::gtest
   GTest::gtest_main

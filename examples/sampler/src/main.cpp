@@ -6,14 +6,14 @@
 #include <functional>
 
 #include "logger.h"
-#include "trackmanager.h"
-#include "devicemanager.h"
-#include "filemanager.h"
+#include "miniaudioengine/trackmanager.h"
+#include "miniaudioengine/devicemanager.h"
+#include "miniaudioengine/filemanager.h"
 #include "sample.h"
 #include "midicontroltypes.h"
 #include "sampleplayer.h"
-#include "cli.h"
-#include "mididevice.h"
+#include "miniaudioengine/cli.h"
+#include "miniaudioengine/mididevice.h"
 
 static const std::filesystem::path SAMPLE_FOLDER = "C:\\Projects\\miniaudioengine\\samples\\drums";
 

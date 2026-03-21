@@ -1,6 +1,6 @@
 #include "audiostreamcontroller.h"
 
-#include "trackmanager.h"
+#include "miniaudioengine/trackmanager.h"
 #include "logger.h"
 
 using namespace miniaudioengine::core;

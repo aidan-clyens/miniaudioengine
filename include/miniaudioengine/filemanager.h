@@ -86,7 +86,8 @@ public:
    */
   inline bool path_exists(const std::filesystem::path &path) const
   {
-    return std::filesystem::exists(path);
+    std::error_code ec;
+    return std::filesystem::exists(path, ec);
   }
 
   /** @brief Checks if a specified path is a file.
@@ -95,7 +96,8 @@ public:
    */
   inline bool is_file(const std::filesystem::path& path) const
   {
-    return (path_exists(path) && std::filesystem::is_regular_file(path));
+    std::error_code ec;
+    return std::filesystem::is_regular_file(path, ec);
   }
 
   /** @brief Checks if a specified path is a WAV file.
@@ -104,7 +106,8 @@ public:
    */
   inline bool is_wav_file(const std::filesystem::path& path) const
   {
-    return (path_exists(path) && std::filesystem::is_regular_file(path) && path.extension() == ".wav");
+    std::error_code ec;
+    return (std::filesystem::is_regular_file(path, ec) && path.extension() == ".wav");
   }
 
   /** @brief Checks if a specified path is a MIDI file.
@@ -113,7 +116,8 @@ public:
    */
   inline bool is_midi_file(const std::filesystem::path &path) const
   {
-    return (path_exists(path) && std::filesystem::is_regular_file(path) && path.extension() == ".mid");
+    std::error_code ec;
+    return (std::filesystem::is_regular_file(path, ec) && path.extension() == ".mid");
   }
 
   /** @brief Checks if a specified path is a directory.
@@ -122,7 +126,8 @@ public:
    */
   inline bool is_directory(const std::filesystem::path& path) const
   {
-    return (path_exists(path) && std::filesystem::is_directory(path));
+    std::error_code ec;
+    return std::filesystem::is_directory(path, ec);
   }
 
   /** @brief Creates a directory at the specified path.

@@ -1,4 +1,4 @@
-#include "devicemanager.h"
+#include "miniaudioengine/devicemanager.h"
 
 using namespace miniaudioengine::core;
 using namespace miniaudioengine;
@@ -17,11 +17,21 @@ IAudioDevicePtr DeviceManager::get_audio_device(const unsigned int id) const
   {
     if (device->id == id)
     {
-      return std::dynamic_pointer_cast<AudioDevice>(device);
+      return device;
     }
   }
 
   throw std::out_of_range("Audio device with ID " + std::to_string(id) + " does not exist");
+}
+
+void DeviceManager::set_audio_controller(std::shared_ptr<audio::IAudioController> controller)
+{
+  p_audio_controller = std::move(controller);
+}
+
+void DeviceManager::set_midi_controller(std::shared_ptr<midi::IMidiController> controller)
+{
+  p_midi_controller = std::move(controller);
 }
 
 std::vector<IDevicePtr> DeviceManager::get_midi_devices() const
