@@ -81,12 +81,12 @@ public:
     return wav_files;
   }
 
-  std::vector<IDevicePtr> list_midi_devices()
+  std::vector<DeviceHandlePtr> list_midi_devices()
   {
     return m_device_manager.get_midi_devices();
   }
 
-  std::vector<IAudioDevicePtr> list_audio_devices()
+  std::vector<DeviceHandlePtr> list_audio_devices()
   {
     return m_device_manager.get_audio_devices();
   }
@@ -118,7 +118,7 @@ public:
     LOG_INFO("Sampler: Loaded sample: ", *sample);
   }
 
-  void set_audio_output_device(const IAudioDevicePtr &device)
+  void set_audio_output_device(const DeviceHandlePtr &device)
   {
     try
     {
@@ -129,7 +129,7 @@ public:
     }
   }
 
-  void set_midi_input_device(const IDevicePtr &device)
+  void set_midi_input_device(const DeviceHandlePtr &device)
   {
     try
     {
@@ -238,9 +238,9 @@ int main()
     {
       unsigned int device_id = static_cast<unsigned int>(std::stoi(arg));
       auto midi_inputs = app.list_midi_devices();
-      auto it = std::find_if(midi_inputs.begin(), midi_inputs.end(), [device_id](const IDevicePtr &device)
+      auto it = std::find_if(midi_inputs.begin(), midi_inputs.end(), [device_id](const DeviceHandlePtr &device)
       {
-        return device->id == device_id;
+        return device->get_id() == device_id;
       });
       if (it != midi_inputs.end())
       {
@@ -257,9 +257,9 @@ int main()
     {
       unsigned int device_id = static_cast<unsigned int>(std::stoi(arg));
       auto audio_outputs = app.list_audio_devices();
-      auto it = std::find_if(audio_outputs.begin(), audio_outputs.end(), [device_id](const IAudioDevicePtr &device)
+      auto it = std::find_if(audio_outputs.begin(), audio_outputs.end(), [device_id](const DeviceHandlePtr &device)
       {
-        return device->id == device_id;
+        return device->get_id() == device_id;
       });
       if (it != audio_outputs.end())
       {

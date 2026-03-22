@@ -11,7 +11,7 @@
 
 #include "dataplane.h"
 #include "audioprocessor.h"
-#include "miniaudioengine/wavfile.h"
+#include "miniaudioengine/filehandle.h"
 #include "logger.h"
 
 namespace miniaudioengine::core
@@ -23,7 +23,7 @@ namespace miniaudioengine::core
 class AudioOutputStatistics : public IDataPlaneStatistics
 {
 public:
-  sf_count_t total_frames_read = 0;
+  long long total_frames_read = 0;
   double total_read_time_ms = 0.0;
   size_t batch_size_frames = 0;
   size_t total_batches = 0;
@@ -93,10 +93,10 @@ public:
   void process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
                      double stream_time, RtAudioStreamStatus status) noexcept;
 
-  /** @brief Preload WAV file data into the audio data plane. Called from the Track control plane before playback.
-   *  @param wav_file Shared pointer to the WavFile to preload.
+  /** @brief Preload audio file data into the audio data plane. Called from the Track control plane before playback.
+   *  @param file_handle Shared pointer to a FileHandle (must be eFileType::Wav).
    */
-  void preload_wav_file(const WavFilePtr& wav_file);
+  void preload_wav_file(const FileHandlePtr& file_handle);
 
   // Mixing and routing for hierarchy
 

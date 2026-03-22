@@ -1,22 +1,39 @@
 #include "audiocontroller.h"
+#include "devicehandle_factory.h"
 
 #include "miniaudioengine/trackmanager.h"
 #include "logger.h"
 
 using namespace miniaudioengine::core;
 using namespace miniaudioengine::audio;
+using namespace miniaudioengine;
 
-std::vector<IAudioDevicePtr> AudioController::get_audio_devices()
+// Converts RtAudio::DeviceInfo to DeviceHandlePtr without exposing RtAudio in any header
+static DeviceHandlePtr make_device_handle(const RtAudio::DeviceInfo& info, unsigned int id)
 {
-  std::vector<IAudioDevicePtr> devices;
+  return DeviceHandleFactory::make_audio(
+    id,
+    info.name,
+    info.isDefaultInput,
+    info.isDefaultOutput,
+    info.outputChannels,
+    info.inputChannels,
+    info.duplexChannels,
+    info.preferredSampleRate,
+    info.sampleRates);
+}
+
+std::vector<DeviceHandlePtr> AudioController::get_audio_devices()
+{
+  std::vector<DeviceHandlePtr> devices;
   unsigned int device_count = m_rtaudio.getDeviceCount();
   devices.reserve(device_count);
 
   std::vector<unsigned int> device_ids = m_rtaudio.getDeviceIds();
-  for (const unsigned int i : device_ids)
+  for (const unsigned int id : device_ids)
   {
-    RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(i);
-    devices.push_back(std::make_shared<AudioDevice>(info));
+    RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(id);
+    devices.push_back(make_device_handle(info, id));
   }
 
   return devices;
@@ -40,23 +57,23 @@ bool AudioController::_start()
     return false;
   }
 
-  auto device = std::dynamic_pointer_cast<AudioDevice>(get_output_device());
-  if (device == nullptr)
+  auto device = m_device_handle;
+  if (!device)
   {
     LOG_ERROR("AudioController: Output device is null after validation. Cannot start stream.");
     return false;
   }
 
   RtAudio::StreamParameters params = {
-    .deviceId = device->id,
-    .nChannels = device->output_channels,
+    .deviceId  = device->get_id(),
+    .nChannels = device->get_output_channels(),
     .firstChannel = 0
   };
 
-  unsigned int sample_rate = device->preferred_sample_rate;
+  unsigned int sample_rate   = device->get_preferred_sample_rate();
   unsigned int buffer_frames = 4096;
 
-  LOG_DEBUG("AudioController: Opening RtAudio stream with device ", device->name,
+  LOG_DEBUG("AudioController: Opening RtAudio stream with device ", device->get_name(),
             ", Sample Rate: ", sample_rate,
             ", Buffer Frames: ", buffer_frames);
 
@@ -82,7 +99,7 @@ bool AudioController::_start()
     return false;
   }
 
-  LOG_DEBUG("AudioController: RtAudio stream Started with output device ", device->name);
+  LOG_DEBUG("AudioController: RtAudio stream Started with output device ", device->get_name());
   m_stream_state = eStreamState::Playing;
 
   return true;

@@ -1,6 +1,5 @@
 #include "miniaudioengine/filemanager.h"
-#include "miniaudioengine/wavfile.h"
-#include "miniaudioengine/midifile.h"
+#include "filehandle_factory.h"
 #include "logger.h"
 
 using namespace miniaudioengine;
@@ -99,7 +98,7 @@ void FileManager::save_to_wav_file(std::vector<float> audio_buffer, const std::f
  *  @param path The path to the WAV file to load.
  *  @return An AudioFile object containing the loaded audio data.
  */
-std::optional<WavFilePtr> FileManager::read_wav_file(const std::filesystem::path &path)
+std::optional<FileHandlePtr> FileManager::read_wav_file(const std::filesystem::path &path)
 {
   std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
   std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
@@ -116,15 +115,18 @@ std::optional<WavFilePtr> FileManager::read_wav_file(const std::filesystem::path
     return std::nullopt;
   }
 
-  return WavFilePtr(new WavFile(absolute_path));
+  try
+  {
+    return FileHandleFactory::make_wav(absolute_path);
+  }
+  catch (const std::exception& ex)
+  {
+    LOG_ERROR("Failed to open WAV file: ", ex.what());
+    return std::nullopt;
+  }
 }
 
-/** @brief Loads audio data from a WAV file.
- *  @param path The path to the WAV file to load.
- *  @return An AudioFile object containing the loaded audio data.
- *  @throws std::runtime_error if the file cannot be opened or read.
- */
-std::optional<MidiFilePtr> FileManager::read_midi_file(const std::filesystem::path &path)
+std::optional<FileHandlePtr> FileManager::read_midi_file(const std::filesystem::path &path)
 {
   std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
   std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
@@ -135,7 +137,7 @@ std::optional<MidiFilePtr> FileManager::read_midi_file(const std::filesystem::pa
     return std::nullopt;
   }
 
-  return MidiFilePtr(new MidiFile(absolute_path));
+  return FileHandleFactory::make_midi(absolute_path);
 }
 
 void FileManager::create_directory(const std::filesystem::path &path)

@@ -2,7 +2,7 @@
 #define __AUDIO_CONTROLLER_INTERFACE_H__
 
 #include "controller.h"
-#include "miniaudioengine/audiodevice.h"
+#include "devicehandle_factory.h"
 #include "audiocallbackhandler.h"
 #include "logger.h"
 
@@ -24,7 +24,21 @@ class IAudioController : public core::IController
 public:
   virtual ~IAudioController() = default;
 
-  virtual std::vector<core::IAudioDevicePtr> get_audio_devices() = 0;
+  /** @brief Enumerate available audio devices.
+   *  @return Vector of DeviceHandle objects, one per physical audio device.
+   */
+  virtual std::vector<DeviceHandlePtr> get_audio_devices() = 0;
+
+  /** @brief Set the output device for the audio stream.
+   *  @param device DeviceHandle representing an audio output device.
+   *  @throws std::invalid_argument if device is null or not an output device.
+   */
+  void set_output_device(DeviceHandlePtr device);
+
+  /** @brief Get the currently configured output device handle.
+   *  @return DeviceHandlePtr, or nullptr if none has been set.
+   */
+  DeviceHandlePtr get_device_handle() const { return m_device_handle; }
 
   virtual std::shared_ptr<core::AudioCallbackContext> get_callback_context() const
   {
@@ -48,6 +62,7 @@ protected:
 
   // Common state shared by all implementations
   std::shared_ptr<core::AudioCallbackContext> m_callback_context;
+  DeviceHandlePtr m_device_handle;
 };
 
 } // namespace miniaudioengine::audio

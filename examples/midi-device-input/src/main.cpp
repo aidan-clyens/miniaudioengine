@@ -64,7 +64,7 @@ static CommandList commands = {
       }
       unsigned int device_id = std::stoi(arg);
       auto midi_device = DeviceManager::instance().get_midi_device(device_id);
-      if (midi_device->id != device_id)
+      if (midi_device->get_id() != device_id)
       {
         LOG_ERROR("MIDI input device with ID " + std::to_string(device_id) + " not found.");
         return;

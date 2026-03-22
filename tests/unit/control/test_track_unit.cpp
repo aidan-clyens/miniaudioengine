@@ -10,7 +10,6 @@
 #include "miniaudioengine/track.h"
 #include "audiocontroller.h"
 #include "miniaudioengine/filemanager.h"
-#include "miniaudioengine/wavfile.h"
 
 // Mocks
 #include "device_mock.h"
@@ -25,7 +24,7 @@ class TrackTest : public ::testing::Test
 {
 protected:
   TrackPtr test_track;
-  MockAudioOutputDevicePtr mock_output_device;
+  DeviceHandlePtr mock_output_device;
 
   void SetUp() override
   {
@@ -33,7 +32,7 @@ protected:
     TrackManager::instance().add_track();
     test_track = TrackManager::instance().get_track(0);
 
-    mock_output_device = std::make_shared<MockAudioOutputDevice>();
+    mock_output_device = miniaudioengine::test::make_mock_audio_output_device();
     TrackManager::instance().set_audio_output_device(mock_output_device);
   }
 
@@ -72,7 +71,7 @@ TEST_F(TrackTest, Action2_AddAudioInputDevice)
 
   // Verify the track has an audio input
   EXPECT_TRUE(test_track->has_audio_input());
-  EXPECT_EQ(std::get<IDevicePtr>(test_track->get_audio_input()), device);
+  EXPECT_EQ(std::get<DeviceHandlePtr>(test_track->get_audio_input()), device);
 }
 
 /** @brief Track - Remove Audio Input Device
@@ -107,7 +106,7 @@ TEST_F(TrackTest, Action4_AddAudioInputFile)
 
   // Verify the track has an audio input
   EXPECT_TRUE(test_track->has_audio_input());
-  EXPECT_EQ(std::get<WavFilePtr>(test_track->get_audio_input()), file.value());
+  EXPECT_EQ(std::get<FileHandlePtr>(test_track->get_audio_input()), file.value());
 }
 
 /** @brief Track - Remove Audio Input File
@@ -166,7 +165,7 @@ TEST_F(TrackTest, Action7_AddMidiInputDevice)
 
   // Verify the track has a MIDI input
   EXPECT_TRUE(test_track->has_midi_input());
-  EXPECT_EQ(std::get<IDevicePtr>(test_track->get_midi_input()), device);
+  EXPECT_EQ(std::get<DeviceHandlePtr>(test_track->get_midi_input()), device);
 }
 
 /** @brief Track - Remove MIDI Input Device
@@ -200,7 +199,7 @@ TEST_F(TrackTest, Action9_AddMidiOutput) {
 
   // Verify the track has a MIDI output
   EXPECT_TRUE(test_track->has_midi_output());
-  EXPECT_EQ(std::get<IDevicePtr>(test_track->get_midi_output()), device);
+  EXPECT_EQ(std::get<DeviceHandlePtr>(test_track->get_midi_output()), device);
 }
 
 /** @brief Track - Remove MIDI Output 

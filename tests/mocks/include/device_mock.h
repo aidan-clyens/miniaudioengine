@@ -2,52 +2,81 @@
 #define __DEVICE_MOCK_H__
 
 #include <memory>
+#include <string>
+#include <vector>
 
+// Framework device interface (still used by IController framework-level tests)
 #include "device.h"
+// DeviceHandle PImpl header and factory (used by IAudioController audio-level tests)
+#include "miniaudioengine/devicehandle.h"
+#include "devicehandle_factory.h"
 
 using namespace miniaudioengine::core;
 
 namespace miniaudioengine::test
 {
 
+// ---------------------------------------------------------------------------
+// MockDevice: IAudioDevice implementation for IController (framework) tests
+// ---------------------------------------------------------------------------
+
 /** @class MockDevice
- *  @brief A mock implementation of the IDevice interface for testing purposes.
- *  This class simulates an audio or MIDI device and can be configured to be an input, output, or both.
+ *  @brief A mock implementation of IAudioDevice for framework-level controller tests.
  */
 class MockDevice : public IAudioDevice
 {
 public:
-  MockDevice(bool is_input = true, bool is_output = false)
+  explicit MockDevice(bool is_input_flag = true, bool is_output_flag = false)
   {
     id = 1;
     name = "Mock Device";
-    is_default_output = is_output;
-    is_default_input = is_input;
-  }
-
-  bool is_input() const
-  {
-    return is_default_input;
-  }
-
-  bool is_output() const
-  {
-    return is_default_output;
+    is_default_output = is_output_flag;
+    is_default_input  = is_input_flag;
+    output_channels   = is_output_flag ? 2 : 0;
+    input_channels    = is_input_flag  ? 2 : 0;
+    duplex_channels   = 0;
+    preferred_sample_rate = 44100;
   }
 };
 
 using MockDevicePtr = std::shared_ptr<MockDevice>;
 
-/** @class MockAudioOutputDevice
- *  @brief A mock output device that simulates an audio output device.
- */
-class MockAudioOutputDevice : public MockDevice
-{
-public:
-  MockAudioOutputDevice() : MockDevice(false, true) {}
-};
+// ---------------------------------------------------------------------------
+// DeviceHandle helpers for IAudioController (audio-level) tests
+// ---------------------------------------------------------------------------
 
-using MockAudioOutputDevicePtr = std::shared_ptr<MockAudioOutputDevice>;
+// Convenience alias: audio tests use DeviceHandlePtr directly
+using MockAudioOutputDevicePtr = DeviceHandlePtr;
+
+/** @brief Creates a mock audio output DeviceHandle for use in tests. */
+inline DeviceHandlePtr make_mock_audio_output_device(
+  unsigned int id = 0,
+  const std::string& name = "Mock Output Device",
+  unsigned int output_channels = 2,
+  unsigned int input_channels = 0,
+  unsigned int preferred_sample_rate = 44100)
+{
+  return DeviceHandleFactory::make_audio(
+    id, name,
+    /*is_default_input=*/false, /*is_default_output=*/true,
+    output_channels, input_channels, /*duplex=*/0,
+    preferred_sample_rate, {44100, 48000});
+}
+
+/** @brief Creates a mock audio input DeviceHandle for use in tests. */
+inline DeviceHandlePtr make_mock_audio_input_device(
+  unsigned int id = 1,
+  const std::string& name = "Mock Input Device",
+  unsigned int output_channels = 0,
+  unsigned int input_channels = 2,
+  unsigned int preferred_sample_rate = 44100)
+{
+  return DeviceHandleFactory::make_audio(
+    id, name,
+    /*is_default_input=*/true, /*is_default_output=*/false,
+    output_channels, input_channels, /*duplex=*/0,
+    preferred_sample_rate, {44100, 48000});
+}
 
 } // namespace miniaudioengine::test
 

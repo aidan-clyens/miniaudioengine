@@ -3,6 +3,7 @@
 
 #include "manager.h"
 #include "track.h"
+#include "devicehandle.h"
 #include "audiocontroller.h"
 #include "midicontroller.h"
 
@@ -24,17 +25,17 @@ public:
   ~MainTrack() override = default;
 
   /** @brief Set the audio output device for the MainTrack.
-   *  @param device The audio output device to use.
+   *  @param device DeviceHandle for the audio output device.
    */
-  void set_audio_output_device(core::IDevicePtr device)
+  void set_audio_output_device(DeviceHandlePtr device)
   {
     p_audio_output_device = device;
     p_audio_controller->set_output_device(device);
   }
 
-  void open_midi_input_port(const midi::MidiDevicePtr device)
+  void open_midi_input_port(const DeviceHandlePtr device)
   {
-    p_midi_controller->open_input_port(device->id);
+    p_midi_controller->open_input_port(device->get_id());
   }
 
   void register_audio_dataplane(core::AudioDataPlanePtr data_plane)
@@ -61,7 +62,7 @@ public:
   bool is_playing() const;
 
 private:
-  core::IDevicePtr p_audio_output_device;
+  DeviceHandlePtr p_audio_output_device;
   std::shared_ptr<audio::IAudioController> p_audio_controller; // Only MainTrack owns the controller
   std::shared_ptr<midi::IMidiController> p_midi_controller; // Only MainTrack owns the controller
 };
@@ -128,7 +129,7 @@ public:
   /** @brief Set the audio output device for the main track.
    *  @param device The audio output device to use.
    */
-  void set_audio_output_device(core::IDevicePtr device);
+  void set_audio_output_device(DeviceHandlePtr device);
 
   // Legacy compatibility methods
 

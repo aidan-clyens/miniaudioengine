@@ -1,54 +1,22 @@
 #ifndef __MIDI_DEVICE_H__
 #define __MIDI_DEVICE_H__
 
-#include <memory>
-#include <string>
-
-#include "device.h"
+/**
+ * @file mididevice.h
+ * @deprecated This header is a compatibility stub. Use DeviceHandle from devicehandle.h instead.
+ */
+#include "devicehandle.h"
 
 namespace miniaudioengine::midi
 {
 
-/** @class MidiDevice
- *  @brief MIDI device
- */
-class MidiDevice : public core::IDevice
-{
-public:
-  MidiDevice() = default;
-  ~MidiDevice() = default;
+/** @deprecated Use DeviceHandle / DeviceHandlePtr instead. */
+[[deprecated("Use DeviceHandle from devicehandle.h instead of MidiDevice")]]
+typedef DeviceHandle MidiDevice;
 
-  MidiDevice(const MidiDevice&) = default;
-  MidiDevice& operator=(const MidiDevice&) = default;
-
-  bool is_input() const override
-  {
-    return is_default_input;
-  }
-
-  bool is_output() const override
-  {
-    return is_default_output;
-  }
-
-  std::string to_string() const
-  {
-    return "MidiDevice(ID=" + std::to_string(id) +
-           ", Name=" + name +
-           ", DefaultOutput=" + (is_default_output ? "Yes" : "No") +
-           ", DefaultInput=" + (is_default_input ? "Yes" : "No") + ")";
-  }
-
-  bool operator==(const MidiDevice& other) const
-  {
-    return id == other.id && name == other.name &&
-           is_default_output == other.is_default_output &&
-           is_default_input == other.is_default_input;
-  }
-
-};
-
-using MidiDevicePtr = std::shared_ptr<MidiDevice>;
+/** @deprecated Use DeviceHandlePtr instead. */
+[[deprecated("Use DeviceHandlePtr from devicehandle.h instead of MidiDevicePtr")]]
+typedef DeviceHandlePtr MidiDevicePtr;
 
 } // namespace miniaudioengine::midi
 

@@ -12,8 +12,9 @@
 
 #include "filemanager.h"
 #include "devicemanager.h"
+#include "devicehandle.h"
+#include "filehandle.h"
 #include "audiocontroller.h"
-#include "audiodevice.h"
 #include "audiodataplane.h"
 #include "midicontroller.h"
 #include "mididataplane.h"
@@ -28,8 +29,8 @@ class MainTrack;
 
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
-typedef std::variant<core::IDevicePtr, WavFilePtr, std::nullopt_t> SourceVariant;
-typedef std::variant<core::IDevicePtr, MidiFilePtr, std::nullopt_t> MidiIOVariant; // TODO - Rename to SourceVariant
+typedef std::variant<DeviceHandlePtr, FileHandlePtr, std::nullopt_t> SourceVariant;
+typedef std::variant<DeviceHandlePtr, FileHandlePtr, std::nullopt_t> MidiIOVariant;
 
 typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOnCallbackFunc;
 typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;

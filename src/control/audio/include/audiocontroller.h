@@ -3,7 +3,6 @@
 
 #include "audiocontroller_interface.h"
 #include "audiocallbackhandler.h"
-#include "miniaudioengine/audiodevice.h"
 
 #include <rtaudio/RtAudio.h>
 #include <optional>
@@ -29,7 +28,7 @@ public:
   /** @brief Get Available Audio Devices
    *  @return List of available audio devices
    */
-  std::vector<core::IAudioDevicePtr> get_audio_devices();
+  std::vector<DeviceHandlePtr> get_audio_devices() override;
 
 private:
   RtAudio m_rtaudio;

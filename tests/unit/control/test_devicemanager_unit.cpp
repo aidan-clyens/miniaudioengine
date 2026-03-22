@@ -2,10 +2,8 @@
 #include <iostream>
 
 #include "miniaudioengine/devicemanager.h"
-#include "device.h"
 #include "logger.h"
 #include "audiocontroller_mock.h"
-#include "device_mock.h"
 
 using namespace miniaudioengine;
 using namespace miniaudioengine::audio;
@@ -34,7 +32,7 @@ TEST_F(DeviceManagerTest, Action1_GetAudioDevices)
 
   for (const auto &device : devices)
   {
-    LOG_INFO(device->id, " - ", device->name);
+    LOG_INFO(device->get_id(), " - ", device->get_name());
   }
 
   for (const auto &device : devices)
@@ -48,23 +46,20 @@ TEST_F(DeviceManagerTest, Action2_GetAudioDevice)
   auto devices = device_manager.get_audio_devices();
   auto device_1 = devices[0];
 
-  auto device_2 = device_manager.get_audio_device(device_1->id);
+  auto device_2 = device_manager.get_audio_device(device_1->get_id());
+  ASSERT_NE(device_2, nullptr) << "get_audio_device should return a valid handle";
 
-  // Attempt to cast to AudioDevice to access specific properties
-  auto audio_device = std::dynamic_pointer_cast<AudioDevice>(device_2);
-  EXPECT_NE(audio_device, nullptr) << "Failed to cast to AudioDevice";
+  LOG_INFO(device_2->get_id(), " - ", device_2->get_name());
 
-  LOG_INFO(audio_device->id, " - ", audio_device->name);
-
-  EXPECT_EQ(audio_device->id, device_1->id);
-  EXPECT_EQ(audio_device->name, device_1->name);
-  EXPECT_EQ(audio_device->input_channels, device_1->input_channels);
-  EXPECT_EQ(audio_device->output_channels, device_1->output_channels);
-  EXPECT_EQ(audio_device->duplex_channels, device_1->duplex_channels);
-  EXPECT_EQ(audio_device->is_default_input, device_1->is_default_input);
-  EXPECT_EQ(audio_device->is_default_output, device_1->is_default_output);
-  EXPECT_EQ(audio_device->sample_rates, device_1->sample_rates);
-  EXPECT_EQ(audio_device->preferred_sample_rate, device_1->preferred_sample_rate);
+  EXPECT_EQ(device_2->get_id(), device_1->get_id());
+  EXPECT_EQ(device_2->get_name(), device_1->get_name());
+  EXPECT_EQ(device_2->get_input_channels(), device_1->get_input_channels());
+  EXPECT_EQ(device_2->get_output_channels(), device_1->get_output_channels());
+  EXPECT_EQ(device_2->get_duplex_channels(), device_1->get_duplex_channels());
+  EXPECT_EQ(device_2->is_default_input(), device_1->is_default_input());
+  EXPECT_EQ(device_2->is_default_output(), device_1->is_default_output());
+  EXPECT_EQ(device_2->get_sample_rates(), device_1->get_sample_rates());
+  EXPECT_EQ(device_2->get_preferred_sample_rate(), device_1->get_preferred_sample_rate());
 }
 
 TEST_F(DeviceManagerTest, Action3_GetAudioDeviceInvalid)
@@ -81,7 +76,7 @@ TEST_F(DeviceManagerTest, Action4_GetMidiDevices)
 
   for (const auto &device : devices)
   {
-    LOG_INFO(device->id, " - ", device->name);
+    LOG_INFO(device->get_id(), " - ", device->get_name());
   }
 }
 
@@ -90,10 +85,10 @@ TEST_F(DeviceManagerTest, Action5_GetMidiDevice)
   auto devices = device_manager.get_midi_devices();
   auto device = device_manager.get_midi_device(0);
 
-  LOG_INFO(device->id, " - ", device->name);
+  LOG_INFO(device->get_id(), " - ", device->get_name());
 
-  EXPECT_EQ(device->id, devices[0]->id);
-  EXPECT_EQ(device->name, devices[0]->name);
+  EXPECT_EQ(device->get_id(), devices[0]->get_id());
+  EXPECT_EQ(device->get_name(), devices[0]->get_name());
 }
 
 TEST_F(DeviceManagerTest, Action6_GetMidiDeviceInvalid)
@@ -132,35 +127,35 @@ TEST_F(DeviceManagerMockTest, GetAudioDevices_ReturnsTwoMockDevices)
 TEST_F(DeviceManagerMockTest, GetAudioDevices_OutputDeviceProperties)
 {
   auto devices = device_manager.get_audio_devices();
-  auto output = std::dynamic_pointer_cast<MockAudioOutputDevice>(devices[0]);
+  auto output = devices[0];
   ASSERT_NE(output, nullptr);
-  EXPECT_EQ(output->id, 0u);
-  EXPECT_EQ(output->name, "Mock Output Device");
-  EXPECT_TRUE(output->is_default_output);
-  EXPECT_FALSE(output->is_default_input);
-  EXPECT_EQ(output->output_channels, 2u);
-  EXPECT_EQ(output->input_channels, 0u);
+  EXPECT_EQ(output->get_id(), 0u);
+  EXPECT_EQ(output->get_name(), "Mock Output Device");
+  EXPECT_TRUE(output->is_default_output());
+  EXPECT_FALSE(output->is_default_input());
+  EXPECT_EQ(output->get_output_channels(), 2u);
+  EXPECT_EQ(output->get_input_channels(), 0u);
 }
 
 TEST_F(DeviceManagerMockTest, GetAudioDevices_InputDeviceProperties)
 {
   auto devices = device_manager.get_audio_devices();
-  auto input = std::dynamic_pointer_cast<MockAudioOutputDevice>(devices[1]);
+  auto input = devices[1];
   ASSERT_NE(input, nullptr);
-  EXPECT_EQ(input->id, 1u);
-  EXPECT_EQ(input->name, "Mock Input Device");
-  EXPECT_FALSE(input->is_default_output);
-  EXPECT_TRUE(input->is_default_input);
-  EXPECT_EQ(input->output_channels, 0u);
-  EXPECT_EQ(input->input_channels, 2u);
+  EXPECT_EQ(input->get_id(), 1u);
+  EXPECT_EQ(input->get_name(), "Mock Input Device");
+  EXPECT_FALSE(input->is_default_output());
+  EXPECT_TRUE(input->is_default_input());
+  EXPECT_EQ(input->get_output_channels(), 0u);
+  EXPECT_EQ(input->get_input_channels(), 2u);
 }
 
 TEST_F(DeviceManagerMockTest, GetAudioDevice_ByIdReturnsCorrectDevice)
 {
   auto device = device_manager.get_audio_device(1);
   ASSERT_NE(device, nullptr);
-  EXPECT_EQ(device->id, 1u);
-  EXPECT_EQ(device->name, "Mock Input Device");
+  EXPECT_EQ(device->get_id(), 1u);
+  EXPECT_EQ(device->get_name(), "Mock Input Device");
 }
 
 TEST_F(DeviceManagerMockTest, GetAudioDevice_InvalidIdThrows)
@@ -172,14 +167,14 @@ TEST_F(DeviceManagerMockTest, GetDefaultAudioOutputDevice_ReturnsMockOutput)
 {
   auto device = device_manager.get_default_audio_output_device();
   ASSERT_NE(device, nullptr);
-  EXPECT_EQ(device->id, 0u);
-  EXPECT_TRUE(device->is_default_output);
+  EXPECT_EQ(device->get_id(), 0u);
+  EXPECT_TRUE(device->is_default_output());
 }
 
 TEST_F(DeviceManagerMockTest, GetDefaultAudioInputDevice_ReturnsMockInput)
 {
   auto device = device_manager.get_default_audio_input_device();
   ASSERT_NE(device, nullptr);
-  EXPECT_EQ(device->id, 1u);
-  EXPECT_TRUE(device->is_default_input);
+  EXPECT_EQ(device->get_id(), 1u);
+  EXPECT_TRUE(device->is_default_input());
 }

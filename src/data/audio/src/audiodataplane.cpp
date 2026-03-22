@@ -87,14 +87,14 @@ void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsi
   update_audio_output_statistics(n_frames, batch_time_ms, stream_time);
 }
 
-/** @brief Preload WAV file data into the audio data plane.
- *  @param wav_file Shared pointer to the WavFile to preload.
+/** @brief Preload audio file data into the audio data plane.
+ *  @param file_handle Shared pointer to a FileHandle (must be eFileType::Wav).
  */
-void AudioDataPlane::preload_wav_file(const WavFilePtr& wav_file)
+void AudioDataPlane::preload_wav_file(const FileHandlePtr& file_handle)
 {
-  if (!wav_file)
+  if (!file_handle)
   {
-    LOG_ERROR("AudioDataPlane: Invalid WAV file: ", wav_file->to_string());
+    LOG_ERROR("AudioDataPlane: Null file handle passed to preload_wav_file.");
     return;
   }
 
@@ -105,20 +105,20 @@ void AudioDataPlane::preload_wav_file(const WavFilePtr& wav_file)
     return;
   }
 
-  LOG_INFO("AudioDataPlane: Preloading WAV file: ", wav_file->to_string());
+  LOG_INFO("AudioDataPlane: Preloading audio file: ", file_handle->to_string());
 
-  wav_file->seek(0);
+  file_handle->seek(0);
   m_read_position.store(0, std::memory_order_release);
 
-  // Read entire WAV file into preloaded buffer
-  sf_count_t total_frames = wav_file->get_total_frames(); // Expect interleaved samples
-  sf_count_t total_samples = total_frames * wav_file->get_channels();
-  m_preloaded_frames_buffer.resize(total_samples, 0.0f);
-  sf_count_t frames_read = wav_file->read_frames(m_preloaded_frames_buffer, total_samples);
+  // Read entire file into preloaded buffer
+  long long total_frames  = static_cast<long long>(file_handle->get_total_frames());
+  long long total_samples = total_frames * static_cast<long long>(file_handle->get_channels());
+  m_preloaded_frames_buffer.resize(static_cast<size_t>(total_samples), 0.0f);
+  long long frames_read = file_handle->read_frames(m_preloaded_frames_buffer, total_samples);
 
   if (frames_read != total_frames)
   {
-    LOG_WARNING("AudioDataPlane: Read fewer frames than expected from WAV file: ",
+    LOG_WARNING("AudioDataPlane: Read fewer frames than expected from audio file: ",
                 frames_read, " / ", total_frames);
   }
 }

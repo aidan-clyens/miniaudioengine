@@ -3,6 +3,7 @@
 
 #include "manager.h"
 #include "input.h"
+#include "filehandle.h"
 
 #include <filesystem>
 #include <vector>
@@ -12,14 +13,6 @@
 
 namespace miniaudioengine
 {
-
-// Forward declaration
-class WavFile;
-class MidiFile;
-
-// Type definitions
-typedef std::shared_ptr<WavFile> WavFilePtr;
-typedef std::shared_ptr<MidiFile> MidiFilePtr;
 
 /** @class File
  *  @brief Base class for various file types
@@ -151,8 +144,18 @@ public:
   }
 
 	void save_to_wav_file(std::vector<float> audio_buffer, const std::filesystem::path &path);
-  std::optional<WavFilePtr> read_wav_file(const std::filesystem::path &path);
-  std::optional<MidiFilePtr> read_midi_file(const std::filesystem::path &path);
+
+  /** @brief Loads audio data from a WAV (or libsndfile-compatible audio) file.
+   *  @param path The path to the audio file.
+   *  @return FileHandlePtr on success, or std::nullopt if the file could not be opened.
+   */
+  std::optional<FileHandlePtr> read_wav_file(const std::filesystem::path &path);
+
+  /** @brief Creates a FileHandle for a MIDI file.
+   *  @param path The path to the MIDI file.
+   *  @return FileHandlePtr on success, or std::nullopt if the path is invalid.
+   */
+  std::optional<FileHandlePtr> read_midi_file(const std::filesystem::path &path);
 
 private:
   FileManager() = default;

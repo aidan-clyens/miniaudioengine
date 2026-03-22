@@ -1,8 +1,6 @@
 #include "miniaudioengine/track.h"
 #include "miniaudioengine/trackmanager.h"
 
-#include "miniaudioengine/wavfile.h"
-#include "miniaudioengine/midifile.h"
 #include "midicontroller.h"
 #include "logger.h"
 
@@ -152,28 +150,23 @@ void Track::add_audio_input(SourceVariant input)
     throw std::runtime_error("This track already has an audio input.");
   }
 
-  // If input is a device, verify it is an input device
-  if (std::holds_alternative<core::IDevicePtr>(input))
+  if (std::holds_alternative<DeviceHandlePtr>(input))
   {
-    auto device = std::get<core::IDevicePtr>(input);
+    auto device = std::get<DeviceHandlePtr>(input);
     if (!device->is_input())
     {
-      throw std::runtime_error("Selected audio device " + device->name + " has no input channels.");
+      throw std::runtime_error("Selected audio device " + device->get_name() + " has no input channels.");
     }
 
-    // TODO - Check if device is an audio device
-
     LOG_INFO("Track: Added audio input device: ", device->to_string());
-    // TODO - Add input device to audio dataplane
-
     m_audio_input = input;
   }
 
-
-  if (std::holds_alternative<WavFilePtr>(input))
+  if (std::holds_alternative<FileHandlePtr>(input))
   {
-    LOG_INFO("Track: Added audio input file: ", std::get<WavFilePtr>(input)->to_string());
-    p_audio_dataplane->set_input_channels(std::get<WavFilePtr>(input)->get_channels());
+    auto file = std::get<FileHandlePtr>(input);
+    LOG_INFO("Track: Added audio input file: ", file->to_string());
+    p_audio_dataplane->set_input_channels(file->get_channels());
     m_audio_input = input;
   }
 }
@@ -189,19 +182,15 @@ void Track::add_midi_input(MidiIOVariant input)
     throw std::runtime_error("This track already has a MIDI input.");
   }
 
-  // If input is a device, verify it is an input device
-  if (std::holds_alternative<core::IDevicePtr>(input))
+  if (std::holds_alternative<DeviceHandlePtr>(input))
   {
-    auto device = std::get<core::IDevicePtr>(input);
+    auto device = std::get<DeviceHandlePtr>(input);
     if (!device->is_input())
     {
-      throw std::runtime_error("Selected MIDI device " + device->name + " has no input channels.");
+      throw std::runtime_error("Selected MIDI device " + device->get_name() + " has no input channels.");
     }
 
-    // TODO - Check if device is a MIDI device
-
     LOG_INFO("Track: Added MIDI input device: ", device->to_string());
-    // TODO - Add input device to MIDI dataplane
     m_midi_input = input;
   }
 }
@@ -217,16 +206,14 @@ void Track::add_midi_output(MidiIOVariant output)
     throw std::runtime_error("This track already has a MIDI output.");
   }
 
-  if (std::holds_alternative<core::IDevicePtr>(output))
+  if (std::holds_alternative<DeviceHandlePtr>(output))
   {
-    auto device = std::get<core::IDevicePtr>(output);
+    auto device = std::get<DeviceHandlePtr>(output);
     if (!device->is_output())
     {
-      LOG_ERROR("Track: Selected MIDI device ", device->name, " has no output channels.");
+      LOG_ERROR("Track: Selected MIDI device ", device->get_name(), " has no output channels.");
       throw std::runtime_error("Selected MIDI device has no output channels.");
     }
-
-    // TODO - Check if device is a MIDI device
 
     LOG_INFO("Track: Added MIDI output device: ", device->to_string());
     m_midi_output = output;
@@ -325,26 +312,20 @@ bool Track::play()
 
   // TODO - Get audio input and configure dataplane
   // If audio input is a WAV file, start producer thread BEFORE starting audio stream
-  if (std::holds_alternative<WavFilePtr>(m_audio_input))
+  if (std::holds_alternative<FileHandlePtr>(m_audio_input))
   {
-    LOG_INFO("Track: Preloading WAV file data into AudioDataPlane ", std::get<WavFilePtr>(m_audio_input)->to_string());
-    WavFilePtr wav_file = std::get<WavFilePtr>(m_audio_input);
-    
+    FileHandlePtr wav_file = std::get<FileHandlePtr>(m_audio_input);
+    LOG_INFO("Track: Preloading WAV file data into AudioDataPlane ", wav_file->to_string());
     p_audio_dataplane->preload_wav_file(wav_file); // Preload WAV file data
     p_audio_dataplane->start();
   }
 
   // TODO - Get MIDI input and configure dataplane
   // If MIDI input is a MIDI device, ensure the port is open
-  if (std::holds_alternative<core::IDevicePtr>(m_midi_input))
+  if (std::holds_alternative<DeviceHandlePtr>(m_midi_input))
   {
-    LOG_INFO("Track: Opening MIDI input port ", std::get<core::IDevicePtr>(m_midi_input)->to_string());
-    auto midi_device = std::dynamic_pointer_cast<MidiDevice>(std::get<core::IDevicePtr>(m_midi_input));
-    if (!midi_device)
-    {
-      LOG_ERROR("Track: Invalid MIDI input device.");
-      return false;
-    }
+    DeviceHandlePtr midi_device = std::get<DeviceHandlePtr>(m_midi_input);
+    LOG_INFO("Track: Opening MIDI input port ", midi_device->to_string());
 
     p_midi_dataplane->start();
     main_track->open_midi_input_port(midi_device);
@@ -477,16 +458,16 @@ std::string Track::to_string() const
   MidiIOVariant midi_output = get_midi_output();
 
   std::string audio_input_str = std::holds_alternative<std::nullopt_t>(audio_input) ? "None" :
-                                std::holds_alternative<core::IDevicePtr>(audio_input) ? std::get<core::IDevicePtr>(audio_input)->to_string() :
-                                std::get<WavFilePtr>(audio_input)->to_string();
+                                std::holds_alternative<DeviceHandlePtr>(audio_input) ? std::get<DeviceHandlePtr>(audio_input)->to_string() :
+                                std::get<FileHandlePtr>(audio_input)->to_string();
 
   std::string midi_input_str = std::holds_alternative<std::nullopt_t>(midi_input) ? "None" :
-                               std::holds_alternative<core::IDevicePtr>(midi_input) ? std::get<core::IDevicePtr>(midi_input)->to_string() :
-                               std::get<MidiFilePtr>(midi_input)->to_string();
+                               std::holds_alternative<DeviceHandlePtr>(midi_input) ? std::get<DeviceHandlePtr>(midi_input)->to_string() :
+                               std::get<FileHandlePtr>(midi_input)->to_string();
 
   std::string midi_output_str = std::holds_alternative<std::nullopt_t>(midi_output) ? "None" :
-                                std::holds_alternative<core::IDevicePtr>(midi_output) ? std::get<core::IDevicePtr>(midi_output)->to_string() :
-                                std::get<MidiFilePtr>(midi_output)->to_string();
+                                std::holds_alternative<DeviceHandlePtr>(midi_output) ? std::get<DeviceHandlePtr>(midi_output)->to_string() :
+                                std::get<FileHandlePtr>(midi_output)->to_string();
 
   return "Track(AudioInput=" + audio_input_str +
          ", MidiInput=" + midi_input_str +

@@ -18,6 +18,8 @@ target_sources(control-audio PRIVATE
 target_include_directories(control-audio
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src/public/io/devicemanager/include>
 )
 
 target_link_libraries(control-audio

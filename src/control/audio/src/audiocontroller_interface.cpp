@@ -4,6 +4,25 @@
 
 using namespace miniaudioengine::core;
 using namespace miniaudioengine::audio;
+using namespace miniaudioengine;
+
+void IAudioController::set_output_device(DeviceHandlePtr device)
+{
+  if (!device)
+  {
+    LOG_ERROR("IAudioController: Attempted to set a null output device.");
+    throw std::invalid_argument("IAudioController: Output device cannot be null.");
+  }
+
+  if (!device->is_output())
+  {
+    LOG_ERROR("IAudioController: Device ", device->get_name(), " is not an output device.");
+    throw std::invalid_argument("IAudioController: Device " + device->get_name() + " is not an output device.");
+  }
+
+  LOG_DEBUG("IAudioController: Output device set to ", device->to_string());
+  m_device_handle = device;
+}
 
 bool IAudioController::validate_start_preconditions() const
 {
@@ -13,8 +32,7 @@ bool IAudioController::validate_start_preconditions() const
     return false;
   }
 
-  auto device = std::dynamic_pointer_cast<AudioDevice>(get_output_device());
-  if (device == nullptr)
+  if (!m_device_handle)
   {
     LOG_WARNING("AudioController: No output device set. Cannot start stream.");
     return false;
@@ -49,13 +67,11 @@ bool IAudioController::register_dataplanes()
     }
   }
 
-  // For each active track, set output channels in data
-  auto device = std::dynamic_pointer_cast<AudioDevice>(get_output_device());
-  if (device != nullptr)
+  if (m_device_handle)
   {
     for (const auto& track_dp : m_callback_context->active_tracks)
     {
-      track_dp->set_output_channels(device->output_channels);
+      track_dp->set_output_channels(m_device_handle->get_output_channels());
     }
   }
 

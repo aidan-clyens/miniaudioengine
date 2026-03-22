@@ -3,8 +3,6 @@
 #include <memory>
 
 #include "miniaudioengine/filemanager.h"
-#include "miniaudioengine/wavfile.h"
-#include "miniaudioengine/midifile.h"
 #include "logger.h"
 
 using namespace miniaudioengine;
@@ -135,7 +133,7 @@ TEST(FileSystemTest, Action10_LoadWavFile)
   // Load the WAV file
   auto file = FileManager::instance().read_wav_file(wav_file_path);
   ASSERT_TRUE(file.has_value()) << "WAV file '" + wav_file_path.string() + "' should be loaded successfully.";
-  WavFilePtr file_ptr = file.value();
+  FileHandlePtr file_ptr = file.value();
 
   ASSERT_EQ(file_ptr->get_filepath(), FileManager::instance().convert_to_absolute(wav_file_path)) << "Loaded WAV file path should match the original path.";
 

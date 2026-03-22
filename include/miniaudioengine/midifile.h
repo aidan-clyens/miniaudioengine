@@ -1,24 +1,22 @@
 #ifndef __MIDI_FILE_H__
 #define __MIDI_FILE_H__
 
-#include "filemanager.h"
+/**
+ * @file midifile.h
+ * @deprecated This header is a compatibility stub. Use FileHandle from filehandle.h instead.
+ */
+#include "filehandle.h"
 
 namespace miniaudioengine
 {
 
-/** @class MidiFile
- *  @brief Class for handling MIDI file operations
- */
-class MidiFile : public File
-{
-friend class FileManager;
+/** @deprecated Use FileHandle / FileHandlePtr instead. */
+[[deprecated("Use FileHandle from filehandle.h instead of MidiFile")]]
+typedef FileHandle MidiFile;
 
-public:
-  virtual ~MidiFile() = default;
-
-private:
-  MidiFile(const std::filesystem::path &path): File(path, core::eInputType::MidiFile) {}
-};
+/** @deprecated Use FileHandlePtr instead. */
+[[deprecated("Use FileHandlePtr from filehandle.h instead of MidiFilePtr")]]
+typedef FileHandlePtr MidiFilePtr;
 
 } // namespace miniaudioengine
 
