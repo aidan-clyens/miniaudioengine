@@ -6,12 +6,10 @@ target_sources(control-audio
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
-      include/audiocontroller_interface.h
       include/audiocontroller.h
 )
 
 target_sources(control-audio PRIVATE
-  src/audiocontroller_interface.cpp
   src/audiocontroller.cpp
 )
 

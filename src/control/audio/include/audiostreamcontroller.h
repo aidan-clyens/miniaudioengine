@@ -20,7 +20,7 @@ namespace miniaudioengine::audio
  *  adjust parameters such as volume, sample rate, and buffer size. 
  *  @note This class is part of the control plane. Operations are synchronous and called from the main thread.
  */
-class AudioStreamController : public IAudioController
+class AudioStreamController : public AudioController
 {
 public:
   explicit AudioStreamController() = default;

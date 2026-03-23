@@ -25,7 +25,7 @@ enum RtAudioErrorType
   RTAUDIO_ERROR,
 };
 
-class MockAudioController : public IAudioController
+class MockAudioController : public AudioController
 {
 public:
   explicit MockAudioController()

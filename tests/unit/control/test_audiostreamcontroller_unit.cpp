@@ -120,7 +120,7 @@ TEST_F(AudioControllerTest, SetAudioOutputDevice_NotAnOutput)
   }
   catch (const std::invalid_argument& e)
   {
-    EXPECT_STREQ(e.what(), "IAudioController: Device Input Only Device is not an output device.");
+    EXPECT_STREQ(e.what(), "AudioController: Device Input Only Device is not an output device.");
   }
   catch (...)
   {

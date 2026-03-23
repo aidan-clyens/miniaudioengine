@@ -8,7 +8,6 @@
 
 #include "devicehandle.h"
 #include "audiocontroller.h"
-#include "audiocontroller_interface.h"
 #include "midicontroller.h"
 #include "midicontroller_interface.h"
 
@@ -75,7 +74,7 @@ public:
   /** @brief Replace the audio controller. Intended for unit testing only.
    *  @param controller The controller to use in place of the default AudioController.
    */
-  void set_audio_controller(std::shared_ptr<audio::IAudioController> controller);
+  void set_audio_controller(std::shared_ptr<audio::AudioController> controller);
 
   /** @brief Replace the MIDI controller. Intended for unit testing only.
    *  @param controller The controller to use in place of the default MidiController.
@@ -93,7 +92,7 @@ private:
   DeviceManager& operator=(const DeviceManager&) = delete;
 
 private:
-  std::shared_ptr<audio::IAudioController> p_audio_controller;
+  std::shared_ptr<audio::AudioController> p_audio_controller;
   std::shared_ptr<midi::IMidiController> p_midi_controller;
 };
 

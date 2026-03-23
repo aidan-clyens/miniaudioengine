@@ -1,8 +1,10 @@
 #ifndef __AUDIO_CONTROLLER_H__
 #define __AUDIO_CONTROLLER_H__
 
-#include "audiocontroller_interface.h"
+#include "controller.h"
+#include "devicehandle_factory.h"
 #include "audiocallbackhandler.h"
+#include "logger.h"
 
 #include <rtaudio/RtAudio.h>
 #include <optional>
@@ -13,22 +15,56 @@ namespace miniaudioengine::audio
 {
 
 /** @class AudioController
- *  @brief This class managers the device audio hardware interfaces.
- *  It is responsible for initializing, configuring, and controlling audio inputs and outputs.
- *  The AudioController provides methods to start and stop audio streams, as well as to
- *  adjust parameters such as volume, sample rate, and buffer size.
+ *  @brief Abstract base class and primary implementation for audio controllers.
+ *  Provides common state management, device validation, and dataplane registration
+ *  logic shared by all audio controller implementations. Concrete subclasses supply
+ *  hardware-specific stream start/stop behaviour.
  *  @note This class is part of the control plane. Operations are synchronous and called from the main thread.
  */
-class AudioController : public IAudioController
+class AudioController : public core::IController
 {
 public:
-  explicit AudioController() = default;
+  explicit AudioController();
   ~AudioController() override = default;
 
-  /** @brief Get Available Audio Devices
-   *  @return List of available audio devices
+  /** @brief Enumerate available audio devices.
+   *  @return Vector of DeviceHandle objects, one per physical audio device.
    */
-  std::vector<DeviceHandlePtr> get_audio_devices() override;
+  virtual std::vector<DeviceHandlePtr> get_audio_devices();
+
+  /** @brief Set the output device for the audio stream.
+   *  @param device DeviceHandle representing an audio output device.
+   *  @throws std::invalid_argument if device is null or not an output device.
+   */
+  void set_output_device(DeviceHandlePtr device);
+
+  /** @brief Get the currently configured output device handle.
+   *  @return DeviceHandlePtr, or nullptr if none has been set.
+   */
+  DeviceHandlePtr get_device_handle() const { return m_device_handle; }
+
+  /** @brief Get the audio callback context shared with the data plane.
+   *  @return Shared pointer to the AudioCallbackContext.
+   */
+  virtual std::shared_ptr<core::AudioCallbackContext> get_callback_context() const
+  {
+    return m_callback_context;
+  }
+
+protected:
+  /** @brief Validates preconditions before starting the audio stream.
+   *  @return true if all preconditions are met, false otherwise.
+   */
+  bool validate_start_preconditions() const;
+
+  /** @brief Registers active tracks from TrackManager for audio callbacks.
+   *  @return true if tracks were successfully registered, false if no active tracks.
+   */
+  bool register_dataplanes();
+
+  // Common state shared by all implementations
+  std::shared_ptr<core::AudioCallbackContext> m_callback_context;
+  DeviceHandlePtr m_device_handle;
 
 private:
   RtAudio m_rtaudio;

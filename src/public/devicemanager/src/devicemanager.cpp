@@ -20,7 +20,7 @@ DeviceHandlePtr DeviceManager::get_audio_device(const unsigned int id) const
   throw std::out_of_range("Audio device with ID " + std::to_string(id) + " does not exist");
 }
 
-void DeviceManager::set_audio_controller(std::shared_ptr<audio::IAudioController> controller)
+void DeviceManager::set_audio_controller(std::shared_ptr<audio::AudioController> controller)
 {
   p_audio_controller = std::move(controller);
 }
