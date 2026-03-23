@@ -12,7 +12,6 @@ target_sources(framework
       include/logger.h
       include/input.h
       include/controller.h
-      include/manager.h
       include/dataplane.h
       include/processor.h
       include/device.h

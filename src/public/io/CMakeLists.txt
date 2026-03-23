@@ -1,2 +1,0 @@
-add_subdirectory(devicemanager)
-add_subdirectory(filemanager)

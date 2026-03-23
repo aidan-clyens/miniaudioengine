@@ -6,7 +6,6 @@
 #include <optional>
 #include <stdexcept>
 
-#include "manager.h"
 #include "devicehandle.h"
 #include "audiocontroller.h"
 #include "audiocontroller_interface.h"
@@ -20,7 +19,7 @@ namespace miniaudioengine
  *  @brief This class manages the system's audio and MIDI I/O devices.
  *  It is implemented as a singleton to provide a global point of access.
  */
-class DeviceManager : public core::IManager
+class DeviceManager
 {
 public:
   static DeviceManager& instance()

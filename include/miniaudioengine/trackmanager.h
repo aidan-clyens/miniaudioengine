@@ -1,7 +1,6 @@
 #ifndef __TRACK_MANAGER_H_
 #define __TRACK_MANAGER_H_
 
-#include "manager.h"
 #include "track.h"
 #include "devicehandle.h"
 #include "audiocontroller.h"
@@ -71,7 +70,7 @@ private:
  *  @brief The TrackManager manages a single-layer hierarchy with MainTrack as root.
  *  All regular Tracks are direct children of MainTrack and may not have children.
  */
-class TrackManager : public core::IManager
+class TrackManager
 {
 using MainTrackPtr = std::shared_ptr<MainTrack>;
 
