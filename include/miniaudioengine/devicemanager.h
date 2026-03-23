@@ -9,7 +9,6 @@
 #include "devicehandle.h"
 #include "audiocontroller.h"
 #include "midicontroller.h"
-#include "midicontroller_interface.h"
 
 namespace miniaudioengine
 {
@@ -79,7 +78,7 @@ public:
   /** @brief Replace the MIDI controller. Intended for unit testing only.
    *  @param controller The controller to use in place of the default MidiController.
    */
-  void set_midi_controller(std::shared_ptr<midi::IMidiController> controller);
+  void set_midi_controller(std::shared_ptr<midi::MidiController> controller);
 
 private:
   DeviceManager():
@@ -93,7 +92,7 @@ private:
 
 private:
   std::shared_ptr<audio::AudioController> p_audio_controller;
-  std::shared_ptr<midi::IMidiController> p_midi_controller;
+  std::shared_ptr<midi::MidiController> p_midi_controller;
 };
 
 } // namespace miniaudioengine

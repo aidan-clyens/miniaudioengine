@@ -63,7 +63,7 @@ public:
 private:
   DeviceHandlePtr p_audio_output_device;
   std::shared_ptr<audio::AudioController> p_audio_controller; // Only MainTrack owns the controller
-  std::shared_ptr<midi::IMidiController> p_midi_controller; // Only MainTrack owns the controller
+  std::shared_ptr<midi::MidiController> p_midi_controller; // Only MainTrack owns the controller
 };
 
 /** @class TrackManager

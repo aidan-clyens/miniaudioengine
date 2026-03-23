@@ -25,7 +25,7 @@ void DeviceManager::set_audio_controller(std::shared_ptr<audio::AudioController>
   p_audio_controller = std::move(controller);
 }
 
-void DeviceManager::set_midi_controller(std::shared_ptr<midi::IMidiController> controller)
+void DeviceManager::set_midi_controller(std::shared_ptr<midi::MidiController> controller)
 {
   p_midi_controller = std::move(controller);
 }
