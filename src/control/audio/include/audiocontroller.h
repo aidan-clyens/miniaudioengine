@@ -1,7 +1,7 @@
 #ifndef __AUDIO_CONTROLLER_H__
 #define __AUDIO_CONTROLLER_H__
 
-#include "controller.h"
+#include "interfaces/controller.h"
 #include "devicehandle_factory.h"
 #include "audiocallbackhandler.h"
 #include "logger.h"

@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "dataplane.h"
+#include "interfaces/dataplane.h"
 
 using namespace miniaudioengine::core;
 

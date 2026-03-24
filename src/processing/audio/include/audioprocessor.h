@@ -4,7 +4,7 @@
 #include <string>
 #include <atomic>
 
-#include "processor.h"
+#include "interfaces/processor.h"
 
 // Forward declaration from rtaudio library
 typedef unsigned int RtAudioStreamStatus;

@@ -1,7 +1,7 @@
-#include "controller.h"
-#include "dataplane.h"
+#include "interfaces/controller.h"
+#include "interfaces/dataplane.h"
+#include "interfaces/device.h"
 
-#include "device.h"
 #include "logger.h"
 
 using namespace miniaudioengine::core;

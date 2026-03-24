@@ -9,9 +9,10 @@
 
 #include <rtaudio/RtAudio.h>
 
-#include "dataplane.h"
-#include "audioprocessor.h"
+#include "interfaces/dataplane.h"
 #include "miniaudioengine/filehandle.h"
+
+#include "audioprocessor.h"
 #include "logger.h"
 
 namespace miniaudioengine::core

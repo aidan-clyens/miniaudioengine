@@ -6,7 +6,7 @@
 #include <vector>
 
 // Framework device interface (still used by IController framework-level tests)
-#include "device.h"
+#include "interfaces/device.h"
 // DeviceHandle PImpl header and factory (used by IAudioController audio-level tests)
 #include "miniaudioengine/devicehandle.h"
 #include "devicehandle_factory.h"

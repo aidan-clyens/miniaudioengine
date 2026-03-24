@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "controller.h"
+#include "interfaces/controller.h"
 
 using namespace miniaudioengine::core;
 

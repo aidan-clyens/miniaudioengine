@@ -1,7 +1,7 @@
 #ifndef __MIDI_CONTROLLER_H__
 #define __MIDI_CONTROLLER_H__
 
-#include "controller.h"
+#include "interfaces/controller.h"
 #include "midicallbackhandler.h"
 #include "miditypes.h"
 

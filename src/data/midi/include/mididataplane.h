@@ -5,7 +5,7 @@
 #include <atomic>
 #include <string>
 
-#include "dataplane.h"
+#include "interfaces/dataplane.h"
 
 namespace miniaudioengine::midi
 {

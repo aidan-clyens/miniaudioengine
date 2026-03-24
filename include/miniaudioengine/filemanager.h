@@ -1,7 +1,7 @@
 #ifndef __FILE_SYSTEM_H__
 #define __FILE_SYSTEM_H__
 
-#include "input.h"
+#include "interfaces/input.h"
 #include "filehandle.h"
 
 #include <filesystem>

@@ -10,12 +10,12 @@ target_sources(framework
       include/lockfree_ringbuffer.h
       include/doublebuffer.h
       include/logger.h
-      include/input.h
-      include/controller.h
-      include/dataplane.h
-      include/processor.h
-      include/device.h
       include/miditypes.h
+      include/interfaces/input.h
+      include/interfaces/controller.h
+      include/interfaces/dataplane.h
+      include/interfaces/processor.h
+      include/interfaces/device.h
 )
 
 target_sources(framework
