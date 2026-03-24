@@ -1,10 +1,52 @@
-# Mini Audio Engine (C++)
-
 # Introduction
 
 `miniaudioengine` is a cross-platform, lightweight, audio processing C++ SDK. The intention is for audio applications written using this SDK to run on platforms as minimal as a Raspberry Pi.
 
----
+<div style="page-break-after: always;"></div>
+
+# Contents
+
+- [Introduction](#introduction)
+- [Contents](#contents)
+- [Requirements](#requirements)
+  - [Functional Requirements](#functional-requirements)
+  - [Non-Functional Requirements](#non-functional-requirements)
+- [Background](#background)
+  - [VST Audio Plugins](#vst-audio-plugins)
+  - [Digital Audio Workstation](#digital-audio-workstation)
+  - [Guitar Effects Pedals](#guitar-effects-pedals)
+  - [Eurorack Modular Synthesizers](#eurorack-modular-synthesizers)
+- [High-Level Design](#high-level-design)
+  - [System Architecture](#system-architecture)
+  - [Public API](#public-api)
+  - [Control Layer](#control-layer)
+  - [Data Layer](#data-layer)
+  - [Processing Layer](#processing-layer)
+  - [Framework/External Layer](#frameworkexternal-layer)
+- [Software Implementation](#software-implementation)
+  - [Project Structure](#project-structure)
+  - [Build Environment](#build-environment)
+    - [Developing on Windows](#developing-on-windows)
+    - [Developing on Linux](#developing-on-linux)
+    - [Docker](#docker)
+    - [VS Code](#vs-code)
+  - [Example Programs](#example-programs)
+    - [WAV File Player](#wav-file-player)
+    - [MIDI Controller Interface](#midi-controller-interface)
+    - [Sampler](#sampler)
+  - [Software Architecture](#software-architecture)
+  - [C++ Coding Conventions](#c-coding-conventions)
+    - [Naming Conventions](#naming-conventions)
+    - [Specifiers \& Attributes](#specifiers--attributes)
+    - [Smart Pointers](#smart-pointers)
+    - [Singletons](#singletons)
+    - [Comments](#comments)
+- [Testing](#testing)
+  - [Unit Testing](#unit-testing)
+  - [Profiling / Real-Time Testing](#profiling--real-time-testing)
+- [Conclusion](#conclusion)
+
+<div style="page-break-after: always;"></div>
 
 # Requirements
 
@@ -25,7 +67,7 @@
 - Cross-platform on **x86** and **ARM64** architectures.
 - Modern, C++ code following best practices.
 
----
+<div style="page-break-after: always;"></div>
 
 # Background
 
@@ -33,17 +75,72 @@
 
 ## Digital Audio Workstation
 
----
+## Guitar Effects Pedals
+
+## Eurorack Modular Synthesizers
+
+<div style="page-break-after: always;"></div>
 
 # High-Level Design
 
 ## System Architecture
 
-![alt text](docs/system_architecture.png)
+```plantuml
+@startuml
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam packageStyle rectangle
 
-## User Interface
+package "Layer 4 - application" {
+  [application] <<application>>
+}
 
-### SDK
+package "Layer 3 - control (sync)" {
+  [control] <<control>>
+}
+
+package "Layer 2 - processing" {
+  [processing] <<processing>>
+}
+
+package "Layer 1 - data (real-time)" {
+  [data] <<data>>
+}
+
+package "Layer 0 - framework" {
+  [framework] <<framework>>
+}
+
+package "External" {
+  [RtAudio] <<external>>
+  [RtMidi] <<external>>
+  [libsndfile] <<external>>
+}
+
+note right of [application]
+  Apps, tools, or CLI programs.
+  Accesses the audio engine via the control layer.
+end note
+
+' Layer dependencies
+[application] --> [control]
+[control] --> [processing]
+[control] --> [data]
+[processing] --> [framework]
+[data] --> [framework]
+[control] --> [framework]
+
+' External dependencies
+[control] --> [RtAudio]
+[data] --> [RtAudio]
+[control] --> [RtMidi]
+[data] --> [RtMidi]
+[control] --> [libsndfile]
+
+@enduml
+```
+
+## Public API
 
 **I/O**
 
@@ -74,50 +171,51 @@
 ## Project Structure
 
 ```
-examples/
-    sampler/
-    wav-file-player/
-    midi-controller-interface/
-src/
-    public/
-        trackmanager/
-        cli/
-        io/
-            devicemanager/
-            filemanager/
-    framework/
-    control/
-        audio/
-        midi/
-    data/
-        audio/
-        midi/
-    processing/
-    cli/
-tests/
-    mocks/
-    unit/
-samples/
 cmake/
 docker/
-docs/
+examples/
+	sampler/
+	wav-file-player/
+	midi-controller-interface/
+samples/
+scripts/
+src/
+	public/
+		trackmanager/
+		cli/
+		io/
+			devicemanager/
+			filemanager/
+	framework/
+	control/
+		audio/
+		midi/
+	data/
+		audio/
+		midi/
+	processing/
+	cli/
+tests/
+	mocks/
+	unit/
 CMakeLists.txt
 Dockerfile
 vcpkg.json
 ```
 
+<div style="page-break-after: always;"></div>
+
 ## Build Environment
 
 ### Developing on Windows
 
-**Requirements**
+Requirements:
 
 - Visual Studio 2022 or later (with C++20 support)
 - CMake 3.25+
 - vcpkg
 
-
-**Build Steps**
+Build steps:
 
 ```bash
 # Configure with vcpkg integration
@@ -129,13 +227,13 @@ cmake --build build
 
 ### Developing on Linux
 
-**Requirements**
+Requirements:
 
 - GCC 11+ or Clang 14+ (with C++20 support)
 - CMake 3.25+
 - vcpkg or system packages (RtAudio, RtMidi, libsndfile)
 
-**Build Steps**
+Build steps:
 
 ```bash
 # Configure
@@ -147,7 +245,7 @@ cmake --build build
 
 ### Docker
 
-For reproducible Linux builds across **x86_64** and **ARM64**
+For reproducible Linux builds across x86_64 and ARM64:
 
 ```bash
 # Build multi-arch Docker image
@@ -161,6 +259,16 @@ cd docker
 cmake -S . -B build
 cmake --build build
 ```
+
+### VS Code
+
+Tasks
+
+Instructions
+
+Prompts
+
+<div style="page-break-after: always;"></div>
 
 ## Example Programs
 
@@ -201,10 +309,10 @@ track->add_audio_input(wav_file);
 
 ```cpp
 track->set_event_callback([](eTrackEvent event) {
-    if (event == eTrackEvent::PlaybackFinished) {
-        LOG_INFO("Track playback finished.");
-        running = false;
-    }
+	if (event == eTrackEvent::PlaybackFinished) {
+		LOG_INFO("Track playback finished.");
+		running = false;
+	}
 });
 ```
 
@@ -218,7 +326,7 @@ track->play();
 
 ```cpp
 while (running) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }
 ```
 
@@ -233,9 +341,115 @@ LOG_INFO("Playback statistics:\n", stats.to_string());
 
 ### Sampler
 
+<div style="page-break-after: always;"></div>
+
+## Software Architecture
+
+```plantuml
+@startuml
+top to bottom direction
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+package "Framework (Layer 0)" #lightblue {
+  interface "IController" <<framework>>
+  interface "IManager" <<framework>>
+  interface "IInput" <<framework>>
+  interface "IDataPlane" <<framework>>
+  interface "IDevice" <<framework>>
+  interface "IAudioDevice" <<framework>>
+}
+
+package "Control Plane (Layer 3)" #lightsalmon {
+  interface "IAudioController" <<control>>
+  [AudioStreamController] <<control>>
+  interface "IMidiController" <<control>>
+  [MidiPortController] <<control>>
+  [AudioCallbackHandler] <<control>>
+  [MidiCallbackHandler] <<control>>
+}
+
+package "Data Plane (Layer 1)" #lightgreen {
+  [AudioDataPlane] <<data>>
+  [MidiDataPlane] <<data>>
+}
+
+package "Public / CLI / Examples (Layer 4)" #lightgray {
+  [Application] <<public>>
+  [TrackManager] <<public>>
+  [MainTrack] <<public>>
+  [Track] <<public>>
+  [DeviceManager] <<public>>
+  [FileManager] <<public>>
+  [File] <<public>>
+  [WavFile] <<public>>
+  [MidiFile] <<public>>
+  [AudioDevice] <<public>>
+  [MidiDevice] <<public>>
+}
+
+' Ordering hints for readability
+"IAudioController" -[hidden]-> [AudioStreamController]
+"IMidiController" -[hidden]-> [MidiPortController]
+"IAudioDevice" -[hidden]-> [AudioDevice]
+
+' Public layer wiring
+[Application] --> [TrackManager]
+[Application] --> [DeviceManager]
+[Application] --> [FileManager]
+[Application] --> [Track]
+[TrackManager] --> [MainTrack]
+[MainTrack] -|> [Track]
+
+[Track] --> [AudioDataPlane]
+[Track] --> [MidiDataPlane]
+
+[MainTrack] --> [AudioStreamController]
+[MainTrack] --> [MidiPortController]
+
+[DeviceManager] --> [AudioStreamController]
+[DeviceManager] --> [MidiPortController]
+[DeviceManager] --> [AudioDevice]
+[DeviceManager] --> [MidiDevice]
+
+[FileManager] --> [File]
+[FileManager] --> [WavFile]
+[FileManager] --> [MidiFile]
+
+[WavFile] -|> [File]
+[MidiFile] -|> [File]
+
+' Inheritance (framework)
+"IAudioController" ..|> "IController"
+"IMidiController" ..|> "IController"
+
+[TrackManager] ..|> "IManager"
+[DeviceManager] ..|> "IManager"
+[FileManager] ..|> "IManager"
+
+[File] ..|> "IInput"
+[AudioDataPlane] ..|> "IDataPlane"
+[MidiDataPlane] ..|> "IDataPlane"
+[AudioDevice] ..|> "IAudioDevice"
+"IAudioDevice" ..|> "IDevice"
+[MidiDevice] ..|> "IDevice"
+
+' Control plane -> data plane
+[AudioStreamController] --> [AudioCallbackHandler]
+[AudioCallbackHandler] --> [AudioDataPlane] : process_audio()
+[MidiPortController] --> [MidiCallbackHandler]
+[MidiCallbackHandler] --> [MidiDataPlane] : process_midi_message()
+
+@enduml
+```
+
+<div style="page-break-after: always;"></div>
+
 ## C++ Coding Conventions
 
-### **Naming Conventions**
+### Naming Conventions
 
 | Element | Convention | Example |
 | --- | --- | --- |
@@ -247,7 +461,7 @@ LOG_INFO("Playback statistics:\n", stats.to_string());
 | Enums | `e` prefix + PascalCase type, PascalCase values | `eStreamState::Playing` |
 | `shared_ptr` aliases | `Ptr` suffix | `IDataPlanePtr`, `AudioDataPlanePtr` |
 
-### **Specifiers & Attributes**
+### Specifiers & Attributes
 
 - `override` used consistently on all derived virtual methods
 - `noexcept` on real-time audio callbacks and time-critical methods
@@ -255,23 +469,23 @@ LOG_INFO("Playback statistics:\n", stats.to_string());
 - `const` extensively applied to getters and parameters
 - `constexpr` for compile-time constants/mappings
 
-### **Smart Pointers**
+### Smart Pointers
 
 - `std::shared_ptr` is the primary ownership mechanism
 - `std::weak_ptr` for parent references (avoiding cycles)
 - Raw pointers only for non-owning references (e.g., RtAudio callback buffers)
 - `std::make_shared` used for allocation
 
-### **Singletons**
+### Singletons
 
 - Thread-safe Meyers singleton via `static T& instance()` with private constructor and deleted copy
 
-### **Comments**
+### Comments
 
 - Doxygen format (`@brief`, `@param`, `@return`, `@throws`, `@deprecated`) on all public APIs
 - Brief inline comments for non-obvious logic only
 
----
+<div style="page-break-after: always;"></div>
 
 # Testing
 
@@ -279,7 +493,7 @@ LOG_INFO("Playback statistics:\n", stats.to_string());
 
 ## Profiling / Real-Time Testing
 
----
+<div style="page-break-after: always;"></div>
 
 # Conclusion
 
