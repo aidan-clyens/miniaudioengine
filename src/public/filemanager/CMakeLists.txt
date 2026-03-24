@@ -7,14 +7,12 @@ target_sources(filemanager
       ${CMAKE_SOURCE_DIR}/include
     FILES
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/filemanager.h
-      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/filehandle.h
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/wavfile.h
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/midifile.h
 )
 
 target_sources(filemanager PRIVATE
   src/filemanager.cpp
-  src/filehandle.cpp
 )
 
 target_include_directories(filemanager
@@ -26,6 +24,7 @@ target_include_directories(filemanager
 target_link_libraries(filemanager
   PUBLIC
     sndfile
+    shared
     framework
 )
 

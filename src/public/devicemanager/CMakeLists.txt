@@ -7,14 +7,12 @@ target_sources(devicemanager
       ${CMAKE_SOURCE_DIR}/include
     FILES
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/devicemanager.h
-      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/devicehandle.h
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/audiodevice.h
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/mididevice.h
 )
 
 target_sources(devicemanager PRIVATE
   src/devicemanager.cpp
-  src/devicehandle.cpp
 )
 
 target_include_directories(devicemanager
@@ -25,6 +23,7 @@ target_include_directories(devicemanager
 
 target_link_libraries(devicemanager
   PUBLIC
+    shared
     data-audio
     data-midi
     control-audio

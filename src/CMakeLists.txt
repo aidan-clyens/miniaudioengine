@@ -1,4 +1,5 @@
 add_subdirectory(framework)
+add_subdirectory(shared)
 add_subdirectory(control)
 add_subdirectory(data)
 add_subdirectory(processing)
