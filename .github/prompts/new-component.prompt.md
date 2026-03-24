@@ -65,7 +65,7 @@ using <ComponentName>Ptr = std::shared_ptr<<ComponentName>>;
 ```
 
 **Layer-appropriate includes to add:**
-- Layer 0: `"logger.h"`
+- Framework (shared): `"logger.h"`, `"devicehandle.h"`, `"filehandle.h"` as needed
 - Layer 1: `"dataplane.h"`, `"logger.h"` — add `noexcept` to any callback methods; no mutex, no allocation
 - Layer 2: `"audioprocessor.h"`, `"logger.h"`
 - Layer 3: `"controller.h"`, `"logger.h"` — mutex allowed

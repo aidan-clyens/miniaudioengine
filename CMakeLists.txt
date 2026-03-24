@@ -97,7 +97,6 @@ install(
         data-audio
         data-midi
         processor-audio
-        shared
         trackmanager
         filemanager
         devicemanager

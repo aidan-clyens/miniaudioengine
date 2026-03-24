@@ -24,7 +24,6 @@ target_include_directories(filemanager
 target_link_libraries(filemanager
   PUBLIC
     sndfile
-    shared
     framework
 )
 

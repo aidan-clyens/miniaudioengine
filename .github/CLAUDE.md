@@ -41,7 +41,10 @@ Layer 4: public / cli / examples  (application interface)
 Layer 3: control                  (synchronous, main thread only)
 Layer 2: processing               (audio processors; per-processor threading only)
 Layer 1: data                     (real-time lock-free callbacks)
-Layer 0: framework                (lock-free primitives, logging, utilities)
+─────────────────────────────────────────────────────────────────────────────────────
+framework (shared — accessible by all layers):
+           LockfreeRingBuffer, DoubleBuffer, Logger, interfaces,
+           DeviceHandle, FileHandle (PImpl wrappers for RtAudio/RtMidi/libsndfile)
 ```
 
 ### Layer 3 — Control Plane
@@ -61,13 +64,16 @@ Executes inside RtAudio/RtMidi callback threads. Must be **completely lock-free*
 - `MidiDataPlane` — per-track MIDI processing in RtMidi callback
 - `MidiCallbackHandler` — RtMidi callback function + context struct
 
-### Layer 0 — Framework (`src/framework/include/`)
+### Framework — Shared Layer (`src/framework/include/`)
+Accessible by all layers (1–4). Not a numbered layer — a cross-cutting foundation.
 - `LockfreeRingBuffer<T, Size>` — SPSC lock-free queue; `try_push`/`try_pop`; `memory_order_release`/`acquire`
 - `DoubleBuffer<T>` — atomic double-buffer for producer/consumer swap
 - `Logger` — thread-safe singleton; use macros `LOG_INFO()`, `LOG_WARNING()`, `LOG_ERROR()`, `LOG_DEBUG()`
 - `MessageQueue<T>` — lock-based blocking queue (not used in real-time paths)
 - `IController`, `IDataPlane`, `IProcessor`, `IManager` — base interfaces for control/data/processing
 - `IInput`, `IDevice`, `IAudioDevice` — shared data models for routing and device metadata
+- `DeviceHandle` / `DeviceHandlePtr` — PImpl wrapper for audio/MIDI device metadata (hides RtAudio/RtMidi)
+- `FileHandle` / `FileHandlePtr` — PImpl wrapper for audio/MIDI file I/O (hides libsndfile)
 - `RealtimeAssert` — header stub present but not implemented yet
 
 ### Track Hierarchy

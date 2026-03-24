@@ -13,7 +13,7 @@ Reference files to read first:
 - Root [CMakeLists.txt](../../CMakeLists.txt) and [vcpkg.json](../../vcpkg.json) for dependency and build context.
 
 Then explore the source tree:
-- `src/framework/` — Layer 0 interfaces and primitives
+- `src/framework/` — shared framework layer (accessible by all layers): interfaces, primitives, DeviceHandle, FileHandle
 - `src/data/` — Layer 1 real-time data plane
 - `src/processing/` — Layer 2 audio processors
 - `src/control/` — Layer 3 controllers
@@ -77,7 +77,7 @@ Describe how the system decomposes into the 5 layers. Show the directory-to-laye
 
 ### 3.3 Logical Viewpoint (Class Design)
 For each layer describe its key abstractions:
-- **Layer 0**: `IController`, `IDataPlane`, `IManager`, `IDevice`, `LockfreeRingBuffer<T,N>`, `DoubleBuffer<T>`, `Logger`
+- **Framework (shared)**: `IController`, `IDataPlane`, `IManager`, `IDevice`, `LockfreeRingBuffer<T,N>`, `DoubleBuffer<T>`, `Logger`, `DeviceHandle`, `FileHandle`
 - **Layer 1**: `AudioDataPlane`, `MidiDataPlane`, callback handlers
 - **Layer 2**: `IAudioProcessor`, `Sample`, `SamplePlayer`
 - **Layer 3**: `AudioStreamController`, `MidiPortController`

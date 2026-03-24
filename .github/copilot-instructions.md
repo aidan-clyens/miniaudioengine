@@ -57,7 +57,10 @@
   Layer 3: control                  (AudioStreamController, MidiPortController)
   Layer 2: processing               (IAudioProcessor, Sample, SamplePlayer — partial/experimental)
   Layer 1: data                     (AudioDataPlane, MidiDataPlane — real-time callbacks)
-  Layer 0: framework                (LockfreeRingBuffer, DoubleBuffer, Logger, interfaces)
+  ─────────────────────────────────────────────────────────────────────────────────────
+  framework (shared — accessible by all layers):
+             LockfreeRingBuffer, DoubleBuffer, Logger, interfaces,
+             DeviceHandle, FileHandle (PImpl wrappers for RtAudio/RtMidi/libsndfile)
   ```
 
 - **Track hierarchy**: `MainTrack` is always the root; regular `Track` objects are its direct children (single-level). Audio output mixes upward from children to parent.

@@ -7,7 +7,6 @@ target_sources(control-midi
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
       include/midicontroller.h
-      include/miditypes.h
 )
 
 target_sources(control-midi

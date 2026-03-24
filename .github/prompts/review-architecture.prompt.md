@@ -29,9 +29,9 @@ Layer 1: src/data/
 - AudioDataPlane, MidiDataPlane (real-time callbacks)
 namespace: miniaudioengine::core
 
-Layer 0: src/framework/
-- LockfreeRingBuffer, DoubleBuffer, Logger, IXxx
-namespace: miniaudioengine::core
+framework (shared — accessible by all layers): src/framework/
+- LockfreeRingBuffer, DoubleBuffer, Logger, IXxx, DeviceHandle, FileHandle
+namespace: miniaudioengine::core / miniaudioengine
 ```
 
 ## Step 1 — Collect Headers
@@ -44,15 +44,15 @@ Focus on project-internal includes (quoted `"..."` headers), not system or exter
 
 ## Step 2 — Assign Each File to a Layer
 
-Use the directory prefix rules above to assign a layer number (0–4) to each source and header file.
+Use the directory prefix rules above to assign a layer number (1–4) to each source and header file, or "framework" for files in `src/framework/`.
 
 For headers that live in `include/` subdirectories, assign them the same layer as their parent `src/` directory.
 
 ## Step 3 — Detect Violations
 
-A **violation** is any include where:
-- `including_file.layer > included_header.layer` is **false** — i.e. the file is at a lower layer but includes a header from a higher layer
+A **violation** is any include where a numbered layer (1–4) file includes a header from a *higher* numbered layer:
 - Specifically flag cases like a Layer 1 file including a Layer 3 or 4 header
+- `src/framework/` is shared and accessible by all layers — includes of framework headers are always allowed
 
 For each violation, output:
 ```
@@ -112,12 +112,14 @@ package "Layer 1 — Data (Real-time)" {
   [MidiDataPlane]
 }
 
-package "Layer 0 — Framework" {
+package "Framework (shared)" {
   [LockfreeRingBuffer]
   [DoubleBuffer]
   [Logger]
   [IController]
   [IDataPlane]
+  [DeviceHandle]
+  [FileHandle]
 }
 
 [TrackManager] --> [AudioStreamController]
@@ -180,7 +182,7 @@ Track "1" *-- "1" MidiDataPlane
 
 Extend or correct based on actual source.
 
-### Diagram C — Interface Hierarchy (Framework Layer 0)
+### Diagram C — Interface Hierarchy (Framework — shared layer)
 
 Show `IController`, `IDataPlane`, `IManager`, `IProcessor`, `IDevice`, `IAudioDevice` and their key implementors across layers.
 
