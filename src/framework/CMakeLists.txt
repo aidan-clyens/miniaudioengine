@@ -11,7 +11,6 @@ target_sources(framework
       include/doublebuffer.h
       include/logger.h
       include/miditypes.h
-      include/interfaces/input.h
       include/interfaces/controller.h
       include/interfaces/dataplane.h
       include/interfaces/processor.h

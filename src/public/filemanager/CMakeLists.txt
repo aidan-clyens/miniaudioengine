@@ -7,8 +7,6 @@ target_sources(filemanager
       ${CMAKE_SOURCE_DIR}/include
     FILES
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/filemanager.h
-      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/wavfile.h
-      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/midifile.h
 )
 
 target_sources(filemanager PRIVATE

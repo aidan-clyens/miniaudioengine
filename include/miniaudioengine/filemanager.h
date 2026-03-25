@@ -1,7 +1,6 @@
 #ifndef __FILE_SYSTEM_H__
 #define __FILE_SYSTEM_H__
 
-#include "interfaces/input.h"
 #include "filehandle.h"
 
 #include <filesystem>
@@ -13,10 +12,20 @@
 namespace miniaudioengine
 {
 
+/** @enum eFileType
+ */
+enum class eFileType
+{
+  None,
+  AudioDevice,
+  AudioFile,
+  MidiFile,
+};
+
 /** @class File
  *  @brief Base class for various file types
  */
-class File : public core::IInput
+class File
 {
   friend class FileManager;
 
@@ -39,10 +48,11 @@ public:
   }
 
 protected:
-  File(const std::filesystem::path &path, const core::eInputType type):
-    core::IInput(type),
+  File(const std::filesystem::path &path, const eFileType type):
+    m_file_type(type),
     m_filepath(path) {}
 
+  eFileType m_file_type = eFileType::None;
   std::filesystem::path m_filepath;
 };
 

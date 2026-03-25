@@ -187,17 +187,17 @@ public:
   bool has_midi_output() const;
 
   /** @brief Gets the audio input of the track.
-   *  @return An audio input variant type (AudioDevice, WavFilePtr, std::nullopt_t).
+   *  @return An audio input variant type (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
    */
   SourceVariant get_audio_input() const;
 
   /** @brief Gets the MIDI input of the track.
-   *  @return A MIDI input variant type (MidiDevice, MidiFilePtr, std::nullopt_t).
+   *  @return A MIDI input variant type (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
    */
   MidiIOVariant get_midi_input() const;
 
   /** @brief Gets the MIDI output of the track.
-   *  @return The MIDI output variant (device, file, or nullopt).
+   *  @return The MIDI output variant (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
    */
   MidiIOVariant get_midi_output() const;
 

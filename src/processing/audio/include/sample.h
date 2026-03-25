@@ -5,10 +5,12 @@
 #include <memory>
 #include <filesystem>
 
-#include "miniaudioengine/wavfile.h"
+#include "miniaudioengine/filehandle.h"
 
 namespace miniaudioengine::audio
 {
+
+using WavFilePtr = FileHandlePtr;
 
 /** @struct Sample
  *  @brief Represents an audio sample in the processing module.
