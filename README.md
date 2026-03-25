@@ -30,11 +30,10 @@
     - [Developing on Linux](#developing-on-linux)
     - [Docker](#docker)
     - [VS Code](#vs-code)
-  - [Example Programs](#example-programs)
-    - [WAV File Player](#wav-file-player)
-    - [MIDI Controller Interface](#midi-controller-interface)
-    - [Sampler](#sampler)
   - [Software Architecture](#software-architecture)
+  - [Example Workflows](#example-workflows)
+    - [Get Audio Devices and Set Output.](#get-audio-devices-and-set-output)
+    - [Monitor Audio Input Device](#monitor-audio-input-device)
   - [C++ Coding Conventions](#c-coding-conventions)
     - [Naming Conventions](#naming-conventions)
     - [Specifiers \& Attributes](#specifiers--attributes)
@@ -91,23 +90,23 @@ skinparam componentStyle rectangle
 skinparam shadowing false
 skinparam packageStyle rectangle
 
-package "Layer 4 - application" {
+package "Layer 4 - application" #lightgray {
   [application] <<application>>
 }
 
-package "Layer 3 - control (sync)" {
+package "Layer 3 - control (sync)" #lightsalmon {
   [control] <<control>>
 }
 
-package "Layer 2 - processing" {
+package "Layer 2 - processing" #lightyellow {
   [processing] <<processing>>
 }
 
-package "Layer 1 - data (real-time)" {
+package "Layer 1 - data (real-time)" #lightgreen {
   [data] <<data>>
 }
 
-package "Layer 0 - framework" {
+package "Layer 0 - framework" #lightblue {
   [framework] <<framework>>
 }
 
@@ -135,7 +134,7 @@ end note
 [data] --> [RtAudio]
 [control] --> [RtMidi]
 [data] --> [RtMidi]
-[control] --> [libsndfile]
+[framework] --> [libsndfile]
 
 @enduml
 ```
@@ -164,7 +163,7 @@ end note
 
 ## Framework/External Layer
 
----
+<div style="page-break-after: always;"></div>
 
 # Software Implementation
 
@@ -174,31 +173,19 @@ end note
 cmake/
 docker/
 examples/
-	sampler/
-	wav-file-player/
-	midi-controller-interface/
 samples/
-scripts/
+include/
 src/
 	public/
-		trackmanager/
-		cli/
-		io/
-			devicemanager/
-			filemanager/
 	framework/
 	control/
-		audio/
-		midi/
 	data/
-		audio/
-		midi/
 	processing/
-	cli/
 tests/
 	mocks/
 	unit/
 CMakeLists.txt
+CMakePresets.json
 Dockerfile
 vcpkg.json
 ```
@@ -270,79 +257,6 @@ Prompts
 
 <div style="page-break-after: always;"></div>
 
-## Example Programs
-
-### WAV File Player
-
-1. Set up resource managers
-
-```cpp
-TrackManager &track_manager = TrackManager::instance();
-DeviceManager &device_manager = DeviceManager::instance();
-FileManager &file_manager = FileManager::instance();
-```
-
-1. Add a Track to the Track Manager
-
-```cpp
-size_t track_id = track_manager.add_track();
-auto track = track_manager.get_track(track_id);
-```
-
-1. Set audio output device
-
-```cpp
-auto output_device = device_manager.get_audio_device(audio_output_device_id);
-
-track_manager.set_audio_output_device(output_device);
-```
-
-1. Open WAV file
-
-```cpp
-auto wav_file = file_manager.read_wav_file(input_file_path);
-
-track->add_audio_input(wav_file);
-```
-
-1. Set Track event callback for end of playback
-
-```cpp
-track->set_event_callback([](eTrackEvent event) {
-	if (event == eTrackEvent::PlaybackFinished) {
-		LOG_INFO("Track playback finished.");
-		running = false;
-	}
-});
-```
-
-1. Start WAV file playback
-
-```cpp
-track->play();
-```
-
-1. Wait until Track playback has finished
-
-```cpp
-while (running) {
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-}
-```
-
-1. Get Track statistics
-
-```cpp
-auto stats = track->get_statistics();
-LOG_INFO("Playback statistics:\n", stats.to_string());
-```
-
-### MIDI Controller Interface
-
-### Sampler
-
-<div style="page-break-after: always;"></div>
-
 ## Software Architecture
 
 ```plantuml
@@ -355,25 +269,28 @@ skinparam classAttributeIconSize 0
 
 package "Framework (Layer 0)" #lightblue {
   interface "IController" <<framework>>
-  interface "IManager" <<framework>>
-  interface "IInput" <<framework>>
+  interface "IProcessor" <<framework>>
   interface "IDataPlane" <<framework>>
   interface "IDevice" <<framework>>
   interface "IAudioDevice" <<framework>>
 }
 
 package "Control Plane (Layer 3)" #lightsalmon {
-  interface "IAudioController" <<control>>
-  [AudioStreamController] <<control>>
-  interface "IMidiController" <<control>>
-  [MidiPortController] <<control>>
-  [AudioCallbackHandler] <<control>>
-  [MidiCallbackHandler] <<control>>
+  [AudioController] <<control>>
+  [MidiController] <<control>>
 }
 
 package "Data Plane (Layer 1)" #lightgreen {
+  [AudioCallbackHandler] <<data>>
   [AudioDataPlane] <<data>>
+  [MidiCallbackHandler] <<data>>
   [MidiDataPlane] <<data>>
+}
+
+package "Processing Plane (Layer 2)" #lightyellow {
+  interface "IAudioProcessor" <<processing>>
+  [SamplePlayer] <<processing>>
+  [Sample] <<processing>>
 }
 
 package "Public / CLI / Examples (Layer 4)" #lightgray {
@@ -383,66 +300,117 @@ package "Public / CLI / Examples (Layer 4)" #lightgray {
   [Track] <<public>>
   [DeviceManager] <<public>>
   [FileManager] <<public>>
-  [File] <<public>>
-  [WavFile] <<public>>
-  [MidiFile] <<public>>
-  [AudioDevice] <<public>>
-  [MidiDevice] <<public>>
+  [DeviceHandle] <<public>>
+  [FileHandle] <<public>>
+  [CLI] <<public>>
 }
 
 ' Ordering hints for readability
-"IAudioController" -[hidden]-> [AudioStreamController]
-"IMidiController" -[hidden]-> [MidiPortController]
-"IAudioDevice" -[hidden]-> [AudioDevice]
+"IProcessor" -[hidden]-> "IAudioProcessor"
+"IAudioDevice" -[hidden]-> [AudioController]
 
 ' Public layer wiring
 [Application] --> [TrackManager]
 [Application] --> [DeviceManager]
 [Application] --> [FileManager]
-[Application] --> [Track]
+[Application] --> [CLI]
 [TrackManager] --> [MainTrack]
 [MainTrack] -|> [Track]
 
 [Track] --> [AudioDataPlane]
 [Track] --> [MidiDataPlane]
+[Track] --> [DeviceHandle] : audio/midi input
+[Track] --> [FileHandle] : audio/midi input
+[Track] --> "IAudioProcessor" : add_audio_processor()
 
-[MainTrack] --> [AudioStreamController]
-[MainTrack] --> [MidiPortController]
+[MainTrack] --> [AudioController]
+[MainTrack] --> [MidiController]
 
-[DeviceManager] --> [AudioStreamController]
-[DeviceManager] --> [MidiPortController]
-[DeviceManager] --> [AudioDevice]
-[DeviceManager] --> [MidiDevice]
+[DeviceManager] --> [AudioController]
+[DeviceManager] --> [MidiController]
+[DeviceManager] --> [DeviceHandle]
 
-[FileManager] --> [File]
-[FileManager] --> [WavFile]
-[FileManager] --> [MidiFile]
+[FileManager] --> [FileHandle]
 
-[WavFile] -|> [File]
-[MidiFile] -|> [File]
+' Processing relationships
+[SamplePlayer] ..|> "IAudioProcessor"
+[SamplePlayer] o-- [Sample]
 
 ' Inheritance (framework)
-"IAudioController" ..|> "IController"
-"IMidiController" ..|> "IController"
+[AudioController] ..|> "IController"
+[MidiController] ..|> "IController"
 
-[TrackManager] ..|> "IManager"
-[DeviceManager] ..|> "IManager"
-[FileManager] ..|> "IManager"
+"IAudioProcessor" ..|> "IProcessor"
 
-[File] ..|> "IInput"
 [AudioDataPlane] ..|> "IDataPlane"
 [MidiDataPlane] ..|> "IDataPlane"
-[AudioDevice] ..|> "IAudioDevice"
 "IAudioDevice" ..|> "IDevice"
-[MidiDevice] ..|> "IDevice"
 
 ' Control plane -> data plane
-[AudioStreamController] --> [AudioCallbackHandler]
+[AudioController] --> [AudioCallbackHandler]
 [AudioCallbackHandler] --> [AudioDataPlane] : process_audio()
-[MidiPortController] --> [MidiCallbackHandler]
+[MidiController] --> [MidiCallbackHandler]
 [MidiCallbackHandler] --> [MidiDataPlane] : process_midi_message()
 
 @enduml
+```
+
+<div style="page-break-after: always;"></div>
+
+## Example Workflows
+
+### Get Audio Devices and Set Output.
+
+```cpp
+DeviceManager device_manager = DeviceManager::instance();
+TrackManager track_manager = TrackManager::instance();
+
+// Get default audio input device
+DeviceHandlePtr input_device = device_manager.get_default_audio_input_device();
+DeviceHandlePtr output_device = nullptr;
+
+// Get all audio devices and search for output
+std::vector<DeviceHandlePtr> devices = device_manager.get_audio_devices();
+for (DeviceHandlePtr device : devices)
+{
+  if (device->is_output())
+  {
+    output_device = device;
+  }
+}
+
+// Audio output is global. Set it using the TrackManager
+// (TODO - Move this to another component)
+if (output_device)
+{
+  track_manager.set_audio_output_device(output_device);
+}
+```
+
+<div style="page-break-after: always;"></div>
+
+### Monitor Audio Input Device
+
+```cpp
+DeviceManager device_manager = DeviceManager::instance();
+TrackManager track_manager = TrackManager::instance();
+
+DeviceHandlePtr output_device = device_manager.get_default_audio_output_device();
+DeviceHandlePtr input_device = device_manager.get_default_audio_input_device();
+
+// Set audio output device
+track_manager.set_audio_output_device(output_device);
+
+// Create miniaudioengine Track
+TrackPtr track = track_manager.create_child_track();
+
+// Set audio device input to track
+track->add_audio_input(input_device);
+
+// Play track. Monitors audio input and routes it to audio output
+track->play();
+// ...
+track->stop();
 ```
 
 <div style="page-break-after: always;"></div>
@@ -496,5 +464,3 @@ package "Public / CLI / Examples (Layer 4)" #lightgray {
 <div style="page-break-after: always;"></div>
 
 # Conclusion
-
----
