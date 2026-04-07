@@ -1,10 +1,16 @@
-# Software Design Description - miniaudioengine
+<style>
+@page { @bottom-center { content: counter(page); } }
+</style>
+
+# Software Design Description
+
+**miniaudioengine**
 
 <div style="page-break-after: always;"></div>
 
 ## Table of Contents
 
-- [Software Design Description - miniaudioengine](#software-design-description---miniaudioengine)
+- [Software Design Description](#software-design-description)
   - [Table of Contents](#table-of-contents)
   - [1 Introduction](#1-introduction)
   - [2 Stakeholders and Design Concerns](#2-stakeholders-and-design-concerns)
