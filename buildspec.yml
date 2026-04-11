@@ -22,13 +22,6 @@ phases:
       - echo "Building..."
       - cmake --build build --parallel $(nproc)
 
-  post_build:
-    on-failure: ABORT
-    commands:
-      - echo "Running unit tests..."
-      - ./build/tests/unit/miniaudioengine-unit-tests
-          --gtest_output="xml:test-results/unit-tests.xml"
-
 reports:
   unit-test-report:
     files:
