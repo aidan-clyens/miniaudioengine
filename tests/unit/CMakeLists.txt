@@ -24,17 +24,11 @@ target_link_libraries(miniaudioengine-unit-tests PRIVATE
 
 target_link_options(miniaudioengine-unit-tests PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/WHOLEARCHIVE:miniaudioengine-unit-test-framework>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:miniaudioengine-unit-test-framework>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--no-whole-archive>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive,$<TARGET_FILE:miniaudioengine-unit-test-framework>,--no-whole-archive>
   $<$<CXX_COMPILER_ID:MSVC>:/WHOLEARCHIVE:miniaudioengine-unit-test-control>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:miniaudioengine-unit-test-control>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--no-whole-archive>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive,$<TARGET_FILE:miniaudioengine-unit-test-control>,--no-whole-archive>
   $<$<CXX_COMPILER_ID:MSVC>:/WHOLEARCHIVE:miniaudioengine-unit-test-data>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:miniaudioengine-unit-test-data>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--no-whole-archive>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive,$<TARGET_FILE:miniaudioengine-unit-test-data>,--no-whole-archive>
 )
 
 include(GoogleTest)
