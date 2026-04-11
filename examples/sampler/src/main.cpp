@@ -188,7 +188,7 @@ private:
 /** @brief Main entry point for the sampler application.
  *  @return Exit code.
  */
-int main()
+int main(int argc, char* argv[])
 {
   // Register exit signal handler (Ctrl+C)
   std::signal(SIGINT, [](int)
@@ -279,7 +279,7 @@ int main()
   };
 
   CLI cli("MiniAudioEngine Sampler", "A simple audio sampler application.", "1.0.0", commands);
-  cli.parse_command_line_arguments(__argc, __argv);
+  cli.parse_command_line_arguments(argc, argv);
 
   auto wav_files = app.list_samples(SAMPLE_FOLDER);
   eMidiNoteValues note = eMidiNoteValues::C_4;
