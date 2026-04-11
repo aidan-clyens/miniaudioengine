@@ -1,0 +1,148 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  CloudFormation stack for the miniaudioengine CI/CD pipeline.
+  Provisions an IAM service role and a CodeBuild project that builds
+  the project inside the project's custom ARM Docker image from GHCR.
+
+# ---------------------------------------------------------------------------
+# Parameters
+# ---------------------------------------------------------------------------
+Parameters:
+  ProjectName:
+    Type: String
+    Default: miniaudioengine
+    Description: Name used for the CodeBuild project and related resources.
+
+  GitHubRepoUrl:
+    Type: String
+    Default: https://github.com/aidan-clyens/miniaudioengine.git
+    Description: HTTPS URL of the GitHub source repository.
+
+  GitHubBranch:
+    Type: String
+    Default: main
+    Description: Branch to build.
+
+  BuildImage:
+    Type: String
+    Default: >-
+      ghcr.io/aidan-clyens/miniaudioengine-dev:latest@sha256:695c1a412aadcbb8b1357bfccbfa6ad05790a2b8d5304f1d1d6bc60a82d94432
+    Description: >
+      Fully-qualified GHCR image reference (including digest) used as the
+      CodeBuild build environment.
+
+  ComputeType:
+    Type: String
+    Default: BUILD_GENERAL1_SMALL
+    AllowedValues:
+      - BUILD_GENERAL1_SMALL
+      - BUILD_GENERAL1_MEDIUM
+      - BUILD_GENERAL1_LARGE
+    Description: CodeBuild compute type for the ARM container.
+
+# ---------------------------------------------------------------------------
+# Resources
+# ---------------------------------------------------------------------------
+Resources:
+
+  # ── IAM Role ──────────────────────────────────────────────────────────────
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-codebuild-service-role"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      Policies:
+        - PolicyName: CodeBuildBasePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              # CloudWatch Logs – write build logs
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectName}"
+                  - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectName}:*"
+              # CodeBuild – report groups (optional, needed for test reports)
+              - Effect: Allow
+                Action:
+                  - codebuild:CreateReportGroup
+                  - codebuild:CreateReport
+                  - codebuild:UpdateReport
+                  - codebuild:BatchPutTestCases
+                  - codebuild:BatchPutCodeCoverages
+                Resource:
+                  - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${ProjectName}-*"
+
+  # ── CodeBuild Project ─────────────────────────────────────────────────────
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Ref ProjectName
+      Description: Builds and tests miniaudioengine using the project's custom ARM Docker image.
+      ServiceRole: !GetAtt CodeBuildServiceRole.Arn
+
+      Source:
+        Type: GITHUB
+        Location: !Ref GitHubRepoUrl
+        BuildSpec: buildspec.yml
+        Auth:
+          Type: OAUTH
+
+      Triggers:
+        Webhook: false   # Set to true to enable automatic builds on push.
+
+      Environment:
+        Type: ARM_CONTAINER
+        ComputeType: !Ref ComputeType
+        Image: !Ref BuildImage
+        ImagePullCredentialsType: SERVICE_ROLE
+        PrivilegedMode: false
+        EnvironmentVariables: []
+
+      Artifacts:
+        Type: NO_ARTIFACTS
+
+      LogsConfig:
+        CloudWatchLogs:
+          Status: ENABLED
+          GroupName: !Sub "/aws/codebuild/${ProjectName}"
+
+      TimeoutInMinutes: 30
+      QueuedTimeoutInMinutes: 60
+
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
+# ---------------------------------------------------------------------------
+# Outputs
+# ---------------------------------------------------------------------------
+Outputs:
+  CodeBuildProjectName:
+    Description: Name of the CodeBuild project.
+    Value: !Ref CodeBuildProject
+    Export:
+      Name: !Sub "${ProjectName}-CodeBuildProjectName"
+
+  CodeBuildProjectArn:
+    Description: ARN of the CodeBuild project.
+    Value: !GetAtt CodeBuildProject.Arn
+    Export:
+      Name: !Sub "${ProjectName}-CodeBuildProjectArn"
+
+  CodeBuildServiceRoleArn:
+    Description: ARN of the IAM service role used by CodeBuild.
+    Value: !GetAtt CodeBuildServiceRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-CodeBuildServiceRoleArn"

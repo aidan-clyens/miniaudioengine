@@ -1,0 +1,41 @@
+version: 0.2
+
+phases:
+  install:
+    on-failure: ABORT
+    commands:
+      # The build image already contains all system dependencies.
+      # Nothing extra to install at this stage.
+      - echo "Build environment ready"
+
+  pre_build:
+    on-failure: ABORT
+    commands:
+      - echo "Configuring CMake..."
+      - cmake -S . -B build
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+  build:
+    on-failure: ABORT
+    commands:
+      - echo "Building..."
+      - cmake --build build --parallel $(nproc)
+
+  post_build:
+    on-failure: ABORT
+    commands:
+      - echo "Running unit tests..."
+      - ./build/tests/unit/miniaudioengine-unit-tests
+          --gtest_output="xml:test-results/unit-tests.xml"
+
+reports:
+  unit-test-report:
+    files:
+      - "test-results/unit-tests.xml"
+    file-format: JUNITXML
+
+artifacts:
+  files:
+    - build/src/**/*
+  discard-paths: no
