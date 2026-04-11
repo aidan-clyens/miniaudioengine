@@ -14,4 +14,7 @@ target_link_libraries(
     processor-audio
     processor-sampleplayer
     cli
+    rtaudio
+    rtmidi
+    sndfile
 )

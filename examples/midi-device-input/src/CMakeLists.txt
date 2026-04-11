@@ -9,6 +9,9 @@ target_link_libraries(
   trackmanager
   devicemanager
   cli
+  rtaudio
+  rtmidi
+  sndfile
 )
 
 target_compile_definitions(

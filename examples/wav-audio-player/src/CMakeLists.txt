@@ -10,4 +10,7 @@ target_link_libraries(
   devicemanager
   filemanager
   cli
+  rtaudio
+  rtmidi
+  sndfile
 )
