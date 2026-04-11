@@ -167,10 +167,9 @@ graph TD
 
     DeviceManager
 
-    DeviceManager --> D1["AudioDevice"]
-    DeviceManager --> D2["AudioDevice"]
-    DeviceManager --> D3["MidiDevice"]
-    DeviceManager --> D4("...")
+    DeviceManager --> D1["DeviceHandle"]
+    DeviceManager --> D2["DeviceHandle"]
+    DeviceManager --> D3["DeviceHandle"]
 ```
 
 #### 3.2.3 File Manager
@@ -180,10 +179,9 @@ graph TD
 
     FileManager
 
-    FileManager --> D1["AudioFile"]
-    FileManager --> D2["AudioFile"]
-    FileManager --> D3["MidiFile"]
-    FileManager --> D4("...")
+    FileManager --> D1["FileHandle"]
+    FileManager --> D2["FileHandle"]
+    FileManager --> D3["FileHandle"]
 ```
 
 #### 3.2.4 Track Manager
@@ -197,7 +195,6 @@ graph TD
     MainTrack --> T1["Track"]
     MainTrack --> T2["Track"]
     MainTrack --> T3["Track"]
-    MainTrack --> T4["..."]
 ```
 
 <div style="page-break-after: always;"></div>
@@ -372,19 +369,27 @@ flowchart LR
 classDiagram
 
     class DeviceHandle {
-
+        +get_id() unsigned int
+        +get_name() string
+        +get_device_type() eDeviceType
+        +is_input() bool
+        +is_output() bool
+        +is_default_input() bool
+        +is_default_output() bool
+        +get_output_channels() unsigned int
+        +get_input_channels() unsigned int
+        +get_sample_rates() vector~unsigned int~
+        +get_preferred_sample_rate() unsigned int
+        +to_string() string
     }
 
-    class AudioDevice {
-
+    class eDeviceType {
+        <<enumeration>>
+        Audio
+        Midi
     }
 
-    class MidiDevice {
-
-    }
-
-    AudioDevice --|> DeviceHandle
-    MidiDevice --|> DeviceHandle
+    DeviceHandle --> eDeviceType : device_type
 ```
 
 #### 3.5.2 Files
@@ -393,19 +398,26 @@ classDiagram
 classDiagram
 
     class FileHandle {
-
+        +get_file_type() eFileType
+        +get_filepath() path
+        +get_filename() string
+        +get_total_frames() unsigned int
+        +get_sample_rate() unsigned int
+        +get_channels() unsigned int
+        +get_duration_seconds() double
+        +get_format_string() string
+        +read_frames(vector~float~, long long) long long
+        +seek(long long)
+        +to_string() string
     }
 
-    class AudioFile {
-
+    class eFileType {
+        <<enumeration>>
+        Wav
+        Midi
     }
 
-    class MidiFile {
-
-    }
-
-    AudioFile --|> FileHandle
-    MidiFile --|> FileHandle
+    FileHandle --> eFileType : file_type
 ```
 
 #### 3.5.3 Tracks
@@ -414,8 +426,64 @@ classDiagram
 classDiagram
 
     class Track {
-
+        +play() bool
+        +stop() bool
+        +is_playing() bool
+        +is_main_track() bool
+        +has_parent() bool
+        +has_audio_input() bool
+        +has_midi_input() bool
+        +add_audio_input(SourceVariant)
+        +add_midi_input(MidiIOVariant)
+        +remove_audio_input()
+        +remove_midi_input()
+        +add_audio_processor(IAudioProcessor)
+        +add_child_track(TrackPtr)
+        +remove_child_track(TrackPtr)
+        +get_parent() TrackPtr
+        +get_children() vector~TrackPtr~
+        +set_output_gain(float)
+        +get_output_gain() float
+        +enable_output(bool)
+        +is_output_enabled() bool
+        +get_audio_dataplane() AudioDataPlanePtr
+        +get_midi_dataplane() MidiDataPlanePtr
+        +get_statistics() TrackStatistics
+        +set_event_callback(TrackEventCallback)
+        +set_midi_note_on_callback(MidiNoteOnCallbackFunc)
+        +set_midi_note_off_callback(MidiNoteOffCallbackFunc)
+        +set_midi_control_change_callback(MidiControlCallbackFunc)
+        #p_audio_dataplane AudioDataPlanePtr
+        #p_midi_dataplane MidiDataPlanePtr
+        #m_audio_input SourceVariant
+        #m_midi_input MidiIOVariant
+        #m_output_gain float
+        #m_output_enabled bool
+        #m_is_main_track bool
+        #m_parent weak_ptr~Track~
+        #m_children vector~TrackPtr~
     }
+
+    class MainTrack {
+        +set_audio_output_device(DeviceHandlePtr)
+        +open_midi_input_port(DeviceHandlePtr)
+        +register_audio_dataplane(AudioDataPlanePtr)
+        +register_midi_dataplane(MidiDataPlanePtr)
+        +start() bool
+        +stop() bool
+        +is_playing() bool
+        -p_audio_output_device DeviceHandlePtr
+        -p_audio_controller AudioControllerPtr
+        -p_midi_controller MidiControllerPtr
+    }
+
+    class eTrackEvent {
+        <<enumeration>>
+        PlaybackFinished
+    }
+
+    MainTrack --|> Track
+    Track --> eTrackEvent
 ```
 
 <div style="page-break-after: always;"></div>
@@ -477,21 +545,69 @@ sequenceDiagram
     participant App
     participant Track
     participant MainTrack
-    participant AudioController (INPUT)
-    participant AudioController (OUTPUT)
+    participant AudioController
+    participant RtAudio
 
-    App->>Track: Play
-    Track->>AudioController (INPUT): Open input device/file
-    Track->>MainTrack: Play
-    MainTrack->>AudioController (OUTPUT): Open output device/file
+    App->>Track: play()
 
-    App->>Track: Stop
-    Track->>AudioController (INPUT): Close input device/file
-    Track->>MainTrack: Stop
-    MainTrack->>AudioController (OUTPUT): Close input device/file
+    opt File source
+        Track->>Track: AudioDataPlane.preload_wav_file()
+    end
+    Track->>Track: AudioDataPlane.start()
+    Track->>MainTrack: register_audio_dataplane(AudioDataPlane)
+    Track->>MainTrack: start()
+    MainTrack->>AudioController: start()
+    AudioController->>AudioController: validate_start_preconditions()
+    AudioController->>AudioController: register_dataplanes() → active_tracks
+    AudioController->>RtAudio: openStream(output device)
+    AudioController->>RtAudio: startStream()
+
+    App->>Track: stop()
+    Track->>Track: AudioDataPlane.stop()
+    Track->>MainTrack: stop()
+    MainTrack->>AudioController: stop()
+    AudioController->>RtAudio: stopStream()
+    AudioController->>RtAudio: closeStream()
+    AudioController->>AudioController: clear_registered_dataplanes()
 ```
 
 **Data Plane**
+
+```mermaid
+sequenceDiagram
+
+    participant RtAudio
+    participant MainTrack
+    participant Track
+    participant AudioDataPlane_IN as AudioDataPlane (INPUT)
+    participant AudioDataPlane_OUT as AudioDataPlane (OUTPUT)
+
+    Note over RtAudio,AudioDataPlane_OUT: Real-time callback thread — fires every n_frames / sample_rate seconds
+
+    RtAudio->>MainTrack: audio_callback(output_buffer, input_buffer, n_frames)
+    MainTrack->>AudioDataPlane_OUT: Zero output_buffer
+
+    loop For each registered Track
+        MainTrack->>Track: process_audio(input_buffer, n_frames)
+        Track->>AudioDataPlane_IN: prepare_output_buffer(n_frames)
+
+        alt Live device input (input_buffer != nullptr)
+            AudioDataPlane_IN->>AudioDataPlane_IN: Copy input_buffer → m_output_buffer
+        else Preloaded file input
+            AudioDataPlane_IN->>AudioDataPlane_IN: Read preloaded_frames_buffer at read_position
+            AudioDataPlane_IN->>AudioDataPlane_IN: Advance read_position += n_frames
+        end
+
+        loop For each non-bypassed processor
+            AudioDataPlane_IN->>AudioDataPlane_IN: processor.process_audio(m_output_buffer)
+        end
+
+        Track-->>MainTrack: m_output_buffer
+        MainTrack->>AudioDataPlane_OUT: Mix m_output_buffer into output_buffer (× gain)
+    end
+
+    MainTrack-->>RtAudio: return 0 (success)
+```
 
 <div style="page-break-after: always;"></div>
 
@@ -506,7 +622,6 @@ sequenceDiagram
     participant MainTrack
     participant Track
     participant MidiController (INPUT)
-    participant AudioController (OUTPUT)
 
     App->>Track: Set MIDI Handler
 
@@ -514,13 +629,11 @@ sequenceDiagram
     MainTrack->>Track: Play
 
     Track->>MidiController (INPUT): Open input device/file
-    MainTrack->>AudioController (OUTPUT): Open output device/file
 
     App->>MainTrack: Stop
     MainTrack->>Track: Stop
 
     Track->>MidiController (INPUT): Close input device/file
-    MainTrack->>AudioController (OUTPUT): Close input device/file
 ```
 
 <div style="page-break-after: always;"></div>
@@ -563,10 +676,20 @@ vcpkg.json                  # Windows VCPKG dependencies
 
 ### 4.1 Architectural Design
 
+#### 4.1.1 Layered Architecture
+
+```mermaid
+graph TD
+    Public["3. Public"]
+    Control["2. Control"]
+    Data["1. Data"]
+    Hardware["0. Hardware"]
+
+    Public --> Control
+    Control --> Data
+    Data --> Hardware
+```
+
 #### 4.1.2 Track Hierarchy
-
-#### 4.1.3 Control Flow
-
-#### 4.1.4 Data Flow
 
 ### 4.2 External Libraries
