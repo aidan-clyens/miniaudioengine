@@ -115,12 +115,20 @@ std::vector<DeviceHandlePtr> AudioController::get_audio_devices()
   unsigned int device_count = m_rtaudio.getDeviceCount();
   devices.reserve(device_count);
 
+#if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
   std::vector<unsigned int> device_ids = m_rtaudio.getDeviceIds();
   for (const unsigned int id : device_ids)
   {
     RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(id);
     devices.push_back(make_device_handle(info, id));
   }
+#else
+  for (unsigned int i = 0; i < device_count; ++i)
+  {
+    RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(i);
+    devices.push_back(make_device_handle(info, i));
+  }
+#endif
 
   return devices;
 }
