@@ -19,19 +19,36 @@
   - [3 Design Views](#3-design-views)
     - [3.1 Context View](#31-context-view)
     - [3.2 Composition View](#32-composition-view)
+      - [3.2.1 miniaudioengine SDK](#321-miniaudioengine-sdk)
+      - [3.2.2 Device Manager](#322-device-manager)
+      - [3.2.3 File Manager](#323-file-manager)
+      - [3.2.4 Track Manager](#324-track-manager)
     - [3.3 Logical View](#33-logical-view)
       - [3.4.1 Monitor Input Device Flow](#341-monitor-input-device-flow)
       - [3.4.2 Open File Flow](#342-open-file-flow)
       - [3.4.3 Play to Output Device Flow](#343-play-to-output-device-flow)
-      - [3.4.4 Multiple Track Flow](#344-multiple-track-flow)
-      - [3.4.5 MIDI Message Flow](#345-midi-message-flow)
-      - [3.4.6 Audio Processing Flow](#346-audio-processing-flow)
+      - [3.4.4 MIDI Message Flow](#344-midi-message-flow)
+      - [3.4.5 Audio Processing Flow](#345-audio-processing-flow)
+      - [3.4.6 Multiple Track Flow](#346-multiple-track-flow)
     - [3.4 Dependency View](#34-dependency-view)
     - [3.5 Information View](#35-information-view)
+      - [3.5.1 Devices](#351-devices)
+      - [3.5.2 Files](#352-files)
+      - [3.5.3 Tracks](#353-tracks)
     - [3.6 Interface View](#36-interface-view)
+      - [3.6.1 Public SDK](#361-public-sdk)
+      - [3.6.2 Example Programs](#362-example-programs)
     - [3.7 Interaction View](#37-interaction-view)
+      - [3.7.1 Audio Input to Audio Output](#371-audio-input-to-audio-output)
+      - [3.7.3 MIDI Input Processing](#373-midi-input-processing)
     - [3.8 Structure View](#38-structure-view)
+      - [3.8.1 Project Structure](#381-project-structure)
   - [4 Design Rationale](#4-design-rationale)
+    - [4.1 Architectural Design](#41-architectural-design)
+      - [4.1.2 Track Hierarchy](#412-track-hierarchy)
+      - [4.1.3 Control Flow](#413-control-flow)
+      - [4.1.4 Data Flow](#414-data-flow)
+    - [4.2 External Libraries](#42-external-libraries)
 
 <div style="page-break-after: always;"></div>
 
@@ -123,8 +140,10 @@ Describe the composition of the **miniaudioengine** SDK software libraries.
 | **DC-17** | Package software as an SDK used by third-party software. |
 | **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. |
 
+#### 3.2.1 miniaudioengine SDK
+
 ```mermaid
-graph TD
+graph LR
 
     subgraph External["External Libraries"]
         RtAudio
@@ -139,6 +158,46 @@ graph TD
     end
 
     SDK -->|includes| External
+```
+
+#### 3.2.2 Device Manager
+
+```mermaid
+graph TD
+
+    DeviceManager
+
+    DeviceManager --> D1["AudioDevice"]
+    DeviceManager --> D2["AudioDevice"]
+    DeviceManager --> D3["MidiDevice"]
+    DeviceManager --> D4("...")
+```
+
+#### 3.2.3 File Manager
+
+```mermaid
+graph TD
+
+    FileManager
+
+    FileManager --> D1["AudioFile"]
+    FileManager --> D2["AudioFile"]
+    FileManager --> D3["MidiFile"]
+    FileManager --> D4("...")
+```
+
+#### 3.2.4 Track Manager
+
+```mermaid
+graph TD
+
+    TrackManager
+
+    TrackManager --> MainTrack
+    MainTrack --> T1["Track"]
+    MainTrack --> T2["Track"]
+    MainTrack --> T3["Track"]
+    MainTrack --> T4["..."]
 ```
 
 <div style="page-break-after: always;"></div>
@@ -205,14 +264,64 @@ flowchart LR
     Step3 -->|...| Step4
 ```
 
-#### 3.4.4 Multiple Track Flow
+#### 3.4.4 MIDI Message Flow
 
 | Design Concern | |
 | -- | -- |
-| **DC-09** | Manage multiple audio tracks.
-| **DC-10** | Add one audio or MIDI input to a track.
-| **DC-11** | Attach one audio or MIDI output to a track.
-| **DC-12** | Chain multiple audio processors in one track.
+| **DC-07** | Processing incoming MIDI messages.
+
+```mermaid
+flowchart TD
+
+    Step1["Get Input Devices"]
+    Step2["Select MIDI Input Device"]
+    Step3["Select Audio Output Device"]
+    Step4["Set MIDI Input Message Handler"]
+    Step5["Play"]
+    Step6["Stop"]
+
+    Step1 --> Step2
+    Step2 --> Step3
+    Step3 --> Step4
+    Step4 --> Step5
+    Step5 --> |...|Step6
+```
+
+<div style="page-break-after: always;"></div>
+
+#### 3.4.5 Audio Processing Flow
+
+| Design Concern | |
+| -- | -- |
+| **DC-08** | Processing incoming audio streams.
+
+```mermaid
+flowchart TD
+
+    Step1["Get Input Devices"]
+    Step2["Select Audio Input Device/File"]
+    Step3["Select Audio Output Device"]
+    Step4["Set Audio Input Processor"]
+    Step5["Play"]
+    Step6["Stop"]
+
+    Step1 --> Step2
+    Step2 --> Step3
+    Step3 --> Step4
+    Step4 --> Step5
+    Step5 --> |...|Step6
+```
+
+<div style="page-break-after: always;"></div>
+
+#### 3.4.6 Multiple Track Flow
+
+| Design Concern |                                               |
+| -------------- | --------------------------------------------- |
+| **DC-09**      | Manage multiple audio tracks.                 |
+| **DC-10**      | Add one audio or MIDI input to a track.       |
+| **DC-11**      | Attach one audio or MIDI output to a track.   |
+| **DC-12**      | Chain multiple audio processors in one track. |
 
 ```mermaid
 flowchart LR
@@ -223,36 +332,241 @@ flowchart LR
         Step3["Select Output Device"]
     end
 
+    subgraph Track2["Track"]
+        Step12["Create Track"]
+        Step22["Select Input Device / File"]
+        Step32["Select Output Device"]
+    end
+
+    J((" "))
+
     Step4["Play"]
     Step5["Stop"]
 
     Step1 --> Step2
     Step1 --> Step3
-    Step2 --> Step4
-    Step3 --> Step4
     Step4 -->|...| Step5
+
+    Step12 --> Step22 
+    Step12 --> Step32
+
+    Step2 --> J
+    Step3 --> J
+    Step22 --> J
+    Step32 --> J
+
+    J --> Step4
 ```
 
-#### 3.4.5 MIDI Message Flow
-
-| Design Concern | |
-| -- | -- |
-| **DC-07** | Processing incoming MIDI messages.
-
-#### 3.4.6 Audio Processing Flow
-
-| Design Concern | |
-| -- | -- |
-| **DC-08** | Processing incoming audio streams.
+<div style="page-break-after: always;"></div>
 
 ### 3.4 Dependency View
 
+<div style="page-break-after: always;"></div>
+
 ### 3.5 Information View
+
+#### 3.5.1 Devices
+
+```mermaid
+classDiagram
+
+    class DeviceHandle {
+
+    }
+
+    class AudioDevice {
+
+    }
+
+    class MidiDevice {
+
+    }
+
+    AudioDevice --|> DeviceHandle
+    MidiDevice --|> DeviceHandle
+```
+
+#### 3.5.2 Files
+
+```mermaid
+classDiagram
+
+    class FileHandle {
+
+    }
+
+    class AudioFile {
+
+    }
+
+    class MidiFile {
+
+    }
+
+    AudioFile --|> FileHandle
+    MidiFile --|> FileHandle
+```
+
+#### 3.5.3 Tracks
+
+```mermaid
+classDiagram
+
+    class Track {
+
+    }
+```
+
+<div style="page-break-after: always;"></div>
 
 ### 3.6 Interface View
 
+#### 3.6.1 Public SDK
+
+```C++
+// miniaudioengine.h
+
+// Types
+using DeviceHandlePtr = std::shared_ptr<DeviceHandle>;
+using FileHandlePtr = std::shared_ptr<FileHandle>;
+using TrackPtr = std::shared_ptr<Track>;
+
+// Playback
+bool miniaudioengine::play();
+bool miniaudioengine::record();
+bool miniaudioengine::stop();
+bool miniaudioengine::is_running();
+
+// Devices
+std::shared_ptr<DeviceManager> miniaudioengine::get_device_manager();
+std::vector<DeviceHandlePtr> miniaudioengine::get_audio_devices();
+std::vector<DeviceHandlePtr> miniaudioengine::get_midi_devices();
+bool miniaudioengine::set_output_device(DeviceHandlePtr device);
+bool miniaudioengine::set_input_device(DeviceHandlePtr device);
+
+// Files
+std::shared_ptr<FileManager> miniaudioengine::get_file_manager();
+std::vector<FileHandlePtr> miniaudioengine::get_audio_files(const std::filesystem::path &directory);
+std::vector<FileHandlePtr> miniaudioengine::get_wav_files(const std::filesystem::path &directory);
+bool miniaudioengine::set_input_file(FileHandlePtr device);
+
+// Tracks
+std::shared_ptr<TrackManager> miniaudioengine::get_track_manager();
+std::vector<TrackPtr> miniaudioengine::get_tracks();
+TrackPtr miniaudioengine::add_track();
+bool miniaudioengine::remove_track(TrackPtr track);
+bool miniaudioengine::clear_tracks();
+```
+
+<div style="page-break-after: always;"></div>
+
+#### 3.6.2 Example Programs
+
+<div style="page-break-after: always;"></div>
+
 ### 3.7 Interaction View
+
+#### 3.7.1 Audio Input to Audio Output
+
+**Control Plane**
+
+```mermaid
+sequenceDiagram
+
+    participant App
+    participant Track
+    participant MainTrack
+    participant AudioController (INPUT)
+    participant AudioController (OUTPUT)
+
+    App->>Track: Play
+    Track->>AudioController (INPUT): Open input device/file
+    Track->>MainTrack: Play
+    MainTrack->>AudioController (OUTPUT): Open output device/file
+
+    App->>Track: Stop
+    Track->>AudioController (INPUT): Close input device/file
+    Track->>MainTrack: Stop
+    MainTrack->>AudioController (OUTPUT): Close input device/file
+```
+
+**Data Plane**
+
+<div style="page-break-after: always;"></div>
+
+#### 3.7.3 MIDI Input Processing
+
+**Control Plane**
+
+```mermaid
+sequenceDiagram
+
+    participant App
+    participant MainTrack
+    participant Track
+    participant MidiController (INPUT)
+    participant AudioController (OUTPUT)
+
+    App->>Track: Set MIDI Handler
+
+    App->>MainTrack: Play
+    MainTrack->>Track: Play
+
+    Track->>MidiController (INPUT): Open input device/file
+    MainTrack->>AudioController (OUTPUT): Open output device/file
+
+    App->>MainTrack: Stop
+    MainTrack->>Track: Stop
+
+    Track->>MidiController (INPUT): Close input device/file
+    MainTrack->>AudioController (OUTPUT): Close input device/file
+```
+
+<div style="page-break-after: always;"></div>
 
 ### 3.8 Structure View
 
+#### 3.8.1 Project Structure
+
+```bash
+cmake/
+    miniaudioengine-config.cmake.in
+docker/
+    docker-build.sh
+    docker-run.sh
+    docker-setup.sh
+    docker-exec.sh
+docs/
+examples/                   # Example programs using miniaudioengine SDK
+samples/
+include/
+    miniaudioengine/
+        miniaudioengine.h   # Public facing SDK
+src/
+    framework/              # Internal, core shared library
+        audio/
+        midi/
+    devices/
+    files/
+    tracks/
+tests/
+CMakeLists.txt              # CMake instructions
+CMakePresets.json           # CMake presets
+Dockerfile                  # Build Docker image for build environment
+vcpkg.json                  # Windows VCPKG dependencies
+```
+
+<div style="page-break-after: always;"></div>
+
 ## 4 Design Rationale
+
+### 4.1 Architectural Design
+
+#### 4.1.2 Track Hierarchy
+
+#### 4.1.3 Control Flow
+
+#### 4.1.4 Data Flow
+
+### 4.2 External Libraries
