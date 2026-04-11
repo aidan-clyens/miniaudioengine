@@ -1,12 +1,15 @@
 #ifndef __AUDIO_CALLBACK_HANDLER_H__
 #define __AUDIO_CALLBACK_HANDLER_H__
 
+#include <memory>
+#include <vector>
+
 #include <rtaudio/RtAudio.h>
+
+#include "audiodataplane.h"
 
 namespace miniaudioengine::core
 {
-// Forward declaration
-typedef std::shared_ptr<class AudioDataPlane> AudioDataPlanePtr;
 
 struct AudioCallbackContext
 {
