@@ -171,6 +171,7 @@ bool AudioController::_start()
             ", Sample Rate: ", sample_rate,
             ", Buffer Frames: ", buffer_frames);
 
+#if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
   RtAudioErrorType rc;
   rc = m_rtaudio.openStream(&params,
                             nullptr,
@@ -192,6 +193,24 @@ bool AudioController::_start()
     LOG_ERROR("AudioController: Failed to start RtAudio stream.");
     return false;
   }
+#else
+  try
+  {
+    m_rtaudio.openStream(&params,
+                         nullptr,
+                         RTAUDIO_FLOAT32,
+                         sample_rate,
+                         &buffer_frames,
+                         &AudioCallbackHandler::audio_callback,
+                         m_callback_context.get());
+    m_rtaudio.startStream();
+  }
+  catch (const RtAudioError &e)
+  {
+    LOG_ERROR("AudioController: Failed to open/start RtAudio stream: ", e.getMessage());
+    return false;
+  }
+#endif
 
   LOG_DEBUG("AudioController: RtAudio stream Started with output device ", device->get_name());
   m_stream_state = eStreamState::Playing;
@@ -210,12 +229,24 @@ bool AudioController::_stop()
   // If stream is running, stop it
   if (m_rtaudio.isStreamRunning())
   {
+#if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
     RtAudioErrorType rc = m_rtaudio.stopStream();
     if (rc != RTAUDIO_NO_ERROR)
     {
       LOG_ERROR("AudioController: Failed to stop RtAudio stream.");
       return false;
     }
+#else
+    try
+    {
+      m_rtaudio.stopStream();
+    }
+    catch (const RtAudioError &e)
+    {
+      LOG_ERROR("AudioController: Failed to stop RtAudio stream: ", e.getMessage());
+      return false;
+    }
+#endif
   }
 
   // If stream is open, close it
