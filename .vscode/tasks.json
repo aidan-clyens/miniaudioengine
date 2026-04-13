@@ -68,12 +68,21 @@
             }
         },
         {
-            "label": "AWS: Monitor Instance",
+            "label": "sam: build and deploy",
             "type": "shell",
-            "command": "aws ec2 monitor-instances --instance-ids i-00b5319ac43a780e6",
-            "windows": {
-                "command": "aws ec2 monitor-instances --instance-ids i-00b5319ac43a780e6"
-            }
+            "command": "sam build; sam deploy",
+            "group": "build"
+        },
+        {
+            "label": "sam: list stack outputs",
+            "type": "shell",
+            "command": "sam list stack-outputs --stack-name miniaudioengine"
+        },
+        {
+            "label": "aws: start build",
+            "type": "shell",
+            "command": "aws codebuild start-build --project-name miniaudioengine",
+            "group": "build"
         }
     ]
 }
