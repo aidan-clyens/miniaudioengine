@@ -48,6 +48,12 @@
             }
         },
         {
+            "label": "aws: start build",
+            "type": "shell",
+            "command": "aws codebuild start-build --project-name miniaudioengine",
+            "group": "build"
+        },
+        {
             "label": "sam: build and deploy",
             "type": "shell",
             "command": "sam build; sam deploy",
