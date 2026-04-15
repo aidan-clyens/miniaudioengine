@@ -13,7 +13,7 @@ protected:
   {
     m_track_manager.clear_tracks();
     m_track_manager.set_audio_output_device(
-        DeviceManager::instance().get_default_audio_output_device());
+        DeviceService::instance().get_default_audio_output_device());
   }
 
   void TearDown() override

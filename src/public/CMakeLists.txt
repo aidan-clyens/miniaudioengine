@@ -1,4 +1,4 @@
 add_subdirectory(cli)
 add_subdirectory(trackmanager)
-add_subdirectory(devicemanager)
+add_subdirectory(deviceservice)
 add_subdirectory(filemanager)

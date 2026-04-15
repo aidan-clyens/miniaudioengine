@@ -6,7 +6,7 @@
 #include "logger.h"
 // miniaudioengine::control
 #include "miniaudioengine/trackmanager.h"
-#include "miniaudioengine/devicemanager.h"
+#include "miniaudioengine/deviceservice.h"
 #include "miniaudioengine/track.h"
 #include "audiocontroller.h"
 #include "miniaudioengine/filemanager.h"
@@ -61,7 +61,7 @@ TEST_F(TrackTest, Action1_Setup)
 TEST_F(TrackTest, Action2_AddAudioInputDevice)
 {
   // Find a valid audio input device
-  auto device = DeviceManager::instance().get_default_audio_input_device();
+  auto device = DeviceService::instance().get_default_audio_input_device();
   EXPECT_NE(device, nullptr) << "No audio input device found for testing";
   LOG_INFO("Adding audio input device: " + device->to_string());
 
@@ -78,7 +78,7 @@ TEST_F(TrackTest, Action2_AddAudioInputDevice)
  */
 TEST_F(TrackTest, Action3_RemoveAudioInputDevice)
 {
-  test_track->add_audio_input(DeviceManager::instance().get_default_audio_input_device());
+  test_track->add_audio_input(DeviceService::instance().get_default_audio_input_device());
 
   // Verify the track has an audio input
   EXPECT_TRUE(test_track->has_audio_input()) << "Track should have audio input before removal";
@@ -131,7 +131,7 @@ TEST_F(TrackTest, Action5_RemoveAudioInputFile)
 TEST_F(TrackTest, Action6_AddAudioInput_InvalidDevice)
 {
   // Get an output device to trigger invalid input
-  auto output_device = DeviceManager::instance().get_default_audio_output_device();
+  auto output_device = DeviceService::instance().get_default_audio_output_device();
   try
   {
     test_track->add_audio_input(output_device);
@@ -155,7 +155,7 @@ TEST_F(TrackTest, Action6_AddAudioInput_InvalidDevice)
 TEST_F(TrackTest, Action7_AddMidiInputDevice)
 {
   // Find a valid MIDI input device
-  auto device = DeviceManager::instance().get_default_midi_input_device();
+  auto device = DeviceService::instance().get_default_midi_input_device();
   EXPECT_NE(device, nullptr) << "No MIDI input device found for testing";
   LOG_INFO("Adding MIDI input device: " + device->to_string());
 
@@ -172,7 +172,7 @@ TEST_F(TrackTest, Action7_AddMidiInputDevice)
  */
 TEST_F(TrackTest, Action8_RemoveMidiInputDevice)
 {
-  test_track->add_midi_input(DeviceManager::instance().get_default_midi_input_device());
+  test_track->add_midi_input(DeviceService::instance().get_default_midi_input_device());
 
   // Verify the track has a MIDI input
   EXPECT_TRUE(test_track->has_midi_input()) << "Track should have MIDI input before removal";
@@ -189,7 +189,7 @@ TEST_F(TrackTest, Action8_RemoveMidiInputDevice)
  */
 TEST_F(TrackTest, Action9_AddMidiOutput) {
   // Find a valid MIDI output device
-  auto device = DeviceManager::instance().get_default_midi_output_device();
+  auto device = DeviceService::instance().get_default_midi_output_device();
   EXPECT_NE(device, nullptr) << "No MIDI output device found for testing";
   LOG_INFO("Adding MIDI output device: " + device->to_string());
 
@@ -206,7 +206,7 @@ TEST_F(TrackTest, Action9_AddMidiOutput) {
  */
 TEST_F(TrackTest, Action10_RemoveMidiOutput)
 {
-  test_track->add_midi_output(DeviceManager::instance().get_default_midi_output_device());
+  test_track->add_midi_output(DeviceService::instance().get_default_midi_output_device());
 
   // Verify the track has a MIDI output
   EXPECT_TRUE(test_track->has_midi_output()) << "Track should have MIDI output before removal";
@@ -222,7 +222,7 @@ TEST_F(TrackTest, Action10_RemoveMidiOutput)
 TEST_F(TrackTest, Action11_PlayWavFileInput)
 {
   // Add audio output
-  auto output_device = DeviceManager::instance().get_default_audio_output_device();
+  auto output_device = DeviceService::instance().get_default_audio_output_device();
   EXPECT_NE(output_device, nullptr) << "No audio output device found for testing";
 
   TrackManager::instance().set_audio_output_device(output_device);
@@ -258,7 +258,7 @@ TEST_F(TrackTest, Action12_PlayMidiDeviceInput)
   // It will open the device, start playback, and log incoming MIDI messages for 10 seconds.
 
   // Add MIDI input device
-  auto midi_input_device = DeviceManager::instance().get_default_midi_input_device();
+  auto midi_input_device = DeviceService::instance().get_default_midi_input_device();
   EXPECT_NE(midi_input_device, nullptr) << "No MIDI input device found for testing";
 
   test_track->add_midi_input(midi_input_device);

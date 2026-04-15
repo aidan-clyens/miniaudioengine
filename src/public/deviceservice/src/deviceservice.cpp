@@ -1,16 +1,16 @@
-#include "miniaudioengine/devicemanager.h"
+#include "miniaudioengine/deviceservice.h"
 #include "devicehandle_factory.h"
 
 using namespace miniaudioengine;
 using namespace miniaudioengine::audio;
 using namespace miniaudioengine::midi;
 
-std::vector<DeviceHandlePtr> DeviceManager::get_audio_devices() const
+std::vector<DeviceHandlePtr> DeviceService::get_audio_devices() const
 {
   return p_audio_controller->get_audio_devices();
 }
 
-DeviceHandlePtr DeviceManager::get_audio_device(const unsigned int id) const
+DeviceHandlePtr DeviceService::get_audio_device(const unsigned int id) const
 {
   for (const auto& device : get_audio_devices())
   {
@@ -20,17 +20,17 @@ DeviceHandlePtr DeviceManager::get_audio_device(const unsigned int id) const
   throw std::out_of_range("Audio device with ID " + std::to_string(id) + " does not exist");
 }
 
-void DeviceManager::set_audio_controller(std::shared_ptr<audio::AudioController> controller)
+void DeviceService::set_audio_controller(std::shared_ptr<audio::AudioController> controller)
 {
   p_audio_controller = std::move(controller);
 }
 
-void DeviceManager::set_midi_controller(std::shared_ptr<midi::MidiController> controller)
+void DeviceService::set_midi_controller(std::shared_ptr<midi::MidiController> controller)
 {
   p_midi_controller = std::move(controller);
 }
 
-std::vector<DeviceHandlePtr> DeviceManager::get_midi_devices() const
+std::vector<DeviceHandlePtr> DeviceService::get_midi_devices() const
 {
   std::vector<DeviceHandlePtr> devices;
   for (const auto& port : p_midi_controller->get_ports())
@@ -44,7 +44,7 @@ std::vector<DeviceHandlePtr> DeviceManager::get_midi_devices() const
   return devices;
 }
 
-DeviceHandlePtr DeviceManager::get_midi_device(const unsigned int id) const
+DeviceHandlePtr DeviceService::get_midi_device(const unsigned int id) const
 {
   for (const auto& device : get_midi_devices())
   {
@@ -54,7 +54,7 @@ DeviceHandlePtr DeviceManager::get_midi_device(const unsigned int id) const
   throw std::out_of_range("MIDI device with ID " + std::to_string(id) + " does not exist");
 }
 
-DeviceHandlePtr DeviceManager::get_default_audio_input_device()
+DeviceHandlePtr DeviceService::get_default_audio_input_device()
 {
   for (const auto& dev : get_audio_devices())
   {
@@ -64,7 +64,7 @@ DeviceHandlePtr DeviceManager::get_default_audio_input_device()
   return nullptr;
 }
 
-DeviceHandlePtr DeviceManager::get_default_audio_output_device()
+DeviceHandlePtr DeviceService::get_default_audio_output_device()
 {
   for (const auto& dev : get_audio_devices())
   {
@@ -74,7 +74,7 @@ DeviceHandlePtr DeviceManager::get_default_audio_output_device()
   return nullptr;
 }
 
-DeviceHandlePtr DeviceManager::get_default_midi_input_device()
+DeviceHandlePtr DeviceService::get_default_midi_input_device()
 {
   for (const auto& dev : get_midi_devices())
   {
@@ -84,7 +84,7 @@ DeviceHandlePtr DeviceManager::get_default_midi_input_device()
   return nullptr;
 }
 
-DeviceHandlePtr DeviceManager::get_default_midi_output_device()
+DeviceHandlePtr DeviceService::get_default_midi_output_device()
 {
   for (const auto& dev : get_midi_devices())
   {

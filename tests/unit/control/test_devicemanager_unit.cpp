@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "miniaudioengine/devicemanager.h"
+#include "miniaudioengine/deviceservice.h"
 #include "logger.h"
 #include "audiocontroller_mock.h"
 
@@ -22,7 +22,7 @@ public:
     // This will run after each test
   }
 
-  DeviceManager &device_manager = DeviceManager::instance();
+  DeviceService &device_manager = DeviceService::instance();
 };
 
 TEST_F(DeviceManagerTest, Action1_GetAudioDevices)
@@ -105,7 +105,7 @@ TEST_F(DeviceManagerTest, Action6_GetMidiDeviceInvalid)
 class DeviceManagerMockTest : public ::testing::Test
 {
 protected:
-  DeviceManager &device_manager = DeviceManager::instance();
+  DeviceService &device_manager = DeviceService::instance();
 
   void SetUp() override
   {

@@ -23,7 +23,7 @@ target_include_directories(data-audio
 target_link_libraries(data-audio PUBLIC
   rtaudio
   core
-  devicemanager
+  deviceservice
   trackmanager
   processor-audio
 )

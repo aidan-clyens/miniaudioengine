@@ -29,5 +29,5 @@ target_link_libraries(trackmanager PUBLIC
   data-audio
   processor-audio
   filemanager
-  devicemanager
+  deviceservice
 )

@@ -7,7 +7,7 @@
 
 #include <logger.h>
 #include <miniaudioengine/cli.h>
-#include <miniaudioengine/devicemanager.h>
+#include <miniaudioengine/deviceservice.h>
 #include <miniaudioengine/trackmanager.h>
 #include <midicontroltypes.h>
 
@@ -44,7 +44,7 @@ static CommandList commands = {
     "List available MIDI input devices",
     [](const char *arg){
       LOG_INFO("Listing available MIDI input devices...");
-      auto midi_devices = DeviceManager::instance().get_midi_devices();
+      auto midi_devices = DeviceService::instance().get_midi_devices();
       for (const auto &device : midi_devices)
       {
         std::cout << device->to_string() << std::endl;
@@ -63,7 +63,7 @@ static CommandList commands = {
         return;
       }
       unsigned int device_id = std::stoi(arg);
-      auto midi_device = DeviceManager::instance().get_midi_device(device_id);
+      auto midi_device = DeviceService::instance().get_midi_device(device_id);
       if (midi_device->get_id() != device_id)
       {
         LOG_ERROR("MIDI input device with ID " + std::to_string(device_id) + " not found.");
@@ -121,8 +121,8 @@ int main(int argc, char* argv[])
 
   // Set default MIDI input device if none specified
   auto midi_input_device = (midi_input_device_id.has_value()) ?
-    DeviceManager::instance().get_midi_device(midi_input_device_id.value()) :
-    DeviceManager::instance().get_default_midi_input_device();
+    DeviceService::instance().get_midi_device(midi_input_device_id.value()) :
+    DeviceService::instance().get_default_midi_input_device();
 
   if (midi_input_device)
   {

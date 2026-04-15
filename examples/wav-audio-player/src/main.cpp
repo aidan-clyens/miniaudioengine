@@ -7,7 +7,7 @@
 #include <chrono>
 
 #include "miniaudioengine/trackmanager.h"
-#include "miniaudioengine/devicemanager.h"
+#include "miniaudioengine/deviceservice.h"
 #include "miniaudioengine/track.h"
 #include "miniaudioengine/filemanager.h"
 #include "miniaudioengine/cli.h"
@@ -31,7 +31,7 @@ static const std::vector<Command> commands = {
     input_file_path = std::string(arg);
   }),
   Command("--list-audio-devices", "-ld", "List available audio devices", [](const char *){
-    auto& device_manager = DeviceManager::instance();
+    auto& device_manager = DeviceService::instance();
     auto audio_devices = device_manager.get_audio_devices();
     std::cout << "Available Audio Devices:\n";
     for (const auto& device : audio_devices) {
@@ -41,7 +41,7 @@ static const std::vector<Command> commands = {
   }),
   Command("--set-audio-output", "-o", "Specify audio output device by ID", [](const char *arg){
     unsigned int device_id = std::stoi(arg);
-    auto& device_manager = DeviceManager::instance();
+    auto& device_manager = DeviceService::instance();
     auto audio_device = device_manager.get_audio_device(device_id);
     if (audio_device->get_id() != device_id) {
       std::cerr << "Error: No audio device found with ID " << device_id << ".\n";
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 
   // Resource managers
   TrackManager &track_manager = TrackManager::instance();
-  DeviceManager &device_manager = DeviceManager::instance();
+  DeviceService &device_manager = DeviceService::instance();
   FileManager &file_manager = FileManager::instance();
 
   if (input_file_path.has_value()) {

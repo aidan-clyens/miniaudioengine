@@ -7,7 +7,7 @@ target_link_libraries(
   ${PROJECT_NAME} PRIVATE
     core
     trackmanager
-    devicemanager
+    deviceservice
     filemanager
     control-midi
     data-midi

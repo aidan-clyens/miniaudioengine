@@ -90,7 +90,7 @@ install(
         processor-audio
         trackmanager
         filemanager
-        devicemanager
+        deviceservice
         core
         cli
     EXPORT miniaudioengine-targets

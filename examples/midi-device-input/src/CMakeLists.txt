@@ -7,7 +7,7 @@ target_link_libraries(
   ${PROJECT_NAME} 
   core
   trackmanager
-  devicemanager
+  deviceservice
   cli
   rtaudio
   rtmidi

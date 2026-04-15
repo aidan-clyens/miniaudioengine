@@ -13,16 +13,16 @@
 namespace miniaudioengine
 {
 
-/** @class DeviceManager
+/** @class DeviceService
  *  @brief This class manages the system's audio and MIDI I/O devices.
  *  It is implemented as a singleton to provide a global point of access.
  */
-class DeviceManager
+class DeviceService
 {
 public:
-  static DeviceManager& instance()
+  static DeviceService& instance()
   {
-    static DeviceManager instance;
+    static DeviceService instance;
     return instance;
   }
 
@@ -81,14 +81,14 @@ public:
   void set_midi_controller(std::shared_ptr<midi::MidiController> controller);
 
 private:
-  DeviceManager():
+  DeviceService():
     p_audio_controller(std::make_shared<audio::AudioController>()),
     p_midi_controller(std::make_shared<midi::MidiController>())
   {}
-  ~DeviceManager() = default;
+  ~DeviceService() = default;
 
-  DeviceManager(const DeviceManager&) = delete;
-  DeviceManager& operator=(const DeviceManager&) = delete;
+  DeviceService(const DeviceService&) = delete;
+  DeviceService& operator=(const DeviceService&) = delete;
 
 private:
   std::shared_ptr<audio::AudioController> p_audio_controller;
