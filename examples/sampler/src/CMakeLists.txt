@@ -8,7 +8,7 @@ target_link_libraries(
     core
     trackmanager
     deviceservice
-    filemanager
+    fileservice
     control-midi
     data-midi
     processor-audio

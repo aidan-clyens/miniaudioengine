@@ -1,4 +1,4 @@
-#include "miniaudioengine/filemanager.h"
+#include "miniaudioengine/fileservice.h"
 #include "filehandle_factory.h"
 #include "logger.h"
 
@@ -7,10 +7,10 @@ using namespace miniaudioengine;
 /** @brief Lists the contents of a directory.
  *  @param path The path to the directory to list.
  *  @param type The type of contents to list (directories, files, or all).
- *  @return A vector of filemanager paths representing the contents of the directory.
+ *  @return A vector of fileservice paths representing the contents of the directory.
  *  @throws std::runtime_error if the path does not exist or is not a directory.
  */ 
-std::vector<std::filesystem::path> FileManager::list_directory(const std::filesystem::path &path, PathType type)
+std::vector<std::filesystem::path> FileService::list_directory(const std::filesystem::path &path, PathType type)
 {
   std::vector<std::filesystem::path> contents;
 
@@ -49,10 +49,10 @@ std::vector<std::filesystem::path> FileManager::list_directory(const std::filesy
 
 /** @brief Lists WAV files in a specified directory.
  *  @param path The path to the directory to list.
- *  @return A vector of filemanager paths representing the WAV files in the specified directory.
+ *  @return A vector of fileservice paths representing the WAV files in the specified directory.
  *  @throws std::runtime_error if the path does not exist or is not a directory
  */
-std::vector<std::filesystem::path> FileManager::list_wav_files_in_directory(const std::filesystem::path &path)
+std::vector<std::filesystem::path> FileService::list_wav_files_in_directory(const std::filesystem::path &path)
 {
   std::vector<std::filesystem::path> contents = list_directory(path, PathType::File);
   std::vector<std::filesystem::path> wav_files;
@@ -70,10 +70,10 @@ std::vector<std::filesystem::path> FileManager::list_wav_files_in_directory(cons
 
 /** @brief Lists MIDI files in a specified directory.
  *  @param path The path to the directory to list.
- *  @return A vector of filemanager paths representing the MIDI files in the specified directory.
+ *  @return A vector of fileservice paths representing the MIDI files in the specified directory.
  *  @throws std::runtime_error if the path does not exist or is not a directory
  */
-std::vector<std::filesystem::path> FileManager::list_midi_files_in_directory(const std::filesystem::path &path)
+std::vector<std::filesystem::path> FileService::list_midi_files_in_directory(const std::filesystem::path &path)
 {
   std::vector<std::filesystem::path> contents = list_directory(path, PathType::File);
   std::vector<std::filesystem::path> midi_files;
@@ -89,7 +89,7 @@ std::vector<std::filesystem::path> FileManager::list_midi_files_in_directory(con
   return midi_files;
 }
 
-void FileManager::save_to_wav_file(std::vector<float> audio_buffer, const std::filesystem::path &path)
+void FileService::save_to_wav_file(std::vector<float> audio_buffer, const std::filesystem::path &path)
 {
   (void)audio_buffer; // Suppress unused variable warning
   (void)path; // Suppress unused variable warning
@@ -99,7 +99,7 @@ void FileManager::save_to_wav_file(std::vector<float> audio_buffer, const std::f
  *  @param path The path to the WAV file to load.
  *  @return An AudioFile object containing the loaded audio data.
  */
-std::optional<FileHandlePtr> FileManager::read_wav_file(const std::filesystem::path &path)
+std::optional<FileHandlePtr> FileService::read_wav_file(const std::filesystem::path &path)
 {
   std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
   std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
@@ -127,7 +127,7 @@ std::optional<FileHandlePtr> FileManager::read_wav_file(const std::filesystem::p
   }
 }
 
-std::optional<FileHandlePtr> FileManager::read_midi_file(const std::filesystem::path &path)
+std::optional<FileHandlePtr> FileService::read_midi_file(const std::filesystem::path &path)
 {
   std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
   std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
@@ -141,7 +141,7 @@ std::optional<FileHandlePtr> FileManager::read_midi_file(const std::filesystem::
   return FileHandleFactory::make_midi(absolute_path);
 }
 
-void FileManager::create_directory(const std::filesystem::path &path)
+void FileService::create_directory(const std::filesystem::path &path)
 {
   std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
   std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
@@ -155,7 +155,7 @@ void FileManager::create_directory(const std::filesystem::path &path)
   }
 }
 
-void FileManager::create_sub_directory(const std::filesystem::path &parent_path, const std::string &subdir_name)
+void FileService::create_sub_directory(const std::filesystem::path &parent_path, const std::string &subdir_name)
 {
   // Ensure parent directory exists
   std::filesystem::path normalized_parent_path = std::filesystem::weakly_canonical(parent_path);

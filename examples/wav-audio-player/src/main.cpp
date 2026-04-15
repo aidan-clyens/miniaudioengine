@@ -9,7 +9,7 @@
 #include "miniaudioengine/trackmanager.h"
 #include "miniaudioengine/deviceservice.h"
 #include "miniaudioengine/track.h"
-#include "miniaudioengine/filemanager.h"
+#include "miniaudioengine/fileservice.h"
 #include "miniaudioengine/cli.h"
 #include "miniaudioengine/filehandle.h"
 #include "logger.h"
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
   // Resource managers
   TrackManager &track_manager = TrackManager::instance();
   DeviceService &device_manager = DeviceService::instance();
-  FileManager &file_manager = FileManager::instance();
+  FileService &file_manager = FileService::instance();
 
   if (input_file_path.has_value()) {
     if (!file_manager.is_wav_file(input_file_path.value())) {

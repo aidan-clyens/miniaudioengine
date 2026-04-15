@@ -9,7 +9,7 @@
 #include "miniaudioengine/deviceservice.h"
 #include "miniaudioengine/track.h"
 #include "audiocontroller.h"
-#include "miniaudioengine/filemanager.h"
+#include "miniaudioengine/fileservice.h"
 
 // Mocks
 #include "device_mock.h"
@@ -96,7 +96,7 @@ TEST_F(TrackTest, Action3_RemoveAudioInputDevice)
 TEST_F(TrackTest, Action4_AddAudioInputFile)
 {
   // Find a valid audio input device
-  auto file = FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);
+  auto file = FileService::instance().read_wav_file(TEST_WAV_FILE_PATH);
   EXPECT_TRUE(file.has_value()) << "Failed to read WAV file for testing";
   LOG_INFO("Adding audio input file: ", file.value()->to_string());
 
@@ -113,7 +113,7 @@ TEST_F(TrackTest, Action4_AddAudioInputFile)
  */
 TEST_F(TrackTest, Action5_RemoveAudioInputFile)
 {
-  test_track->add_audio_input(FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH).value());
+  test_track->add_audio_input(FileService::instance().read_wav_file(TEST_WAV_FILE_PATH).value());
 
   // Verify the track has an audio input
   EXPECT_TRUE(test_track->has_audio_input()) << "Track should have audio input before removal";
@@ -228,7 +228,7 @@ TEST_F(TrackTest, Action11_PlayWavFileInput)
   TrackManager::instance().set_audio_output_device(output_device);
 
   // Open WAV file and add as audio input
-  auto file = FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);  
+  auto file = FileService::instance().read_wav_file(TEST_WAV_FILE_PATH);  
   EXPECT_TRUE(file.has_value()) << "Failed to read WAV file for testing";
   
   test_track->add_audio_input(file.value());

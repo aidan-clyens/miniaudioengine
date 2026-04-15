@@ -10,7 +10,7 @@
 #include <string>
 #include <functional>
 
-#include "filemanager.h"
+#include "fileservice.h"
 #include "deviceservice.h"
 #include "devicehandle.h"
 #include "filehandle.h"
@@ -148,17 +148,17 @@ public:
   // Audio/MIDI IO
 
   /** @brief Add an audio input to the track. 
-   *  @param device The audio input device or file retrieved from DeviceService or FileManager.
+   *  @param device The audio input device or file retrieved from DeviceService or FileService.
    */
   void add_audio_input(SourceVariant input);
 
   /** @brief Add a MIDI input to the track.
-   *  @param device The MIDI input device or file retrieved from DeviceService or FileManager.
+   *  @param device The MIDI input device or file retrieved from DeviceService or FileService.
    */
   void add_midi_input(MidiIOVariant input);
 
   /** @brief Add a MIDI output to the track.
-   *  @param device The MIDI output device or file retrieved from DeviceService or FileManager.
+   *  @param device The MIDI output device or file retrieved from DeviceService or FileService.
    */
   void add_midi_output(MidiIOVariant output);
 

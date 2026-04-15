@@ -22,7 +22,7 @@ target_include_directories(processor-audio
 target_link_libraries(processor-audio
   PUBLIC
     core
-    filemanager
+    fileservice
 )
 
 set_target_properties(processor-audio PROPERTIES LINKER_LANGUAGE CXX)

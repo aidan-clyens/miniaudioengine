@@ -28,6 +28,6 @@ target_link_libraries(trackmanager PUBLIC
   data-midi
   data-audio
   processor-audio
-  filemanager
+  fileservice
   deviceservice
 )

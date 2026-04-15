@@ -89,7 +89,7 @@ install(
         data-midi
         processor-audio
         trackmanager
-        filemanager
+        fileservice
         deviceservice
         core
         cli

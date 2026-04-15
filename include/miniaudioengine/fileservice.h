@@ -27,7 +27,7 @@ enum class eFileType
  */
 class File
 {
-  friend class FileManager;
+  friend class FileService;
 
 public:
   virtual ~File() = default;
@@ -66,15 +66,15 @@ enum class PathType
   All,
 };
 
-/** @class FileManager
+/** @class FileService
  *  @brief Singleton class for managing file system operations.
  */
-class FileManager
+class FileService
 {
 public:
-  static FileManager& instance()
+  static FileService& instance()
   {
-    static FileManager instance;
+    static FileService instance;
     return instance;
   }
 
@@ -167,11 +167,11 @@ public:
   std::optional<FileHandlePtr> read_midi_file(const std::filesystem::path &path);
 
 private:
-  FileManager() = default;
-  virtual ~FileManager() = default;
+  FileService() = default;
+  virtual ~FileService() = default;
 
-  FileManager(const FileManager&) = delete;
-  FileManager& operator=(const FileManager&) = delete;
+  FileService(const FileService&) = delete;
+  FileService& operator=(const FileService&) = delete;
 };
 
 }  // namespace miniaudioengine

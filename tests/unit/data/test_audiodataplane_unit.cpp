@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "audiodataplane.h"
-#include "miniaudioengine/filemanager.h"
+#include "miniaudioengine/fileservice.h"
 #include "logger.h"
 
 #define TEST_WAV_FILE_PATH "C:\\Projects\\miniaudioengine\\examples\\wav-audio-player\\samples\\test2.wav"
@@ -67,7 +67,7 @@ TEST_F(AudioDataPlaneTest, Action3_PreloadWavFile)
 {
   EXPECT_FALSE(audio_dataplane()->is_running()) << "AudioDataPlane should not be running before preloading WAV file";
 
-  auto wav_file = FileManager::instance().read_wav_file(TEST_WAV_FILE_PATH);
+  auto wav_file = FileService::instance().read_wav_file(TEST_WAV_FILE_PATH);
   ASSERT_TRUE(wav_file.has_value()) << "Failed to read WAV file from path: " << TEST_WAV_FILE_PATH;
   LOG_INFO("Read WAV file: ", wav_file.value()->to_string());
 

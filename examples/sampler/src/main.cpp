@@ -8,7 +8,7 @@
 #include "logger.h"
 #include "miniaudioengine/trackmanager.h"
 #include "miniaudioengine/deviceservice.h"
-#include "miniaudioengine/filemanager.h"
+#include "miniaudioengine/fileservice.h"
 #include "sample.h"
 #include "midicontroltypes.h"
 #include "sampleplayer.h"
@@ -36,7 +36,7 @@ public:
   Sampler():
     m_track_manager(TrackManager::instance()),
     m_device_manager(DeviceService::instance()),
-    m_file_manager(FileManager::instance()),
+    m_file_manager(FileService::instance()),
     m_logger(Logger::instance())
   {
     // Create main track
@@ -175,7 +175,7 @@ public:
 private:
   TrackManager &m_track_manager;
   DeviceService &m_device_manager;
-  FileManager &m_file_manager;
+  FileService &m_file_manager;
 
   TrackPtr m_track;
   SamplePlayerPtr m_sample_player;
