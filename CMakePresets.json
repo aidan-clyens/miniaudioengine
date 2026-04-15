@@ -14,6 +14,16 @@
       }
     },
     {
+      "name": "ubuntu-base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/ubuntu.cmake",
+        "BUILD_TESTS": "ON",
+        "BUILD_EXAMPLES": "ON"
+      }
+    },
+    {
       "name": "windows-debug",
       "displayName": "Windows x64 Debug",
       "inherits": "windows-base",
@@ -58,6 +68,15 @@
         "CMAKE_BUILD_TYPE": "MinSizeRel",
         "BUILD_TESTS": "OFF"
       }
+    },
+    {
+      "name": "ubuntu-debug",
+      "displayName": "Ubuntu x64 Debug",
+      "inherits": "ubuntu-base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "BUILD_TESTS": "ON"
+      }
     }
   ],
   "buildPresets": [
@@ -90,6 +109,12 @@
       "displayName": "Windows MinSizeRel Build",
       "configurePreset": "windows-minsizerel",
       "configuration": "MinSizeRel"
+    },
+    {
+      "name": "ubuntu-debug",
+      "displayName": "Ubuntu Debug Build",
+      "configurePreset": "ubuntu-debug",
+      "configuration": "Debug"
     }
   ],
   "testPresets": [
@@ -98,6 +123,12 @@
       "description": "",
       "displayName": "Windows x86 Debug Tests",
       "configurePreset": "windows-debug"
+    },
+    {
+      "name": "Ubuntu x86 Debug",
+      "description": "",
+      "displayName": "Ubuntu x86 Debug Tests",
+      "configurePreset": "ubuntu-debug"
     }
   ]
 }
