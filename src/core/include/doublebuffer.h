@@ -55,7 +55,7 @@ private:
   std::vector<T> m_buffer_a;
   std::vector<T> m_buffer_b;
 
-  std::atomic<std::vector<T>*> m_read_buffer;;
+  std::atomic<std::vector<T>*> m_read_buffer;
   std::atomic<std::vector<T>*> m_write_buffer;
 
   std::atomic<bool> m_read_ready;

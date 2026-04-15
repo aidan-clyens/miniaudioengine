@@ -22,6 +22,7 @@ void MidiDataPlane::process_midi_message(const MidiMessage &midi_message)
 
 void MidiDataPlane::update_midi_input_statistics(const MidiMessage &midi_message)
 {
+  (void)midi_message; // Unused for now, but can be used to update statistics based on message type, channel, etc.
   if (p_statistics)
   {
     auto midi_stats = std::dynamic_pointer_cast<MidiInputStatistics>(p_statistics);

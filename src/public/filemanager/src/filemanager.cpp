@@ -91,7 +91,8 @@ std::vector<std::filesystem::path> FileManager::list_midi_files_in_directory(con
 
 void FileManager::save_to_wav_file(std::vector<float> audio_buffer, const std::filesystem::path &path)
 {
-
+  (void)audio_buffer; // Suppress unused variable warning
+  (void)path; // Suppress unused variable warning
 }
 
 /** @brief Loads audio data from a WAV file.
