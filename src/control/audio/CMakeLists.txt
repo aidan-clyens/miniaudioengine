@@ -23,7 +23,7 @@ target_include_directories(control-audio
 target_link_libraries(control-audio
   PUBLIC
     rtaudio
-    framework
+    core
     data-audio
     devicemanager
 )

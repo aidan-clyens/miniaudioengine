@@ -21,7 +21,7 @@ target_include_directories(processor-audio
 
 target_link_libraries(processor-audio
   PUBLIC
-    framework
+    core
     filemanager
 )
 

@@ -22,7 +22,7 @@ target_include_directories(trackmanager
 )
 
 target_link_libraries(trackmanager PUBLIC
-  framework
+  core
   control-audio
   control-midi
   data-midi

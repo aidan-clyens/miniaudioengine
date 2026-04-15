@@ -26,7 +26,7 @@ enum class eStreamState
 };
 
 /** @class IController
- *  @brief Base class for all controllers in the framework.
+ *  @brief Base class for all controllers in the core.
  *  Controllers are responsible for managing specific aspects of the application,
  *  such as audio, MIDI, or track management. This class provides a common interface
  *  and shared functionality for all controller types.

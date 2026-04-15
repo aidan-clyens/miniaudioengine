@@ -5,7 +5,7 @@ add_executable(
 
 target_link_libraries(
   ${PROJECT_NAME} 
-  framework
+  core
   trackmanager
   devicemanager
   cli

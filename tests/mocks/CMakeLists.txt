@@ -20,7 +20,7 @@ target_include_directories(test-mocks
 
 target_link_libraries(test-mocks
   INTERFACE
-    framework
+    core
     control-audio
     data-audio
     trackmanager

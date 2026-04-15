@@ -24,6 +24,6 @@ target_include_directories(data-midi
 
 target_link_libraries(data-midi PUBLIC
   rtmidi
-  framework
+  core
   control-midi
 )

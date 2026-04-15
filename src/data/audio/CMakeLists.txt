@@ -22,7 +22,7 @@ target_include_directories(data-audio
 
 target_link_libraries(data-audio PUBLIC
   rtaudio
-  framework
+  core
   devicemanager
   trackmanager
   processor-audio

@@ -22,7 +22,7 @@ target_include_directories(filemanager
 target_link_libraries(filemanager
   PUBLIC
     sndfile
-    framework
+    core
 )
 
 set_target_properties(filemanager PROPERTIES LINKER_LANGUAGE CXX)

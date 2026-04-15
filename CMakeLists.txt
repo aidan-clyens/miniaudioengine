@@ -91,7 +91,7 @@ install(
         trackmanager
         filemanager
         devicemanager
-        framework
+        core
         cli
     EXPORT miniaudioengine-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

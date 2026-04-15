@@ -5,7 +5,7 @@ add_executable(
 
 target_link_libraries(
   ${PROJECT_NAME} PRIVATE
-    framework
+    core
     trackmanager
     devicemanager
     filemanager

@@ -1,6 +1,6 @@
-add_library(framework STATIC)
+add_library(core STATIC)
 
-target_sources(framework
+target_sources(core
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
@@ -17,7 +17,7 @@ target_sources(framework
       include/interfaces/device.h
 )
 
-target_sources(framework
+target_sources(core
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
@@ -27,22 +27,22 @@ target_sources(framework
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/filehandle.h
 )
 
-target_sources(framework PRIVATE
+target_sources(core PRIVATE
   src/logger.cpp
   src/controller.cpp
   src/devicehandle.cpp
   src/filehandle.cpp
 )
 
-target_include_directories(framework
+target_include_directories(core
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
-target_link_libraries(framework
+target_link_libraries(core
   PUBLIC
     sndfile
 )
 
-set_target_properties(framework PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(core PROPERTIES LINKER_LANGUAGE CXX)

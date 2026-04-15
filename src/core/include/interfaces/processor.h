@@ -7,7 +7,7 @@ namespace miniaudioengine::core
 {
 
 /** @class IProcessor
- *  @brief Base class for all processors in the framework.
+ *  @brief Base class for all processors in the core.
  *  Processors are responsible for handling data processing,
  *  such as audio processing, MIDI processing, or effects processing.
  *  concurrently to main application.

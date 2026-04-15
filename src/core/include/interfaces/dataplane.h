@@ -29,7 +29,7 @@ public:
 using IDataPlaneStatisticsPtr = std::shared_ptr<IDataPlaneStatistics>;
 
 /** @class IDataPlane
- *  @brief Abstract base class for data planes in the framework.
+ *  @brief Abstract base class for data planes in the core.
  *  Data planes handle the processing and management of data streams,
  *  such as audio or MIDI data. They provide interfaces for starting,
  *  stopping, and configuring data flow.

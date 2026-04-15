@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-// Framework device interface (still used by IController framework-level tests)
+// Framework device interface (still used by IController core-level tests)
 #include "interfaces/device.h"
 // DeviceHandle PImpl header and factory (used by IAudioController audio-level tests)
 #include "miniaudioengine/devicehandle.h"
@@ -17,11 +17,11 @@ namespace miniaudioengine::test
 {
 
 // ---------------------------------------------------------------------------
-// MockDevice: IAudioDevice implementation for IController (framework) tests
+// MockDevice: IAudioDevice implementation for IController (core) tests
 // ---------------------------------------------------------------------------
 
 /** @class MockDevice
- *  @brief A mock implementation of IAudioDevice for framework-level controller tests.
+ *  @brief A mock implementation of IAudioDevice for core-level controller tests.
  */
 class MockDevice : public IAudioDevice
 {

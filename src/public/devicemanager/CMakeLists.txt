@@ -23,7 +23,7 @@ target_include_directories(devicemanager
 
 target_link_libraries(devicemanager
   PUBLIC
-    framework
+    core
     data-audio
     data-midi
     control-audio

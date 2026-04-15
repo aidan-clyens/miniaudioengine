@@ -43,7 +43,8 @@
       - [3.7.1 Audio Input to Audio Output](#371-audio-input-to-audio-output)
       - [3.7.3 MIDI Input Processing](#373-midi-input-processing)
     - [3.8 Structure View](#38-structure-view)
-      - [3.8.1 Project Structure](#381-project-structure)
+      - [3.8.1 Library Structure](#381-library-structure)
+      - [3.8.2 Project Structure](#382-project-structure)
   - [4 Design Rationale](#4-design-rationale)
     - [4.1 Architectural Design](#41-architectural-design)
       - [4.1.1 Layered Architecture](#411-layered-architecture)
@@ -674,16 +675,32 @@ sequenceDiagram
 
 ### 3.8 Structure View
 
-#### 3.8.1 Project Structure
+#### 3.8.1 Library Structure
+
+*Include Structure:*
+
+```bash
+miniaudioengine/
+    miniaudioengine.h
+```
+
+*Libraries:*
+
+```bash
+miniaudioengine/
+    core/           # Shared infrastructure, interfaces, logging
+    backends/       # Wrappers for external libraries
+    engine/         # Runtime orchestration, controllers, audio and MIDI data flow
+    processing/     # DSP units
+    public/         # Public facing SDK - miniaudioengine.h
+```
+
+#### 3.8.2 Project Structure
 
 ```bash
 cmake/
     miniaudioengine-config.cmake.in
 docker/
-    docker-build.sh
-    docker-run.sh
-    docker-setup.sh
-    docker-exec.sh
 docs/
 examples/                   # Example programs using miniaudioengine SDK
 samples/
@@ -691,12 +708,11 @@ include/
     miniaudioengine/
         miniaudioengine.h   # Public facing SDK
 src/
-    framework/              # Internal, core shared library
-        audio/
-        midi/
-    devices/
-    files/
-    tracks/
+    core/
+    backends/
+    engine/
+    processing/
+    public/
 tests/
 CMakeLists.txt              # CMake instructions
 CMakePresets.json           # CMake presets
@@ -779,6 +795,8 @@ classDiagram
 
 **Factory**
 
+This SDK uses the Factory pattern to create `DeviceHandle`, `FileHandle`, and `Track` objects.
+
 ```mermaid
 classDiagram
 
@@ -799,10 +817,28 @@ classDiagram
         +method()
     }
 
-    Factory <|-- IFactory
-    Object <|-- IObject
+    IFactory <|-- Factory
+    IObject <|-- Object
 
     IFactory --> IObject
+    
+    Factory --> Object
+```
+
+*e.g.*
+
+```mermaid
+classDiagram
+
+    class IFactory
+    class IObject
+
+    class DeviceAdapter
+
+    IFactory <|-- DeviceAdapter
+    IObject <|-- DeviceHandle
+
+    DeviceAdapter --> DeviceHandle
 ```
 
 **Proxy**
