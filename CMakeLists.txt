@@ -88,7 +88,7 @@ install(
         data-audio
         data-midi
         processor-audio
-        trackmanager
+        trackservice
         fileservice
         deviceservice
         core

@@ -23,5 +23,5 @@ target_link_libraries(test-mocks
     core
     control-audio
     data-audio
-    trackmanager
+    trackservice
 )

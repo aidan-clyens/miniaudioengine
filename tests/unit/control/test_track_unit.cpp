@@ -5,7 +5,7 @@
 // miniaudioengine::core
 #include "logger.h"
 // miniaudioengine::control
-#include "miniaudioengine/trackmanager.h"
+#include "miniaudioengine/trackservice.h"
 #include "miniaudioengine/deviceservice.h"
 #include "miniaudioengine/track.h"
 #include "audiocontroller.h"
@@ -28,12 +28,12 @@ protected:
 
   void SetUp() override
   {
-    TrackManager::instance().clear_tracks();
-    TrackManager::instance().add_track();
-    test_track = TrackManager::instance().get_track(0);
+    TrackService::instance().clear_tracks();
+    TrackService::instance().add_track();
+    test_track = TrackService::instance().get_track(0);
 
     mock_output_device = miniaudioengine::test::make_mock_audio_output_device();
-    TrackManager::instance().set_audio_output_device(mock_output_device);
+    TrackService::instance().set_audio_output_device(mock_output_device);
   }
 
   void TearDown() override
@@ -225,7 +225,7 @@ TEST_F(TrackTest, Action11_PlayWavFileInput)
   auto output_device = DeviceService::instance().get_default_audio_output_device();
   EXPECT_NE(output_device, nullptr) << "No audio output device found for testing";
 
-  TrackManager::instance().set_audio_output_device(output_device);
+  TrackService::instance().set_audio_output_device(output_device);
 
   // Open WAV file and add as audio input
   auto file = FileService::instance().read_wav_file(TEST_WAV_FILE_PATH);  

@@ -16,7 +16,7 @@ target_link_libraries(miniaudioengine-unit-tests PRIVATE
   control-midi
   data-audio
   data-midi
-  trackmanager
+  trackservice
   fileservice
   deviceservice
   test-mocks

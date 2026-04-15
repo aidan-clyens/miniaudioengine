@@ -1,4 +1,4 @@
-#include "miniaudioengine/trackmanager.h"
+#include "miniaudioengine/trackservice.h"
 
 using namespace miniaudioengine::core;
 using namespace miniaudioengine;
@@ -14,11 +14,11 @@ bool MainTrack::is_playing() const
 // Constructor
 // ============================================================================
 
-TrackManager::TrackManager()
+TrackService::TrackService()
 {
   // Create MainTrack (root of hierarchy) with hardware output
   m_main_track = std::make_shared<MainTrack>(); // is_main_track = true
-  LOG_INFO("TrackManager: Created MainTrack (root of hierarchy)");
+  LOG_INFO("TrackService: Created MainTrack (root of hierarchy)");
 }
 
 // ============================================================================
@@ -28,10 +28,10 @@ TrackManager::TrackManager()
 /** @brief Create a new detached track (not yet in hierarchy).
  *  @return Shared pointer to the new track.
  */
-TrackPtr TrackManager::create_track()
+TrackPtr TrackService::create_track()
 {
   auto new_track = std::make_shared<Track>(false);
-  LOG_INFO("TrackManager: Created detached track");
+  LOG_INFO("TrackService: Created detached track");
   return new_track;
 }
 
@@ -39,13 +39,13 @@ TrackPtr TrackManager::create_track()
  *  @param parent The parent track (defaults to MainTrack if nullptr).
  *  @return Shared pointer to the new track.
  */
-TrackPtr TrackManager::create_child_track(TrackPtr parent)
+TrackPtr TrackService::create_child_track(TrackPtr parent)
 {
   if (!parent || !parent->is_main_track())
   {
     if (parent && !parent->is_main_track())
     {
-      LOG_WARNING("TrackManager: Non-MainTrack parent provided. Defaulting to MainTrack.");
+      LOG_WARNING("TrackService: Non-MainTrack parent provided. Defaulting to MainTrack.");
     }
     parent = m_main_track;
   }
@@ -57,10 +57,10 @@ TrackPtr TrackManager::create_child_track(TrackPtr parent)
   }
   catch (const std::exception& e)
   {
-    LOG_ERROR("TrackManager: Failed to create child track: ", e.what());
+    LOG_ERROR("TrackService: Failed to create child track: ", e.what());
   }
 
-  LOG_INFO("TrackManager: Created child track. Total tracks in hierarchy: ", get_track_count());
+  LOG_INFO("TrackService: Created child track. Total tracks in hierarchy: ", get_track_count());
   return new_track;
 }
 
@@ -68,7 +68,7 @@ TrackPtr TrackManager::create_child_track(TrackPtr parent)
  *  @param track The track to remove (will also remove all descendants).
  *  @throws std::runtime_error if attempting to remove MainTrack.
  */
-void TrackManager::remove_track(TrackPtr track)
+void TrackService::remove_track(TrackPtr track)
 {
   if (!track)
   {
@@ -82,13 +82,13 @@ void TrackManager::remove_track(TrackPtr track)
 
   if (track->get_child_count() > 0)
   {
-    LOG_WARNING("TrackManager: Removing a track that still has children. Children will be detached.");
+    LOG_WARNING("TrackService: Removing a track that still has children. Children will be detached.");
   }
 
   // Remove from parent (MainTrack)
   track->remove_from_parent();
   
-  LOG_INFO("TrackManager: Removed track from hierarchy. Total tracks: ", get_track_count());
+  LOG_INFO("TrackService: Removed track from hierarchy. Total tracks: ", get_track_count());
 }
 
 // ============================================================================
@@ -98,7 +98,7 @@ void TrackManager::remove_track(TrackPtr track)
 /** @brief Get all tracks in the hierarchy (breadth-first traversal).
  *  @return Vector of all track pointers including MainTrack.
  */
-std::vector<TrackPtr> TrackManager::get_all_tracks() const
+std::vector<TrackPtr> TrackService::get_all_tracks() const
 {
   std::vector<TrackPtr> all_tracks;
 
@@ -116,16 +116,16 @@ std::vector<TrackPtr> TrackManager::get_all_tracks() const
 /** @brief Get total number of tracks including MainTrack.
  *  @return Total track count.
  */
-size_t TrackManager::get_track_count() const
+size_t TrackService::get_track_count() const
 {
   return get_all_tracks().size();
 }
 
 /** @brief Clear all tracks except MainTrack.
  */
-void TrackManager::clear_tracks()
+void TrackService::clear_tracks()
 {
-  LOG_INFO("TrackManager: Clearing all tracks except MainTrack. Total tracks before clear: ", get_track_count());
+  LOG_INFO("TrackService: Clearing all tracks except MainTrack. Total tracks before clear: ", get_track_count());
   
   // Get all children of MainTrack (without holding the lock during removal)
   std::vector<TrackPtr> children;
@@ -140,7 +140,7 @@ void TrackManager::clear_tracks()
     m_main_track->remove_child_track(child);
   }
   
-  LOG_INFO("TrackManager: All tracks cleared. Total tracks after clear: ", get_track_count());
+  LOG_INFO("TrackService: All tracks cleared. Total tracks after clear: ", get_track_count());
 }
 
 // ============================================================================
@@ -150,9 +150,9 @@ void TrackManager::clear_tracks()
 /** @brief Set the audio output device for the main track.
  *  @param device The audio output device to use.
  */
-void TrackManager::set_audio_output_device(DeviceHandlePtr device)
+void TrackService::set_audio_output_device(DeviceHandlePtr device)
 {
-  LOG_INFO("TrackManager: Set audio output device: ", device->get_name());
+  LOG_INFO("TrackService: Set audio output device: ", device->get_name());
   m_main_track->set_audio_output_device(device);
 }
 
@@ -160,38 +160,38 @@ void TrackManager::set_audio_output_device(DeviceHandlePtr device)
 // Legacy Compatibility Methods
 // ============================================================================
 
-/** @brief Add a Track to the TrackManager (legacy compatibility).
+/** @brief Add a Track to the TrackService (legacy compatibility).
  *  @return The index of the newly added track in MainTrack's children.
  */
-size_t TrackManager::add_track()
+size_t TrackService::add_track()
 {
   auto new_track = create_child_track(m_main_track);
   size_t index = m_main_track->get_child_count() - 1;
-  LOG_INFO("TrackManager: Adding a new track (legacy). Total tracks: ", get_track_count());
+  LOG_INFO("TrackService: Adding a new track (legacy). Total tracks: ", get_track_count());
   return index;
 }
 
-/** @brief Get a Track from the TrackManager by index (legacy compatibility).
+/** @brief Get a Track from the TrackService by index (legacy compatibility).
  *  @param index The index of the track in MainTrack's children.
  *  @return A shared pointer to the Track at the specified index.
  *  @throws std::out_of_range if the index is invalid.
  */
-TrackPtr TrackManager::get_track(size_t index)
+TrackPtr TrackService::get_track(size_t index)
 {
   auto children = m_main_track->get_children();
   if (index >= children.size())
   {
-    LOG_ERROR("TrackManager: Attempted to get track with invalid index: ", index);
+    LOG_ERROR("TrackService: Attempted to get track with invalid index: ", index);
     throw std::out_of_range("Track index out of range");
   }
 
   return children[index];
 }
 
-/** @brief Get all Tracks from the TrackManager (legacy compatibility).
+/** @brief Get all Tracks from the TrackService (legacy compatibility).
  *  @return A vector of shared pointers to all immediate children of MainTrack.
  */
-std::vector<TrackPtr> TrackManager::get_tracks() const
+std::vector<TrackPtr> TrackService::get_tracks() const
 {
   return m_main_track->get_children();
 }

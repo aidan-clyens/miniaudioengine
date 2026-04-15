@@ -6,7 +6,7 @@
 #include <functional>
 
 #include "logger.h"
-#include "miniaudioengine/trackmanager.h"
+#include "miniaudioengine/trackservice.h"
 #include "miniaudioengine/deviceservice.h"
 #include "miniaudioengine/fileservice.h"
 #include "sample.h"
@@ -34,7 +34,7 @@ class Sampler
 {
 public:
   Sampler():
-    m_track_manager(TrackManager::instance()),
+    m_track_manager(TrackService::instance()),
     m_device_manager(DeviceService::instance()),
     m_file_manager(FileService::instance()),
     m_logger(Logger::instance())
@@ -173,7 +173,7 @@ public:
   }
 
 private:
-  TrackManager &m_track_manager;
+  TrackService &m_track_manager;
   DeviceService &m_device_manager;
   FileService &m_file_manager;
 

@@ -6,7 +6,7 @@
 #include <thread>
 #include <chrono>
 
-#include "miniaudioengine/trackmanager.h"
+#include "miniaudioengine/trackservice.h"
 #include "miniaudioengine/deviceservice.h"
 #include "miniaudioengine/track.h"
 #include "miniaudioengine/fileservice.h"
@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
   LOG_INFO("Initializing wav-audio-player...");
 
   // Resource managers
-  TrackManager &track_manager = TrackManager::instance();
+  TrackService &track_manager = TrackService::instance();
   DeviceService &device_manager = DeviceService::instance();
   FileService &file_manager = FileService::instance();
 

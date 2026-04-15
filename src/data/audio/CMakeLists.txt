@@ -24,6 +24,6 @@ target_link_libraries(data-audio PUBLIC
   rtaudio
   core
   deviceservice
-  trackmanager
+  trackservice
   processor-audio
 )

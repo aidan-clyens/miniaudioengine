@@ -66,18 +66,18 @@ private:
   std::shared_ptr<midi::MidiController> p_midi_controller; // Only MainTrack owns the controller
 };
 
-/** @class TrackManager
- *  @brief The TrackManager manages a single-layer hierarchy with MainTrack as root.
+/** @class TrackService
+ *  @brief The TrackService manages a single-layer hierarchy with MainTrack as root.
  *  All regular Tracks are direct children of MainTrack and may not have children.
  */
-class TrackManager
+class TrackService
 {
 using MainTrackPtr = std::shared_ptr<MainTrack>;
 
 public:
-  static TrackManager& instance()
+  static TrackService& instance()
   {
-    static TrackManager instance;
+    static TrackService instance;
     return instance;
   }
 
@@ -153,8 +153,8 @@ public:
   std::vector<TrackPtr> get_tracks() const;
 
 private:
-  TrackManager();
-  virtual ~TrackManager() = default;
+  TrackService();
+  virtual ~TrackService() = default;
 
   MainTrackPtr m_main_track; // Root of track tree (owns hardware audio output)
   mutable std::mutex m_manager_mutex;

@@ -57,7 +57,7 @@ protected:
    */
   bool validate_start_preconditions() const;
 
-  /** @brief Registers active tracks from TrackManager for audio callbacks.
+  /** @brief Registers active tracks from TrackService for audio callbacks.
    *  @return true if tracks were successfully registered, false if no active tracks.
    */
   bool register_dataplanes();

@@ -145,7 +145,7 @@ TEST_F(AudioControllerTest, StartStream)
 {
   set_default_audio_output_device();
 
-  // TODO - Add active track to TrackManager mock
+  // TODO - Add active track to TrackService mock
 
   // Start stream
   bool rc = get_audio_controller_mock()->start();

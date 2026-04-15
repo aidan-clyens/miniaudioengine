@@ -8,7 +8,7 @@
 #include <logger.h>
 #include <miniaudioengine/cli.h>
 #include <miniaudioengine/deviceservice.h>
-#include <miniaudioengine/trackmanager.h>
+#include <miniaudioengine/trackservice.h>
 #include <midicontroltypes.h>
 
 #ifndef PROGRAM_NAME
@@ -111,8 +111,8 @@ int main(int argc, char* argv[])
   });
 
   // Add one track
-  size_t track_id = TrackManager::instance().add_track();
-  auto track = TrackManager::instance().get_track(track_id);
+  size_t track_id = TrackService::instance().add_track();
+  auto track = TrackService::instance().get_track(track_id);
   if (!track)
   {
     LOG_ERROR("Failed to create track.");

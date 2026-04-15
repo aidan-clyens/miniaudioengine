@@ -1,27 +1,27 @@
-add_library(trackmanager STATIC)
+add_library(trackservice STATIC)
 
-target_sources(trackmanager
+target_sources(trackservice
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
       ${CMAKE_SOURCE_DIR}/include
     FILES
       ${CMAKE_SOURCE_DIR}/include/miniaudioengine/track.h
-      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/trackmanager.h
+      ${CMAKE_SOURCE_DIR}/include/miniaudioengine/trackservice.h
 )
 
-target_sources(trackmanager
+target_sources(trackservice
   PRIVATE
-  src/trackmanager.cpp
+  src/trackservice.cpp
   src/track.cpp
 )
 
-target_include_directories(trackmanager
+target_include_directories(trackservice
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
-target_link_libraries(trackmanager PUBLIC
+target_link_libraries(trackservice PUBLIC
   core
   control-audio
   control-midi

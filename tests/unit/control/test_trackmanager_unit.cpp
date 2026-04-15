@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "miniaudioengine/trackmanager.h"
+#include "miniaudioengine/trackservice.h"
 
 using namespace miniaudioengine;
 
@@ -21,7 +21,7 @@ protected:
     m_track_manager.clear_tracks();
   }
 
-  TrackManager &get_track_manager()
+  TrackService &get_track_manager()
   {
     return m_track_manager;
   }
@@ -36,7 +36,7 @@ protected:
   }
 
 private:
-  TrackManager &m_track_manager = TrackManager::instance();
+  TrackService &m_track_manager = TrackService::instance();
 };
 
 TEST_F(TrackManagerTest, Initial)
