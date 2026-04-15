@@ -31,6 +31,7 @@
       - [3.4.5 Audio Processing Flow](#345-audio-processing-flow)
       - [3.4.6 Multiple Track Flow](#346-multiple-track-flow)
     - [3.4 Dependency View](#34-dependency-view)
+    - [3.4.1 Layer Hierarchy](#341-layer-hierarchy)
     - [3.5 Information View](#35-information-view)
       - [3.5.1 Devices](#351-devices)
       - [3.5.2 Files](#352-files)
@@ -45,9 +46,9 @@
       - [3.8.1 Project Structure](#381-project-structure)
   - [4 Design Rationale](#4-design-rationale)
     - [4.1 Architectural Design](#41-architectural-design)
+      - [4.1.1 Layered Architecture](#411-layered-architecture)
       - [4.1.2 Track Hierarchy](#412-track-hierarchy)
-      - [4.1.3 Control Flow](#413-control-flow)
-      - [4.1.4 Data Flow](#414-data-flow)
+      - [4.1.3 Software Design Patterns](#413-software-design-patterns)
     - [4.2 External Libraries](#42-external-libraries)
 
 <div style="page-break-after: always;"></div>
@@ -153,8 +154,8 @@ graph LR
 
     subgraph SDK["miniaudioengine SDK"]
         TrackManager
-        DeviceManager
-        FileManager
+        DeviceService
+        FileService
     end
 
     SDK -->|includes| External
@@ -165,11 +166,11 @@ graph LR
 ```mermaid
 graph TD
 
-    DeviceManager
+    DeviceService
 
-    DeviceManager --> D1["DeviceHandle"]
-    DeviceManager --> D2["DeviceHandle"]
-    DeviceManager --> D3["DeviceHandle"]
+    DeviceService --> D1["DeviceHandle"]
+    DeviceService --> D2["DeviceHandle"]
+    DeviceService --> D3["DeviceHandle"]
 ```
 
 #### 3.2.3 File Manager
@@ -177,11 +178,11 @@ graph TD
 ```mermaid
 graph TD
 
-    FileManager
+    FileService
 
-    FileManager --> D1["FileHandle"]
-    FileManager --> D2["FileHandle"]
-    FileManager --> D3["FileHandle"]
+    FileService --> D1["FileHandle"]
+    FileService --> D2["FileHandle"]
+    FileService --> D3["FileHandle"]
 ```
 
 #### 3.2.4 Track Manager
@@ -268,7 +269,7 @@ flowchart LR
 | **DC-07** | Processing incoming MIDI messages.
 
 ```mermaid
-flowchart TD
+flowchart LR
 
     Step1["Get Input Devices"]
     Step2["Select MIDI Input Device"]
@@ -293,12 +294,12 @@ flowchart TD
 | **DC-08** | Processing incoming audio streams.
 
 ```mermaid
-flowchart TD
+flowchart LR
 
     Step1["Get Input Devices"]
     Step2["Select Audio Input Device/File"]
     Step3["Select Audio Output Device"]
-    Step4["Set Audio Input Processor"]
+    Step4["Add Audio Processor"]
     Step5["Play"]
     Step6["Stop"]
 
@@ -326,14 +327,16 @@ flowchart LR
     subgraph Track["Track"]
         Step1["Create Track"]
         Step2["Select Input Device / File"]
-        Step3["Select Output Device"]
     end
 
     subgraph Track2["Track"]
         Step12["Create Track"]
         Step22["Select Input Device / File"]
-        Step32["Select Output Device"]
     end
+
+    SelectOutput["Select Output Device"]
+    SelectOutput --> Step1
+    SelectOutput --> Step12
 
     J((" "))
 
@@ -341,16 +344,12 @@ flowchart LR
     Step5["Stop"]
 
     Step1 --> Step2
-    Step1 --> Step3
     Step4 -->|...| Step5
 
     Step12 --> Step22 
-    Step12 --> Step32
 
     Step2 --> J
-    Step3 --> J
     Step22 --> J
-    Step32 --> J
 
     J --> Step4
 ```
@@ -358,6 +357,41 @@ flowchart LR
 <div style="page-break-after: always;"></div>
 
 ### 3.4 Dependency View
+
+The components in this SDK depend on the file system, audio and MIDI devices on the host system.
+Separating devices and files into different services divides the dependency.
+
+### 3.4.1 Layer Hierarchy
+
+```mermaid
+graph TD
+    subgraph Public["Layer 3: Public"]
+        DeviceService
+        FileService
+    end
+    subgraph Adapter["Layer 2: Adapter"]
+        AudioAdapter
+        MidiAdapter
+        FileAdapter
+    end
+    subgraph Implementation["Layer 1: Implementation"]
+        AudioAdapterImpl["AudioAdapter::Impl"]
+        MidiAdapterImpl["MidiAdapter::Impl"]
+        FileAdapterImpl["FileAdapter::Impl"]
+    end
+    subgraph External["Layer 0: External"]
+        RtAudio
+        RtMidi
+        sndfile
+    end
+
+    DeviceService --> AudioAdapter
+    DeviceService --> MidiAdapter
+    FileService --> FileAdapter
+    AudioAdapter --> AudioAdapterImpl --> RtAudio
+    MidiAdapter --> MidiAdapterImpl --> RtMidi
+    FileAdapter --> FileAdapterImpl --> sndfile
+```
 
 <div style="page-break-after: always;"></div>
 
@@ -507,14 +541,14 @@ bool miniaudioengine::stop();
 bool miniaudioengine::is_running();
 
 // Devices
-std::shared_ptr<DeviceManager> miniaudioengine::get_device_manager();
+std::shared_ptr<DeviceService> miniaudioengine::get_device_manager();
 std::vector<DeviceHandlePtr> miniaudioengine::get_audio_devices();
 std::vector<DeviceHandlePtr> miniaudioengine::get_midi_devices();
 bool miniaudioengine::set_output_device(DeviceHandlePtr device);
 bool miniaudioengine::set_input_device(DeviceHandlePtr device);
 
 // Files
-std::shared_ptr<FileManager> miniaudioengine::get_file_manager();
+std::shared_ptr<FileService> miniaudioengine::get_file_manager();
 std::vector<FileHandlePtr> miniaudioengine::get_audio_files(const std::filesystem::path &directory);
 std::vector<FileHandlePtr> miniaudioengine::get_wav_files(const std::filesystem::path &directory);
 bool miniaudioengine::set_input_file(FileHandlePtr device);
@@ -680,16 +714,207 @@ vcpkg.json                  # Windows VCPKG dependencies
 
 ```mermaid
 graph TD
-    Public["3. Public"]
-    Control["2. Control"]
-    Data["1. Data"]
-    Hardware["0. Hardware"]
+    Layer3["Layer 3: Public"]
+    Layer2["Layer 2: Interface"]
+    Layer1["Layer 1: Implementation"]
+    Layer0["Layer 0: External"]
 
-    Public --> Control
-    Control --> Data
-    Data --> Hardware
+    Layer3 --> Layer2
+    Layer2 --> Layer1
+    Layer1 --> Layer0
 ```
 
 #### 4.1.2 Track Hierarchy
+
+```mermaid
+graph TD
+
+    TrackManager --> MainTrack
+    MainTrack --> Track1["Track"]
+    MainTrack --> Track2["Track"]
+    MainTrack --> Track3["Track"]
+```
+
+#### 4.1.3 Software Design Patterns
+
+**C++ PImpl**
+
+**Singleton**
+
+This SDK uses the Singleton pattern for the `AudioEngine` component. There should only ever be one instance of `AudioEngine`. It owns all other components used in this SDK.
+
+```mermaid
+classDiagram
+    class ISingleton {
+        -instance
+        +instance() *ISingleton
+        -ISingleton()
+    }
+```
+
+*AudioEngine:*
+
+```mermaid
+classDiagram
+
+    class ISingleton
+
+    class AudioEngine {
+        -device_service : DeviceService
+        -file_service : FileService
+    }
+
+    class DeviceService
+    class FileService
+
+    ISingleton <|-- AudioEngine
+
+    AudioEngine --> DeviceService
+    AudioEngine --> FileService
+
+```
+**Facade**
+
+**Adapter**
+
+**Factory**
+
+```mermaid
+classDiagram
+
+    class IFactory {
+        +createObject() IObject
+    }
+
+    class IObject {
+        -IObject()
+    }
+
+    class Factory {
+        +createObject() Object
+    }
+
+    class Object {
+        -data
+        +method()
+    }
+
+    Factory <|-- IFactory
+    Object <|-- IObject
+
+    IFactory --> IObject
+```
+
+**Proxy**
+
+This SDK uses the Proxy pattern. The `User` interacts with the `DeviceService` and `FileService` via the `AudioEngine`
+
+Client requests data from a Service via a Proxy.
+
+```mermaid
+graph LR
+
+    Client -->|request| Proxy
+    Proxy -->|request| ServiceA
+    Proxy -->|request| ServiceB
+
+    ServiceA -->|respond| Proxy
+    ServiceB -->|respond| Proxy
+    Proxy -->|respond| Client
+```
+
+*e.g.*
+```mermaid
+graph LR
+
+    User --> AudioEngine
+    AudioEngine --> User
+    AudioEngine --> DeviceService
+    DeviceService --> AudioEngine
+    AudioEngine --> FileService
+    FileService --> AudioEngine
+```
+
+*Note:* The request method in this example is blocking.
+
+```mermaid
+classDiagram
+
+    class IProxy {
+        -services : list~IService~
+        +register_service(service : IService)
+        +unregister_service(service : IService)
+        +request(message : IRequest) IResponse
+    }
+
+    class IService {
+        -proxy : IProxy
+        +request(message: IRequest) IResponse
+    }
+
+    class IClient {
+        -proxy : IProxy
+    }
+
+    class IRequest {
+
+    }
+
+    class IResponse {
+
+    }
+
+    IProxy --> IService
+    IProxy --> IClient
+
+    IProxy --> IRequest
+    IProxy --> IResponse
+```
+
+*Device Service:*
+
+```mermaid
+classDiagram
+
+    class IService
+    class IRequest
+    class IResponse
+
+    class DeviceService {
+        +request(message: DeviceRequest) DeviceResponse
+    }
+
+    class DeviceRequest
+    class DeviceResponse
+
+    DeviceService <|-- IService
+    DeviceRequest <|-- IRequest
+    DeviceResponse <|-- IResponse
+    DeviceService --> DeviceRequest
+    DeviceService --> DeviceResponse
+```
+
+*File Service:*
+
+```mermaid
+classDiagram
+
+    class IService
+    class IRequest
+    class IResponse
+
+    class FileService {
+        +request(message: FileRequest) FileResponse
+    }
+
+    class FileRequest
+    class FileResponse
+
+    FileService <|-- IService
+    FileRequest <|-- IRequest
+    FileResponse <|-- IResponse
+    FileService --> FileRequest
+    FileService --> FileResponse
+```
 
 ### 4.2 External Libraries
