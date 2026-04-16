@@ -10,7 +10,6 @@ target_sources(engine
       include/audiodataplane.h
       include/audiocontroller.h
       include/midicontroltypes.h
-      include/midicallbackhandler.h
       include/mididataplane.h
       include/midicontroller.h
 )
@@ -19,7 +18,6 @@ target_sources(engine PRIVATE
   src/engine.cpp
   src/audiodataplane.cpp
   src/audiocontroller.cpp
-  src/midicallbackhandler.cpp
   src/mididataplane.cpp
   src/midicontroller.cpp
 )
@@ -34,7 +32,6 @@ target_link_libraries(engine PUBLIC
   core
   backend
   processor-audio
-  rtmidi
 )
 
 set_target_properties(engine PROPERTIES LINKER_LANGUAGE CXX)

@@ -58,15 +58,6 @@ inline constexpr std::array<std::pair<eMidiMessageType, std::string_view>, 19> m
   {eMidiMessageType::SystemReset, "System Reset"}
 }};
 
-/** @struct MidiPort
-  * @brief Represents a MIDI port with its number and name.
-  */
-struct MidiPort
-{
-  unsigned int port_number;
-  std::string port_name;
-};
-
 /** @struct MidiMessage
   * @brief Represents a MIDI message with its delta time received, status, data bytes, and type name.
   */

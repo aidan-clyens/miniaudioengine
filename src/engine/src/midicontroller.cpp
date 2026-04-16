@@ -6,36 +6,6 @@
 using namespace miniaudioengine::midi;
 using namespace miniaudioengine::core;
 
-/** @brief Lists all available MIDI input ports.
- *  This function retrieves and prints the names of all available MIDI input ports.
- *
- *  @return A vector of MidiPort objects representing the available MIDI ports.
- */
-std::vector<MidiPort> MidiController::get_ports()
-{
-  std::vector<MidiPort> ports;
-
-  // Get the number of available MIDI input ports
-  unsigned int port_count = m_rtmidi_in.getPortCount();
-  LOG_DEBUG("MidiController: Number of MIDI input ports: ", port_count);
-
-  // List all available MIDI input ports
-  for (unsigned int i = 0; i < port_count; ++i)
-  {
-    try
-    {
-      std::string port_name = m_rtmidi_in.getPortName(i);
-      ports.push_back({i, port_name});
-    }
-    catch (const RtMidiError &error)
-    {
-      LOG_ERROR("MidiController: Error getting port name: ", error.getMessage());
-    }
-  }
-
-  return ports;
-}
-
 /** @brief Opens a MIDI input device port.
  *  @param port_number The MIDI device port number to open (default is 0).
  *  @throws std::out_of_range if the port number is invalid.
@@ -43,7 +13,7 @@ std::vector<MidiPort> MidiController::get_ports()
  */
 void MidiController::open_input_port(unsigned int port_number)
 {
-  if (port_number >= m_rtmidi_in.getPortCount())
+  if (port_number >= m_midi_adapter.get_port_count())
   {
     LOG_ERROR("MidiController: Invalid MIDI port number: ", port_number);
     throw std::out_of_range("Invalid MIDI port number: " + std::to_string(port_number));
@@ -57,7 +27,7 @@ void MidiController::open_input_port(unsigned int port_number)
   }
 
   // Check if port is already open
-  if (m_rtmidi_in.isPortOpen())
+  if (m_midi_adapter.is_port_open())
   {
     LOG_WARNING("MidiController: MIDI input port is already open. Closing existing port.");
     close_input_port();
@@ -80,39 +50,25 @@ void MidiController::open_input_port(unsigned int port_number)
     return;
   }
 
-  m_rtmidi_in.setCallback(&MidiCallbackHandler::midi_callback, m_callback_context.get());
-  m_rtmidi_in.ignoreTypes(false, true, true);
-
-  // Set up the MIDI input port
-  try
+  if (!m_midi_adapter.open_input_port(port_number, m_callback_context.get()))
   {
-    m_rtmidi_in.openPort(port_number);
+    LOG_ERROR("MidiController: Failed to open MIDI input port number: ", port_number);
+    throw std::runtime_error("Failed to open MIDI input port number: " + std::to_string(port_number));
   }
-  catch (const RtMidiError &error)
-  {
-    LOG_ERROR("MidiController: Failed to open MIDI input port: ", error.getMessage());
-    return;
-  }
-
-  LOG_DEBUG("MidiController: Opened MIDI input port (ID=", port_number, ", Name=", m_rtmidi_in.getPortName(port_number), ")");
 }
 
 /** @brief Closes the currently opened MIDI input port.
  */
 void MidiController::close_input_port()
 {
-  if (!m_rtmidi_in.isPortOpen())
+  if (!m_midi_adapter.is_port_open())
   {
     return;
   }
 
-  try
+  if (!m_midi_adapter.close_input_port())
   {
-    m_rtmidi_in.closePort();
-    LOG_DEBUG("MidiController: Closed MIDI input port (Name=", m_rtmidi_in.getPortName(), ")");
-  }
-  catch (const RtMidiError &error)
-  {
-    LOG_ERROR("MidiController: Error closing MIDI input port: ", error.getMessage());
+    LOG_ERROR("MidiController: Failed to close MIDI input port.");
+    throw std::runtime_error("Failed to close MIDI input port.");
   }
 }

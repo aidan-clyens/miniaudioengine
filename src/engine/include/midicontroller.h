@@ -2,15 +2,23 @@
 #define __MIDI_CONTROLLER_H__
 
 #include "interfaces/controller.h"
-#include "midicallbackhandler.h"
+#include "mididataplane.h"
 #include "miditypes.h"
+#include "midiadapter.h"
 
-#include <rtmidi/RtMidi.h>
 #include <memory>
 #include <vector>
 
 namespace miniaudioengine::midi
 {
+
+/** @struct MidiCallbackContext
+ *  @brief Context structure passed to the MIDI callback function.
+ */
+struct MidiCallbackContext
+{
+  std::vector<core::MidiDataPlanePtr> active_tracks;
+};
 
 /** @class MidiController
  *  @brief This class manages the MIDI hardware interfaces.
@@ -22,7 +30,7 @@ class MidiController : public core::IController
 {
 public:
   MidiController() : core::IController("MidiController"),
-                     m_callback_context(std::make_shared<core::MidiCallbackContext>()) {}
+                     m_callback_context(std::make_shared<MidiCallbackContext>()) {}
 
   ~MidiController() override
   {
@@ -32,7 +40,10 @@ public:
   /** @brief Gets the list of available MIDI input ports.
    *  @return A vector of MidiPort structures representing the available MIDI ports.
    */
-  virtual std::vector<MidiPort> get_ports();
+  virtual std::vector<adapter::MidiPort> get_ports()
+  {
+    return m_midi_adapter.get_ports();
+  }
 
   /** @brief Opens a MIDI input device port.
    *  @param port_number The MIDI device port number to open (default is 0).
@@ -48,16 +59,16 @@ public:
   /** @brief Get the MIDI callback context shared with the data plane.
    *  @return Shared pointer to the MidiCallbackContext.
    */
-  virtual std::shared_ptr<core::MidiCallbackContext> get_callback_context() const
+  virtual std::shared_ptr<MidiCallbackContext> get_callback_context() const
   {
     return m_callback_context;
   }
 
 protected:
-  std::shared_ptr<core::MidiCallbackContext> m_callback_context;
+  std::shared_ptr<MidiCallbackContext> m_callback_context;
 
 private:
-  RtMidiIn m_rtmidi_in;
+  adapter::MidiAdapter m_midi_adapter;
 
   bool _start() override { throw std::runtime_error("MidiController start/stop operations not implemented."); }
   bool _stop() override { throw std::runtime_error("MidiController start/stop operations not implemented."); }

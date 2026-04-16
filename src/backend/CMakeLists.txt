@@ -7,10 +7,12 @@ target_sources(backend
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
         include/audioadapter.h
+        include/midiadapter.h
 )
 
 target_sources(backend PRIVATE
     src/audioadapter.cpp
+    src/midiadapter.cpp
 )
 
 target_include_directories(backend
@@ -22,6 +24,7 @@ target_include_directories(backend
 target_link_libraries(backend PRIVATE
   engine
   rtaudio
+  rtmidi
 )
 
 set_target_properties(backend PROPERTIES LINKER_LANGUAGE CXX)

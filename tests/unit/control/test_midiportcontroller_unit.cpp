@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "midicontroller.h"
+#include "midiadapter.h"
 #include "logger.h"
 
 using namespace miniaudioengine;
@@ -20,7 +21,7 @@ private:
 
 TEST_F(MidiControllerTest, GetPorts)
 {
-  std::vector<MidiPort> ports = get_midi_controller()->get_ports();
+  std::vector<adapter::MidiPort> ports = get_midi_controller()->get_ports();
   EXPECT_GE(ports.size(), 0);
 
   for (const auto &port : ports)
@@ -33,7 +34,7 @@ TEST_F(MidiControllerTest, GetPorts)
 
 TEST_F(MidiControllerTest, OpenCloseInputPort)
 {
-  std::vector<MidiPort> ports = get_midi_controller()->get_ports();
+  std::vector<adapter::MidiPort> ports = get_midi_controller()->get_ports();
 
   if (ports.empty())
   {
@@ -47,7 +48,7 @@ TEST_F(MidiControllerTest, OpenCloseInputPort)
 
 TEST_F(MidiControllerTest, OpenInvalidPort)
 {
-  std::vector<MidiPort> ports = get_midi_controller()->get_ports();
+  std::vector<adapter::MidiPort> ports = get_midi_controller()->get_ports();
   unsigned int invalid_port_number = ports.size(); // Out of range port number
 
   EXPECT_THROW(get_midi_controller()->open_input_port(invalid_port_number), std::out_of_range);
@@ -55,7 +56,7 @@ TEST_F(MidiControllerTest, OpenInvalidPort)
 
 TEST_F(MidiControllerTest, ReopenPort)
 {
-  std::vector<MidiPort> ports = get_midi_controller()->get_ports();
+  std::vector<adapter::MidiPort> ports = get_midi_controller()->get_ports();
 
   if (ports.empty())
   {

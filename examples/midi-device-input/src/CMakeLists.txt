@@ -9,7 +9,6 @@ target_link_libraries(
   trackservice
   deviceservice
   cli
-  rtmidi
   sndfile
 )
 
