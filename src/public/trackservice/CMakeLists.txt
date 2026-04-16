@@ -23,10 +23,7 @@ target_include_directories(trackservice
 
 target_link_libraries(trackservice PUBLIC
   core
-  control-audio
-  control-midi
-  data-midi
-  data-audio
+  engine
   processor-audio
   fileservice
   deviceservice

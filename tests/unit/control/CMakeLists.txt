@@ -15,6 +15,5 @@ target_link_libraries(miniaudioengine-unit-test-control PRIVATE
   GTest::gtest
   GTest::gtest_main
   test-mocks
-  control-audio
-  control-midi
+  engine
 )

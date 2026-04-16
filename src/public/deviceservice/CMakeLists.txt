@@ -24,10 +24,7 @@ target_include_directories(deviceservice
 target_link_libraries(deviceservice
   PUBLIC
     core
-    data-audio
-    data-midi
-    control-audio
-    control-midi
+    engine
 )
 
 set_target_properties(deviceservice PROPERTIES LINKER_LANGUAGE CXX)

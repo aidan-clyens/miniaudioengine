@@ -9,8 +9,7 @@ target_link_libraries(
     trackservice
     deviceservice
     fileservice
-    control-midi
-    data-midi
+    engine
     processor-audio
     processor-sampleplayer
     cli

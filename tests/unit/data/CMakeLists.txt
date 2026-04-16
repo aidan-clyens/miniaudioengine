@@ -7,6 +7,5 @@ target_link_libraries(miniaudioengine-unit-test-data PRIVATE
   GTest::gtest
   GTest::gtest_main
   test-mocks
-  data-audio
-  data-midi
+  engine
 )

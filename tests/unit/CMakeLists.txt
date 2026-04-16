@@ -12,10 +12,7 @@ target_link_libraries(miniaudioengine-unit-tests PRIVATE
   miniaudioengine-unit-test-core
   miniaudioengine-unit-test-control
   miniaudioengine-unit-test-data
-  control-audio
-  control-midi
-  data-audio
-  data-midi
+  engine
   trackservice
   fileservice
   deviceservice

@@ -83,10 +83,7 @@ include(CMakePackageConfigHelpers)
 # Install library targets and header files
 install(
     TARGETS
-        control-audio
-        control-midi
-        data-audio
-        data-midi
+        engine
         processor-audio
         trackservice
         fileservice
