@@ -35,7 +35,6 @@ target_link_libraries(engine PUBLIC
   backend
   processor-audio
   rtmidi
-  rtaudio
 )
 
 set_target_properties(engine PROPERTIES LINKER_LANGUAGE CXX)

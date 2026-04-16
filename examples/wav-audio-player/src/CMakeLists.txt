@@ -10,7 +10,6 @@ target_link_libraries(
   deviceservice
   fileservice
   cli
-  rtaudio
   rtmidi
   sndfile
 )

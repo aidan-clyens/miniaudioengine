@@ -19,7 +19,7 @@ target_include_directories(backend
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
-target_link_libraries(backend PUBLIC
+target_link_libraries(backend PRIVATE
   engine
   rtaudio
 )
