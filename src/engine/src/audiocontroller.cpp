@@ -11,7 +11,7 @@ using namespace miniaudioengine;
 
 AudioController::AudioController()
   : core::IController("AudioController"),
-    m_callback_context(std::make_shared<core::AudioCallbackContext>())
+    m_callback_context(std::make_shared<AudioCallbackContext>())
 {}
 
 void AudioController::set_output_device(DeviceHandlePtr device)

@@ -1,7 +1,5 @@
 #include "audioadapter.h"
 
-#include "audiocallbackhandler.h"
-
 using namespace miniaudioengine;
 using namespace miniaudioengine::adapter;
 
@@ -46,7 +44,7 @@ bool AudioAdapter::open_stream(AudioStreamParameters &params,
                             RTAUDIO_FLOAT32,
                             sample_rate,
                             &buffer_frames,
-                            &core::AudioCallbackHandler::audio_callback,
+                            &AudioCallbackHandler::audio_callback,
                             callback_context);
 
   if (rc != RTAUDIO_NO_ERROR)
@@ -62,7 +60,7 @@ bool AudioAdapter::open_stream(AudioStreamParameters &params,
                          RTAUDIO_FLOAT32,
                          sample_rate,
                          &buffer_frames,
-                         &core::AudioCallbackHandler::audio_callback,
+                         &AudioCallbackHandler::audio_callback,
                          callback_context);
     m_rtaudio.startStream();
   }

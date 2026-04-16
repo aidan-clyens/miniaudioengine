@@ -4,7 +4,6 @@
 #include "interfaces/controller.h"
 #include "devicehandle_factory.h"
 #include "audioadapter.h"
-#include "audiocallbackhandler.h"
 #include "logger.h"
 
 #include <optional>
@@ -13,6 +12,11 @@
 
 namespace miniaudioengine::audio
 {
+
+struct AudioCallbackContext
+{
+  std::vector<core::IDataPlanePtr> active_tracks;
+};
 
 /** @class AudioController
  *  @brief Abstract base class and primary implementation for audio controllers.
@@ -46,7 +50,7 @@ public:
   /** @brief Get the audio callback context shared with the data plane.
    *  @return Shared pointer to the AudioCallbackContext.
    */
-  virtual std::shared_ptr<core::AudioCallbackContext> get_callback_context() const
+  virtual std::shared_ptr<AudioCallbackContext> get_callback_context() const
   {
     return m_callback_context;
   }
@@ -63,7 +67,7 @@ protected:
   bool register_dataplanes();
 
   // Common state shared by all implementations
-  std::shared_ptr<core::AudioCallbackContext> m_callback_context;
+  std::shared_ptr<AudioCallbackContext> m_callback_context;
   DeviceHandlePtr m_device_handle;
 
 private:

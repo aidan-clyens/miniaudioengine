@@ -12,6 +12,13 @@ namespace miniaudioengine::adapter
 typedef RtAudioStreamStatus AudioStreamStatus;
 typedef RtAudio::StreamParameters AudioStreamParameters;
 
+class AudioCallbackHandler
+{
+public:
+  static int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
+                            double stream_time, adapter::AudioStreamStatus status, void *user_data) noexcept {}
+};
+
 /** @class AudioAdapter
  *  @brief Adapter class that encapsulates RtAudio, separating the audio controller from direct dependency on RtAudio.
  */

@@ -8,7 +8,6 @@ target_sources(engine
     FILES
       include/engine.h
       include/audiodataplane.h
-      include/audiocallbackhandler.h
       include/audiocontroller.h
       include/midicontroltypes.h
       include/midicallbackhandler.h
@@ -18,7 +17,6 @@ target_sources(engine
 
 target_sources(engine PRIVATE
   src/engine.cpp
-  src/audiocallbackhandler.cpp
   src/audiodataplane.cpp
   src/audiocontroller.cpp
   src/midicallbackhandler.cpp
