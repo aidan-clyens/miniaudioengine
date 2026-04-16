@@ -3,10 +3,10 @@
 
 #include "interfaces/controller.h"
 #include "devicehandle_factory.h"
+#include "audioadapter.h"
 #include "audiocallbackhandler.h"
 #include "logger.h"
 
-#include <rtaudio/RtAudio.h>
 #include <optional>
 #include <vector>
 #include <memory>
@@ -67,7 +67,7 @@ protected:
   DeviceHandlePtr m_device_handle;
 
 private:
-  RtAudio m_rtaudio;
+  adapter::AudioAdapter m_adapter;
 
   /** @brief Start Audio Stream
    *  @return true if the audio stream was started successfully, false otherwise

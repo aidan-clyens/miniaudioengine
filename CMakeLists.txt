@@ -84,6 +84,7 @@ include(CMakePackageConfigHelpers)
 install(
     TARGETS
         engine
+        backend
         processor-audio
         trackservice
         fileservice

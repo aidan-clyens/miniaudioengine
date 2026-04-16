@@ -7,11 +7,10 @@
 #include <algorithm>
 #include <vector>
 
-#include <rtaudio/RtAudio.h>
-
 #include "interfaces/dataplane.h"
 #include "miniaudioengine/filehandle.h"
 
+#include "audioadapter.h"
 #include "audioprocessor.h"
 #include "logger.h"
 
@@ -92,7 +91,7 @@ public:
    *  @param status Stream status flags.
    */
   void process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                     double stream_time, RtAudioStreamStatus status) noexcept;
+                     double stream_time, adapter::AudioStreamStatus status) noexcept;
 
   /** @brief Preload audio file data into the audio data plane. Called from the Track control plane before playback.
    *  @param file_handle Shared pointer to a FileHandle (must be eFileType::Wav).

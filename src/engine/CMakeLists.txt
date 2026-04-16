@@ -34,6 +34,7 @@ target_include_directories(engine
 
 target_link_libraries(engine PUBLIC
   core
+  backend
   processor-audio
   rtmidi
   rtaudio

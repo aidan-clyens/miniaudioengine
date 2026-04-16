@@ -5,7 +5,7 @@ using namespace miniaudioengine;
 using namespace miniaudioengine::core;
 
 void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                                        double stream_time, RtAudioStreamStatus status) noexcept
+                                        double stream_time, adapter::AudioStreamStatus status) noexcept
 {
   (void)status; // Unused for now, but can be used to handle underflow/overflow conditions in the future
   float *in_buffer = static_cast<float *>(input_buffer);

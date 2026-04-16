@@ -94,43 +94,9 @@ bool AudioController::register_dataplanes()
   return true;
 }
 
-// Converts RtAudio::DeviceInfo to DeviceHandlePtr without exposing RtAudio in any header
-static DeviceHandlePtr make_device_handle(const RtAudio::DeviceInfo& info, unsigned int id)
-{
-  return DeviceHandleFactory::make_audio(
-    id,
-    info.name,
-    info.isDefaultInput,
-    info.isDefaultOutput,
-    info.outputChannels,
-    info.inputChannels,
-    info.duplexChannels,
-    info.preferredSampleRate,
-    info.sampleRates);
-}
-
 std::vector<DeviceHandlePtr> AudioController::get_audio_devices()
 {
-  std::vector<DeviceHandlePtr> devices;
-  unsigned int device_count = m_rtaudio.getDeviceCount();
-  devices.reserve(device_count);
-
-#if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
-  std::vector<unsigned int> device_ids = m_rtaudio.getDeviceIds();
-  for (const unsigned int id : device_ids)
-  {
-    RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(id);
-    devices.push_back(make_device_handle(info, id));
-  }
-#else
-  for (unsigned int i = 0; i < device_count; ++i)
-  {
-    RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(i);
-    devices.push_back(make_device_handle(info, i));
-  }
-#endif
-
-  return devices;
+  return m_adapter.get_devices();
 }
 
 bool AudioController::_start()
@@ -158,7 +124,7 @@ bool AudioController::_start()
     return false;
   }
 
-  RtAudio::StreamParameters params = {
+  adapter::AudioStreamParameters params = {
     .deviceId  = device->get_id(),
     .nChannels = device->get_output_channels(),
     .firstChannel = 0
@@ -171,46 +137,11 @@ bool AudioController::_start()
             ", Sample Rate: ", sample_rate,
             ", Buffer Frames: ", buffer_frames);
 
-#if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
-  RtAudioErrorType rc;
-  rc = m_rtaudio.openStream(&params,
-                            nullptr,
-                            RTAUDIO_FLOAT32,
-                            sample_rate,
-                            &buffer_frames,
-                            &AudioCallbackHandler::audio_callback,
-                            m_callback_context.get());
-
-  if (rc != RTAUDIO_NO_ERROR)
+  if (!m_adapter.open_stream(params, sample_rate, buffer_frames, m_callback_context.get()))
   {
     LOG_ERROR("AudioController: Failed to open RtAudio stream.");
     return false;
   }
-
-  rc = m_rtaudio.startStream();
-  if (rc != RTAUDIO_NO_ERROR)
-  {
-    LOG_ERROR("AudioController: Failed to start RtAudio stream.");
-    return false;
-  }
-#else
-  try
-  {
-    m_rtaudio.openStream(&params,
-                         nullptr,
-                         RTAUDIO_FLOAT32,
-                         sample_rate,
-                         &buffer_frames,
-                         &AudioCallbackHandler::audio_callback,
-                         m_callback_context.get());
-    m_rtaudio.startStream();
-  }
-  catch (const RtAudioError &e)
-  {
-    LOG_ERROR("AudioController: Failed to open/start RtAudio stream: ", e.getMessage());
-    return false;
-  }
-#endif
 
   LOG_DEBUG("AudioController: RtAudio stream Started with output device ", device->get_name());
   m_stream_state = eStreamState::Playing;
@@ -227,32 +158,19 @@ bool AudioController::_stop()
   }
 
   // If stream is running, stop it
-  if (m_rtaudio.isStreamRunning())
+  if (m_adapter.is_stream_running())
   {
-#if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
-    RtAudioErrorType rc = m_rtaudio.stopStream();
-    if (rc != RTAUDIO_NO_ERROR)
+    if (!m_adapter.stop_stream())
     {
       LOG_ERROR("AudioController: Failed to stop RtAudio stream.");
       return false;
     }
-#else
-    try
-    {
-      m_rtaudio.stopStream();
-    }
-    catch (const RtAudioError &e)
-    {
-      LOG_ERROR("AudioController: Failed to stop RtAudio stream: ", e.getMessage());
-      return false;
-    }
-#endif
   }
 
   // If stream is open, close it
-  if (m_rtaudio.isStreamOpen())
+  if (m_adapter.is_stream_open())
   {
-    m_rtaudio.closeStream();
+    m_adapter.close_stream();
   }
 
   clear_registered_dataplane();

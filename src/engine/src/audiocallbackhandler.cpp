@@ -9,7 +9,7 @@ using namespace miniaudioengine::audio;
 using namespace miniaudioengine::core;
 
 int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                          double stream_time, RtAudioStreamStatus status, void *user_data) noexcept
+                          double stream_time, adapter::AudioStreamStatus status, void *user_data) noexcept
 {
   set_thread_name("RtAudioCallback");
 
