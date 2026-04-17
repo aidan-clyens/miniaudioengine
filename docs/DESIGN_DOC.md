@@ -38,7 +38,6 @@
       - [3.5.3 Tracks](#353-tracks)
     - [3.6 Interface View](#36-interface-view)
       - [3.6.1 Public SDK](#361-public-sdk)
-      - [3.6.2 Example Programs](#362-example-programs)
     - [3.7 Interaction View](#37-interaction-view)
       - [3.7.1 Audio Input to Audio Output](#371-audio-input-to-audio-output)
       - [3.7.3 MIDI Input Processing](#373-midi-input-processing)
@@ -366,32 +365,53 @@ Separating devices and files into different services divides the dependency.
 
 ```mermaid
 graph TD
-    subgraph Public["Layer 3: Public"]
+    subgraph Layer4["Layer 4: SDK"]
+        SDK["miniaudioengine SDK"]
+    end
+
+    subgraph Layer3["Layer 3: Proxy"]
+        Proxy
+    end
+
+    subgraph Layer2["Layer 2: Services"]
+        TrackService
         DeviceService
         FileService
     end
-    subgraph Adapter["Layer 2: Adapter"]
-        AudioAdapter
-        MidiAdapter
-        FileAdapter
+
+    subgraph Layer1["Layer 1: Engine / Foundation"]
+        Engine
+        Core
+        Adapters
     end
-    subgraph Implementation["Layer 1: Implementation"]
-        AudioAdapterImpl["AudioAdapter::Impl"]
-        MidiAdapterImpl["MidiAdapter::Impl"]
-        FileAdapterImpl["FileAdapter::Impl"]
-    end
-    subgraph External["Layer 0: External"]
+
+    subgraph Layer0["Layer 0: External"]
         RtAudio
         RtMidi
         sndfile
     end
 
-    DeviceService --> AudioAdapter
-    DeviceService --> MidiAdapter
-    FileService --> FileAdapter
-    AudioAdapter --> AudioAdapterImpl --> RtAudio
-    MidiAdapter --> MidiAdapterImpl --> RtMidi
-    FileAdapter --> FileAdapterImpl --> sndfile
+    SDK --> Proxy
+
+    Proxy --> TrackService
+    Proxy --> DeviceService
+    Proxy --> FileService
+
+    TrackService --> Engine
+    TrackService --> Core
+
+    DeviceService --> Core
+    DeviceService --> Adapters
+
+    FileService --> Core
+    FileService --> Adapters
+
+    Engine --> Core
+    Engine --> Adapters
+
+    Adapters --> RtAudio
+    Adapters --> RtMidi
+    Adapters --> sndfile
 ```
 
 <div style="page-break-after: always;"></div>
@@ -527,44 +547,24 @@ classDiagram
 
 #### 3.6.1 Public SDK
 
-```C++
-// miniaudioengine.h
+The user uses the software via the main `miniaudioengine` SDK library.
 
-// Types
-using DeviceHandlePtr = std::shared_ptr<DeviceHandle>;
-using FileHandlePtr = std::shared_ptr<FileHandle>;
-using TrackPtr = std::shared_ptr<Track>;
+The following types need to be accessible to the user:
+- `DeviceHandle`
+- `FileHandle`
+- `Track`
+- `Processor`
 
-// Playback
-bool miniaudioengine::play();
-bool miniaudioengine::record();
-bool miniaudioengine::stop();
-bool miniaudioengine::is_running();
-
-// Devices
-std::shared_ptr<DeviceService> miniaudioengine::get_device_manager();
-std::vector<DeviceHandlePtr> miniaudioengine::get_audio_devices();
-std::vector<DeviceHandlePtr> miniaudioengine::get_midi_devices();
-bool miniaudioengine::set_output_device(DeviceHandlePtr device);
-bool miniaudioengine::set_input_device(DeviceHandlePtr device);
-
-// Files
-std::shared_ptr<FileService> miniaudioengine::get_file_manager();
-std::vector<FileHandlePtr> miniaudioengine::get_audio_files(const std::filesystem::path &directory);
-std::vector<FileHandlePtr> miniaudioengine::get_wav_files(const std::filesystem::path &directory);
-bool miniaudioengine::set_input_file(FileHandlePtr device);
-
-// Tracks
-std::shared_ptr<TrackManager> miniaudioengine::get_track_manager();
-std::vector<TrackPtr> miniaudioengine::get_tracks();
-TrackPtr miniaudioengine::add_track();
-bool miniaudioengine::remove_track(TrackPtr track);
-bool miniaudioengine::clear_tracks();
-```
-
-<div style="page-break-after: always;"></div>
-
-#### 3.6.2 Example Programs
+The following operations need to be accessible to the user:
+- Get audio/MIDI devices.
+- Get audio/MIDI files.
+- Set audio/MIDI device as input or output.
+- Set audio/MIDI file as input or output.
+- Add a new track.
+- Add and audio or MIDI processor to a track.
+- Start/stop playback.
+- Start/stop recording.
+- Start/stop monitoring.
 
 <div style="page-break-after: always;"></div>
 
@@ -605,6 +605,8 @@ sequenceDiagram
     AudioController->>RtAudio: closeStream()
     AudioController->>AudioController: clear_registered_dataplanes()
 ```
+
+<div style="page-break-after: always;"></div>
 
 **Data Plane**
 
@@ -688,11 +690,65 @@ miniaudioengine/
 
 ```bash
 miniaudioengine/
-    core/           # Shared infrastructure, interfaces, logging
-    backends/       # Wrappers for external libraries
-    engine/         # Runtime orchestration, controllers, audio and MIDI data flow
-    processing/     # DSP units
-    public/         # Public facing SDK - miniaudioengine.h
+    core/           # Shared infrastructure, common types, and logging
+    adapters/       # Wrappers for RtAudio, RtMidi, and libsndfile
+    engine/         # Runtime orchestration and audio/MIDI control flow
+    services/       # Track, device, and file management
+    proxy/          # SDK-facing proxy layer delegating requests to services
+```
+
+*Note:* This view omits the optional processing and CLI helper libraries for clarity.
+
+```mermaid
+graph TD
+    SDK["miniaudioengine SDK"]
+
+    subgraph ProxyLayer["Proxy Layer"]
+        Proxy["proxy"]
+    end
+
+    subgraph Services["Service Layer"]
+        TrackService["trackservice"]
+        DeviceService["deviceservice"]
+        FileService["fileservice"]
+    end
+
+    subgraph Runtime["Engine Layer"]
+        Engine["engine"]
+    end
+
+    subgraph Foundation["Core / Framework"]
+        Core["core"]
+    end
+
+    subgraph Backends["I/O Backends / Adapters"]
+        Adapters["adapters"]
+        RtAudio["RtAudio"]
+        RtMidi["RtMidi"]
+        SndFile["libsndfile"]
+    end
+
+    SDK --> Proxy
+
+    Proxy --> TrackService
+    Proxy --> DeviceService
+    Proxy --> FileService
+
+    TrackService --> Engine
+    TrackService --> Core
+
+    DeviceService --> Core
+    DeviceService --> Adapters
+
+    FileService --> Core
+    FileService --> Adapters
+
+    Engine --> Core
+    Engine --> Adapters
+
+    Adapters --> RtAudio
+    Adapters --> RtMidi
+    Adapters --> SndFile
 ```
 
 #### 3.8.2 Project Structure
@@ -709,10 +765,11 @@ include/
         miniaudioengine.h   # Public facing SDK
 src/
     core/
-    backends/
+    adapters/
     engine/
     processing/
-    public/
+    services/
+    cli/
 tests/
 CMakeLists.txt              # CMake instructions
 CMakePresets.json           # CMake presets
