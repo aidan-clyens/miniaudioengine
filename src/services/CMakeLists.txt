@@ -1,4 +1,3 @@
-add_subdirectory(cli)
 add_subdirectory(trackservice)
 add_subdirectory(deviceservice)
 add_subdirectory(fileservice)

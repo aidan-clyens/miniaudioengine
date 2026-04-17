@@ -6,7 +6,6 @@ target_sources(engine
     BASE_DIRS
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
-      include/engine.h
       include/audiodataplane.h
       include/audiocontroller.h
       include/midicontroltypes.h
@@ -15,7 +14,6 @@ target_sources(engine
 )
 
 target_sources(engine PRIVATE
-  src/engine.cpp
   src/audiodataplane.cpp
   src/audiocontroller.cpp
   src/mididataplane.cpp
