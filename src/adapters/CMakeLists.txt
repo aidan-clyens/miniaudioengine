@@ -1,6 +1,6 @@
-add_library(backend STATIC)
+add_library(adapters STATIC)
 
-target_sources(backend
+target_sources(adapters
   PUBLIC
   FILE_SET HEADERS
     BASE_DIRS
@@ -11,23 +11,23 @@ target_sources(backend
         include/fileadapter.h
 )
 
-target_sources(backend PRIVATE
+target_sources(adapters PRIVATE
     src/audioadapter.cpp
     src/midiadapter.cpp
     src/fileadapter.cpp
 )
 
-target_include_directories(backend
+target_include_directories(adapters
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
 )
 
-target_link_libraries(backend PRIVATE
+target_link_libraries(adapters PRIVATE
   engine
   rtaudio
   rtmidi
   sndfile
 )
 
-set_target_properties(backend PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(adapters PROPERTIES LINKER_LANGUAGE CXX)

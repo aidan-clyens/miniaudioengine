@@ -30,7 +30,7 @@ target_include_directories(engine
 
 target_link_libraries(engine PUBLIC
   core
-  backend
+  adapters
   processor-audio
 )
 
