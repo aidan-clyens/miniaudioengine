@@ -42,7 +42,7 @@ target_include_directories(core
 
 target_link_libraries(core
   PUBLIC
-    sndfile
+    backend
 )
 
 set_target_properties(core PROPERTIES LINKER_LANGUAGE CXX)

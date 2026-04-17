@@ -21,7 +21,6 @@ target_include_directories(fileservice
 
 target_link_libraries(fileservice
   PUBLIC
-    sndfile
     core
 )
 

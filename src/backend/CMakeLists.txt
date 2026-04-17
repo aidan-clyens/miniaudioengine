@@ -8,11 +8,13 @@ target_sources(backend
     FILES
         include/audioadapter.h
         include/midiadapter.h
+        include/fileadapter.h
 )
 
 target_sources(backend PRIVATE
     src/audioadapter.cpp
     src/midiadapter.cpp
+    src/fileadapter.cpp
 )
 
 target_include_directories(backend
@@ -25,6 +27,7 @@ target_link_libraries(backend PRIVATE
   engine
   rtaudio
   rtmidi
+  sndfile
 )
 
 set_target_properties(backend PROPERTIES LINKER_LANGUAGE CXX)

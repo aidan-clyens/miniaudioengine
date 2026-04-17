@@ -1,5 +1,6 @@
 #include "filehandle_factory.h"
 #include "miniaudioengine/filehandle.h"
+#include "fileadapter.h"
 
 #include <sndfile.h>
 #include <filesystem>
@@ -21,8 +22,7 @@ struct FileHandle::Impl
   std::filesystem::path filepath;
 
   // WAV-only fields (zeroed/empty for MIDI)
-  SF_INFO sfinfo{};
-  std::shared_ptr<SNDFILE> sndfile;
+  adapter::FileAdapter file_adapter;
 };
 
 // =============================================================================
@@ -43,13 +43,13 @@ std::string FileHandle::get_filename() const { return p_impl->filepath.filename(
 unsigned int FileHandle::get_total_frames() const
 {
   if (p_impl->file_type != eFileType::Wav) return 0u;
-  return static_cast<unsigned int>(p_impl->sfinfo.frames);
+  return static_cast<unsigned int>(p_impl->file_adapter.get_info().frames);
 }
 
 unsigned int FileHandle::get_bits_per_sample() const
 {
   if (p_impl->file_type != eFileType::Wav) return 0u;
-  const int fmt = p_impl->sfinfo.format & SF_FORMAT_SUBMASK;
+  const int fmt = p_impl->file_adapter.get_info().format & SF_FORMAT_SUBMASK;
   switch (fmt)
   {
     case SF_FORMAT_PCM_16: return 16u;
@@ -64,13 +64,13 @@ unsigned int FileHandle::get_bits_per_sample() const
 unsigned int FileHandle::get_sample_rate() const
 {
   if (p_impl->file_type != eFileType::Wav) return 0u;
-  return static_cast<unsigned int>(p_impl->sfinfo.samplerate);
+  return static_cast<unsigned int>(p_impl->file_adapter.get_info().samplerate);
 }
 
 unsigned int FileHandle::get_channels() const
 {
   if (p_impl->file_type != eFileType::Wav) return 0u;
-  return static_cast<unsigned int>(p_impl->sfinfo.channels);
+  return static_cast<unsigned int>(p_impl->file_adapter.get_info().channels);
 }
 
 double FileHandle::get_duration_seconds() const
@@ -83,7 +83,7 @@ double FileHandle::get_duration_seconds() const
 std::string FileHandle::get_format_string() const
 {
   if (p_impl->file_type != eFileType::Wav) return {};
-  switch (p_impl->sfinfo.format & SF_FORMAT_TYPEMASK)
+  switch (p_impl->file_adapter.get_info().format & SF_FORMAT_TYPEMASK)
   {
     case SF_FORMAT_WAV:  return "WAV";
     case SF_FORMAT_AIFF: return "AIFF";
@@ -94,16 +94,16 @@ std::string FileHandle::get_format_string() const
 
 long long FileHandle::read_frames(std::vector<float>& buffer, long long frames_to_read)
 {
-  if (p_impl->file_type != eFileType::Wav || !p_impl->sndfile) return 0LL;
-  return sf_readf_float(p_impl->sndfile.get(),
+  if (p_impl->file_type != eFileType::Wav || !p_impl->file_adapter.get_file()) return 0LL;
+  return sf_readf_float(p_impl->file_adapter.get_file(),
                         buffer.data(),
                         static_cast<sf_count_t>(frames_to_read));
 }
 
 void FileHandle::seek(long long frame_offset)
 {
-  if (p_impl->file_type != eFileType::Wav || !p_impl->sndfile) return;
-  sf_seek(p_impl->sndfile.get(), static_cast<sf_count_t>(frame_offset), SEEK_SET);
+  if (p_impl->file_type != eFileType::Wav || !p_impl->file_adapter.get_file()) return;
+  sf_seek(p_impl->file_adapter.get_file(), static_cast<sf_count_t>(frame_offset), SEEK_SET);
 }
 
 std::string FileHandle::to_string() const
@@ -131,13 +131,8 @@ FileHandlePtr FileHandleFactory::make_wav(const std::filesystem::path& path)
   auto impl = std::make_unique<FileHandle::Impl>();
   impl->file_type = FileHandle::eFileType::Wav;
   impl->filepath  = path;
-  impl->sfinfo    = {};
 
-  impl->sndfile = std::shared_ptr<SNDFILE>(
-    sf_open(path.string().c_str(), SFM_READ, &impl->sfinfo),
-    [](SNDFILE* f) { if (f) sf_close(f); });
-
-  if (!impl->sndfile)
+  if (!impl->file_adapter.open(path.string().c_str()))
   {
     throw std::runtime_error("Failed to open WAV file: " + path.string());
   }
