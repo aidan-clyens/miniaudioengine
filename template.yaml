@@ -83,6 +83,15 @@ Resources:
                   - codebuild:BatchPutCodeCoverages
                 Resource:
                   - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${ProjectName}-*"
+              # S3 – read/write build artifacts
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:GetBucketVersioning
+                Resource:
+                  - !Sub "arn:aws:s3:::${ArtifactsBucket}"
+                  - !Sub "arn:aws:s3:::${ArtifactsBucket}/*"
 
   # ── Artifacts S3 Bucket ─────────────────────────────────────────────────────
   ArtifactsBucket:
