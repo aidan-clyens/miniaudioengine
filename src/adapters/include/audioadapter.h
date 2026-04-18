@@ -16,7 +16,9 @@ class AudioCallbackHandler
 {
 public:
   static int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                            double stream_time, adapter::AudioStreamStatus status, void *user_data) noexcept {}
+                            double stream_time, adapter::AudioStreamStatus status, void *user_data) noexcept {
+                              return 1;
+                            }
 };
 
 /** @class AudioAdapter

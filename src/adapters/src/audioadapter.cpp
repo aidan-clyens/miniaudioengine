@@ -76,11 +76,8 @@ bool AudioAdapter::open_stream(AudioStreamParameters &params,
 bool AudioAdapter::close_stream()
 {
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
-  if (!m_rtaudio.closeStream())
-  {
-    LOG_ERROR("AudioAdapter: Failed to close RtAudio stream.");
-    return false;
-  }
+  m_rtaudio.closeStream();
+  return true;
 #else
   try
   {

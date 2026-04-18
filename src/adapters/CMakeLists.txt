@@ -25,6 +25,9 @@ target_include_directories(adapters
 
 target_link_libraries(adapters PRIVATE
   engine
+)
+
+target_link_libraries(adapters PUBLIC
   rtaudio
   rtmidi
   sndfile
