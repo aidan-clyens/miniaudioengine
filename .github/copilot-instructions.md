@@ -50,31 +50,35 @@
 - Inline comments only for non-obvious logic; do not comment self-evident code
 
 ## Architecture
+
+See [docs/DESIGN_DOC.md](docs/DESIGN_DOC.md) for full rationale and sequence diagrams.
+
 - Strict layered system — dependencies flow **upward only** (lower layers must never depend on upper layers):
 
   ```
-  Layer 4: public / cli / examples  (TrackManager, DeviceManager, FileManager, CLI)
-  Layer 3: control                  (AudioStreamController, MidiPortController)
-  Layer 2: processing               (IAudioProcessor, Sample, SamplePlayer — partial/experimental)
-  Layer 1: data                     (AudioDataPlane, MidiDataPlane — real-time callbacks)
-  ─────────────────────────────────────────────────────────────────────────────────────
-  framework (shared — accessible by all layers):
-             LockfreeRingBuffer, DoubleBuffer, Logger, interfaces,
-             DeviceHandle, FileHandle (PImpl wrappers for RtAudio/RtMidi/libsndfile)
+  Layer 4: services / cli  (TrackService, DeviceService, FileService, CLI)
+  Layer 3: engine          (AudioController, AudioDataPlane, MidiController, MidiDataPlane)
+  Layer 2: processing      (IAudioProcessor, Sample, SamplePlayer — partial/experimental)
+  Layer 1: adapters        (AudioAdapter, FileAdapter, MidiAdapter — PImpl wrappers for RtAudio/RtMidi/libsndfile)
+  ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
+  core (shared — accessible by all layers):
+       LockfreeRingBuffer, DoubleBuffer, Logger, interfaces, DeviceHandle, FileHandle
   ```
 
 - **Track hierarchy**: `MainTrack` is always the root; regular `Track` objects are its direct children (single-level). Audio output mixes upward from children to parent.
 
   ```
-  MainTrack (root — owns AudioStreamController, MidiPortController)
-  ├── Track (owns AudioDataPlane + MidiDataPlane; source = device or file via std::variant)
-  └── Track
+  TrackService (singleton manager)
+  └── MainTrack (root — owns AudioController, MidiController)
+      ├── Track (owns AudioDataPlane + MidiDataPlane; source = DeviceHandle or FileHandle via std::variant)
+      └── Track
   ```
 
-- Control plane is synchronous singletons (main thread, locks allowed):
-	- Controllers in `src/control/` (`AudioStreamController`, `MidiPortController`)
-	- Public managers in `src/public/` (`TrackManager`, `DeviceManager`, `FileManager`)
-- Data plane executes in RtAudio/RtMidi callbacks in `src/data/` — use `LockfreeRingBuffer<T, Size>` from `src/framework/include/lockfree_ringbuffer.h` for cross-thread messaging.
+- Service layer is synchronous singletons (main thread, locks allowed):
+	- `src/services/` — `TrackService`, `DeviceService`, `FileService`
+	- `src/cli/` — CLI entry point
+- Engine layer executes in RtAudio/RtMidi callbacks in `src/engine/` — use `LockfreeRingBuffer<T, Size>` from `src/core/` for cross-thread messaging.
+- Adapter layer in `src/adapters/` wraps all external library calls; never access RtAudio/RtMidi/libsndfile directly above this layer.
 - Processing plane is minimal: `IAudioProcessor`, `Sample`, `SamplePlayer` (per-processor threading via `core::IProcessor`; no orchestration layer yet).
 
 ## Build and Test
@@ -89,19 +93,20 @@
 - Windows runtime: vcpkg DLLs must be on `PATH` or copied next to the executable; see [docs/WINDOWS_SETUP.md](docs/WINDOWS_SETUP.md) for full setup.
 
 ## Project Conventions
-- Singletons via `::instance()`; unit tests often call `TrackManager::instance().clear_tracks()` to reset state.
-- **Real-time safety rules** (any code in `src/data/` callbacks):
+- Singletons via `::instance()`; unit tests often call `TrackService::instance().clear_tracks()` to reset state.
+- **Public types**: Use `DeviceHandle` / `DeviceHandlePtr` and `FileHandle` / `FileHandlePtr` as the canonical public API types. `AudioDevice`, `MidiDevice`, `WavFile`, `MidiFile` in `include/miniaudioengine/` are deprecated stubs kept for backward compatibility.
+- **Real-time safety rules** (any code in `src/engine/` callbacks):
   1. No mutexes — no `std::mutex`, `std::lock_guard`, or any blocking primitive
   2. No heap allocation — no `new`, `malloc`, `std::vector::push_back`, or dynamic allocation
   3. No blocking I/O — no file reads, no sleep calls
   4. Use `LockfreeRingBuffer` for all cross-thread communication
   5. Keep total callback work under 1 ms
-- `MessageQueue<T>` in `src/framework/include/messagequeue.h` is lock-based — never use it in real-time paths.
-- `IAudioController` is deprecated; prefer `AudioStreamController` directly (still referenced in `TrackManager`).
+- `MessageQueue<T>` in `src/core/` is lock-based — never use it in real-time paths.
 - Mocks live in `tests/mocks/include/` under namespace `miniaudioengine::test`; mirror interface names with `Mock` prefix (e.g., `MockAudioController`).
 
 ## Integration Points
 - External dependencies managed by vcpkg in `vcpkg.json`: RtAudio, RtMidi, libsndfile, gtest.
+- All external library calls are isolated in `src/adapters/` (`AudioAdapter`, `FileAdapter`, `MidiAdapter`); no layer above adapters may include RtAudio, RtMidi, or libsndfile headers directly.
 - Platform detection macros `PLATFORM_WINDOWS` / `PLATFORM_LINUX` are used for OS-specific code paths.
 
 ## Security
