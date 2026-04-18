@@ -84,6 +84,17 @@ Resources:
                 Resource:
                   - !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${ProjectName}-*"
 
+  # ── Artifacts S3 Bucket ─────────────────────────────────────────────────────
+  ArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-artifacts"
+      VersioningConfiguration:
+        Status: Enabled
+      Tags:
+        - Key: Project
+          Value: !Ref ProjectName
+
   # ── CodeBuild Project ─────────────────────────────────────────────────────
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -111,7 +122,8 @@ Resources:
         EnvironmentVariables: []
 
       Artifacts:
-        Type: NO_ARTIFACTS
+        Type: S3
+        Location: !Ref ArtifactsBucket
 
       LogsConfig:
         CloudWatchLogs:
@@ -146,3 +158,15 @@ Outputs:
     Value: !GetAtt CodeBuildServiceRole.Arn
     Export:
       Name: !Sub "${ProjectName}-CodeBuildServiceRoleArn"
+
+  ArtifactsBucketName:
+    Description: Name of the S3 bucket for build artifacts.
+    Value: !Ref ArtifactsBucket
+    Export:
+      Name: !Sub "${ProjectName}-ArtifactsBucketName"
+
+  ArtifactsBucketArn:
+    Description: ARN of the S3 bucket for build artifacts.
+    Value: !Sub "arn:aws:s3:::${ArtifactsBucket}"
+    Export:
+      Name: !Sub "${ProjectName}-ArtifactsBucketArn"
