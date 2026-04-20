@@ -679,103 +679,116 @@ sequenceDiagram
 
 #### 3.8.1 Library Structure
 
-*Include Structure:*
+| Library | Description |
+|---|---|
+| framework |
+| services |
+| adapters |
+| RtAudio |
+| RtMidi |
+| sndfile |
 
-```bash
-miniaudioengine/
-    miniaudioengine.h
-```
-
-*Libraries:*
-
-```bash
-miniaudioengine/
-    core/           # Shared infrastructure, common types, and logging
-    adapters/       # Wrappers for RtAudio, RtMidi, and libsndfile
-    engine/         # Runtime orchestration and audio/MIDI control flow
-    services/       # Track, device, and file management
-    proxy/          # SDK-facing proxy layer delegating requests to services
-```
-
-*Note:* This view omits the optional processing and CLI helper libraries for clarity.
+<div><br><br></div>
 
 ```mermaid
 graph TD
-    SDK["miniaudioengine SDK"]
+    subgraph miniaudioengine
 
-    subgraph ProxyLayer["Proxy Layer"]
-        Proxy["proxy"]
+        Engine
+        Track
+        DeviceHandle
+        FileHandle
+        AudioProcessorUnit
+
+        subgraph framework
+            IService
+            IAdapter
+        end
+
+        subgraph services
+            TrackService
+            AudioService
+            DeviceService
+            FileService
+            MidiService
+        end
+
+        subgraph adapters
+            FileAdapter
+            AudioAdapter
+            MidiAdapter
+        end
+
     end
 
-    subgraph Services["Service Layer"]
-        TrackService["trackservice"]
-        DeviceService["deviceservice"]
-        FileService["fileservice"]
+    subgraph External
+        RtAudio
+        RtMidi
+        sndfile
     end
 
-    subgraph Runtime["Engine Layer"]
-        Engine["engine"]
-    end
-
-    subgraph Foundation["Core / Framework"]
-        Core["core"]
-    end
-
-    subgraph Backends["I/O Backends / Adapters"]
-        Adapters["adapters"]
-        RtAudio["RtAudio"]
-        RtMidi["RtMidi"]
-        SndFile["libsndfile"]
-    end
-
-    SDK --> Proxy
-
-    Proxy --> TrackService
-    Proxy --> DeviceService
-    Proxy --> FileService
-
-    TrackService --> Engine
-    TrackService --> Core
-
-    DeviceService --> Core
-    DeviceService --> Adapters
-
-    FileService --> Core
-    FileService --> Adapters
-
-    Engine --> Core
-    Engine --> Adapters
-
-    Adapters --> RtAudio
-    Adapters --> RtMidi
-    Adapters --> SndFile
+    Engine --> services
+    Engine --> Track
+    Engine --> DeviceHandle
+    Engine --> FileHandle
+    Engine --> AudioProcessorUnit
+    services --> adapters
+    adapters --> External
+    services --> framework
+    adapters --> framework
 ```
+
+<div><br><br></div>
 
 #### 3.8.2 Project Structure
 
 ```bash
-cmake/
-    miniaudioengine-config.cmake.in
-docker/
-docs/
 examples/                   # Example programs using miniaudioengine SDK
 samples/
 include/
     miniaudioengine/
         miniaudioengine.h   # Public facing SDK
 src/
-    core/
-    adapters/
-    engine/
-    processing/
+    framework/
     services/
+    adapters/
     cli/
 tests/
-CMakeLists.txt              # CMake instructions
-CMakePresets.json           # CMake presets
-Dockerfile                  # Build Docker image for build environment
-vcpkg.json                  # Windows VCPKG dependencies
 ```
+
+#### 3.8.3 Thread Structure
+
+| Thread | Description |
+|---|---|
+| Main | Main execution thread.
+| RtAudio | Real-time audio data processing.
+| RtMidi | Real-time MIDI message handling. 
+
+<div><br><br></div>
+
+```mermaid
+graph TD
+    subgraph Main
+        TrackService
+        FileService
+        DeviceService
+        AudioService
+        MidiService
+    end
+
+    subgraph RtAudio
+        AudioCallbackHandler
+    end
+
+    subgraph RtMidi
+        MidiCallbackHandler
+    end
+
+    Main <--> RtAudio
+    Main <--> RtMidi
+```
+
+<div><br><br></div>
 
 <div style="page-break-after: always;"></div>
 
