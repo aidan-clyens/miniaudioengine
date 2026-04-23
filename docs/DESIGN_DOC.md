@@ -1,74 +1,28 @@
-<style>
-@page { @bottom-center { content: counter(page); } }
-</style>
+---
+title: "Software Design Description"
+subtitle: "miniaudioengine C++ SDK"
+author: "Aidan Clyens"
+titlepage: true
+---
 
-# Software Design Description
+\newpage
 
-**miniaudioengine**
+# 1. Introduction
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-## Table of Contents
+# 2. Stakeholders and Design Concerns
 
-- [Software Design Description](#software-design-description)
-  - [Table of Contents](#table-of-contents)
-  - [1 Introduction](#1-introduction)
-  - [2 Stakeholders and Design Concerns](#2-stakeholders-and-design-concerns)
-    - [2.1 Stakeholders](#21-stakeholders)
-    - [2.2 Design Concerns](#22-design-concerns)
-  - [3 Design Views](#3-design-views)
-    - [3.1 Context View](#31-context-view)
-    - [3.2 Composition View](#32-composition-view)
-      - [3.2.1 miniaudioengine SDK](#321-miniaudioengine-sdk)
-      - [3.2.2 Device Manager](#322-device-manager)
-      - [3.2.3 File Manager](#323-file-manager)
-      - [3.2.4 Track Manager](#324-track-manager)
-    - [3.3 Logical View](#33-logical-view)
-      - [3.4.1 Monitor Input Device Flow](#341-monitor-input-device-flow)
-      - [3.4.2 Open File Flow](#342-open-file-flow)
-      - [3.4.3 Play to Output Device Flow](#343-play-to-output-device-flow)
-      - [3.4.4 MIDI Message Flow](#344-midi-message-flow)
-      - [3.4.5 Audio Processing Flow](#345-audio-processing-flow)
-      - [3.4.6 Multiple Track Flow](#346-multiple-track-flow)
-    - [3.4 Dependency View](#34-dependency-view)
-    - [3.4.1 Layer Hierarchy](#341-layer-hierarchy)
-    - [3.5 Information View](#35-information-view)
-      - [3.5.1 Devices](#351-devices)
-      - [3.5.2 Files](#352-files)
-      - [3.5.3 Tracks](#353-tracks)
-    - [3.6 Interface View](#36-interface-view)
-      - [3.6.1 Public SDK](#361-public-sdk)
-    - [3.7 Interaction View](#37-interaction-view)
-      - [3.7.1 Audio Input to Audio Output](#371-audio-input-to-audio-output)
-      - [3.7.3 MIDI Input Processing](#373-midi-input-processing)
-    - [3.8 Structure View](#38-structure-view)
-      - [3.8.1 Library Structure](#381-library-structure)
-      - [3.8.2 Project Structure](#382-project-structure)
-  - [4 Design Rationale](#4-design-rationale)
-    - [4.1 Architectural Design](#41-architectural-design)
-      - [4.1.1 Layered Architecture](#411-layered-architecture)
-      - [4.1.2 Track Hierarchy](#412-track-hierarchy)
-      - [4.1.3 Software Design Patterns](#413-software-design-patterns)
-    - [4.2 External Libraries](#42-external-libraries)
-
-<div style="page-break-after: always;"></div>
-
-## 1 Introduction
-
-<div style="page-break-after: always;"></div>
-
-## 2 Stakeholders and Design Concerns
-
-### 2.1 Stakeholders
+## 2.1. Stakeholders
 
 | Stakeholder | Responsibilities | Design Concerns |
 | -- | -- | -- |
-| Software User | - Monitor audio input device.<br>- Monitor MIDI input device.<br>- Read audio files<br>- Play audio to output device.<br>- Play MIDI to output device. | DC-01<br>DC-02<br>DC-03<br>DC-04<br>DC-05<br>DC-06 |
-| Third-Party Developer | - Include SDK in C++ software application.<br>- Handle incoming MIDI messages.<br>- Process audio input.<br>- Route processed audio to output device.<br>- Manage audio in multiple tracks. | DC-07<br>DC-08<br>DC-09<br>DC-10<br>DC-11<br>DC-12<br>DC-13<br>DC-14<br>DC-17<br>DC-18 |
-| Maintainer | - Maintain CI/CD pipeline.<br>- Manage code repo.<br>- Manage software releases. | DC-13<br>DC-14<br>DC-15<br>DC-16<br>DC-17 |
-| Hardware | - Run on a Windows desktop.<br>- Run on an embedded Linux platform. | DC-13<br>DC-14 |
+| Software User | - Monitor audio input device.\newline- Monitor MIDI input device.\newline- Read audio files\newline- Play audio to output device.\newline- Play MIDI to output device. | DC-01\newline DC-02\newline DC-03\newline DC-04\newline DC-05\newline DC-06 |
+| Third-Party Developer | - Include SDK in C++ software application.\newline- Handle incoming MIDI messages.\newline- Process audio input.\newline- Route processed audio to output device.\newline- Manage audio in multiple tracks. | DC-07\newline DC-08\newline DC-09\newline DC-10\newline DC-11\newline DC-12\newline DC-13\newline DC-14\newline DC-17\newline DC-18 |
+| Maintainer | - Maintain CI/CD pipeline.\newline- Manage code repo.\newline- Manage software releases. | DC-13\newline DC-14\newline DC-15\newline DC-16\newline DC-17 |
+| Hardware | - Run on a Windows desktop.\newline- Run on an embedded Linux platform. | DC-13\newline DC-14 |
 
-### 2.2 Design Concerns
+## 2.2. Design Concerns
 
 | ID | Description | Relevant Views |
 | -- | -- | -- |
@@ -91,11 +45,11 @@
 | **DC-17** | Package software as an SDK used by third-party software. | Context, Composition
 | **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. | Composition
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-## 3 Design Views
+# 3. Design Views
 
-### 3.1 Context View
+## 3.1. Context View
 
 Describes the software in context with its external environment. Define users, external components, and the interactions between.
 
@@ -106,7 +60,7 @@ Describes the software in context with its external environment. Define users, e
 
 ```mermaid
 graph TD
-    App["Host Application"]
+    App["App"]
     SDK["miniaudioengine SDK"]
 
     subgraph Libraries[External Libraries]
@@ -121,7 +75,7 @@ graph TD
         FS["File System"]
     end
 
-    App -->|Public API| SDK
+    App -->|includes| SDK
     SDK --> RtA
     SDK --> RtM
     SDK --> SND
@@ -130,9 +84,9 @@ graph TD
     SND --> FS
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-### 3.2 Composition View
+## 3.2. Composition View
 
 Describe the composition of the **miniaudioengine** SDK software libraries.
 
@@ -141,10 +95,10 @@ Describe the composition of the **miniaudioengine** SDK software libraries.
 | **DC-17** | Package software as an SDK used by third-party software. |
 | **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. |
 
-#### 3.2.1 miniaudioengine SDK
+### 3.2.1. miniaudioengine SDK
 
 ```mermaid
-graph LR
+graph TD
 
     subgraph External["External Libraries"]
         RtAudio
@@ -153,56 +107,20 @@ graph LR
     end
 
     subgraph SDK["miniaudioengine SDK"]
-        TrackManager
-        DeviceService
-        FileService
+        AudioEngine
+        DeviceHandle
+        FileHandle
+        Track
     end
 
     SDK -->|includes| External
 ```
 
-#### 3.2.2 Device Manager
+\newpage
 
-```mermaid
-graph TD
+## 3.3. Logical View
 
-    DeviceService
-
-    DeviceService --> D1["DeviceHandle"]
-    DeviceService --> D2["DeviceHandle"]
-    DeviceService --> D3["DeviceHandle"]
-```
-
-#### 3.2.3 File Manager
-
-```mermaid
-graph TD
-
-    FileService
-
-    FileService --> D1["FileHandle"]
-    FileService --> D2["FileHandle"]
-    FileService --> D3["FileHandle"]
-```
-
-#### 3.2.4 Track Manager
-
-```mermaid
-graph TD
-
-    TrackManager
-
-    TrackManager --> MainTrack
-    MainTrack --> T1["Track"]
-    MainTrack --> T2["Track"]
-    MainTrack --> T3["Track"]
-```
-
-<div style="page-break-after: always;"></div>
-
-### 3.3 Logical View
-
-#### 3.4.1 Monitor Input Device Flow
+### 3.3.1. Record Audio Input
 
 | Design Concern |     |
 | -------------- | --- |
@@ -213,7 +131,7 @@ graph TD
 flowchart LR
 
     Step1["Get Input Devices"]
-    Step2["Select Input Device<br>(Audio or MIDI)"]
+    Step2["Select Input Device\newline(Audio or MIDI)"]
     Step3["Play"]
     Step4["Stop"]
 
@@ -222,7 +140,7 @@ flowchart LR
     Step3 -->|...| Step4
 ```
 
-#### 3.4.2 Open File Flow
+### 3.3.2. Play Audio File
 
 | Design Concern | |
 | -- | -- |
@@ -233,7 +151,7 @@ flowchart LR
 flowchart LR
 
     Step1["Read Filesystem"]
-    Step2["Open File<br>(.wav or .midi)"]
+    Step2["Open File\newline(.wav or .midi)"]
     Step3["Play"]
     Step4["Stop"]
 
@@ -242,7 +160,7 @@ flowchart LR
     Step3 -->|...| Step4
 ```
 
-#### 3.4.3 Play to Output Device Flow
+### 3.3.3. Play to Audio Output Device
 
 | Design Concern |     |
 | -------------- | --- |
@@ -253,7 +171,7 @@ flowchart LR
 flowchart LR
 
     Step1["Get Output Devices"]
-    Step2["Select Output Device<br>(Audio or MIDI)"]
+    Step2["Select Output Device\newline(Audio or MIDI)"]
     Step3["Play"]
     Step4["Stop"]
 
@@ -262,7 +180,7 @@ flowchart LR
     Step3 -->|...| Step4
 ```
 
-#### 3.4.4 MIDI Message Flow
+### 3.3.4. Read MIDI Messages
 
 | Design Concern | |
 | -- | -- |
@@ -285,9 +203,9 @@ flowchart LR
     Step5 --> |...|Step6
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-#### 3.4.5 Audio Processing Flow
+### 3.3.5. Audio Processing
 
 | Design Concern | |
 | -- | -- |
@@ -310,9 +228,9 @@ flowchart LR
     Step5 --> |...|Step6
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-#### 3.4.6 Multiple Track Flow
+### 3.3.6. Multiple Tracks
 
 | Design Concern |                                               |
 | -------------- | --------------------------------------------- |
@@ -354,23 +272,23 @@ flowchart LR
     J --> Step4
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-### 3.4 Dependency View
+## 3.4. Dependency View
 
 The components in this SDK depend on the file system, audio and MIDI devices on the host system.
 Separating devices and files into different services divides the dependency.
 
-### 3.4.1 Layer Hierarchy
+### 3.4.1. Layer Hierarchy
 
 ```mermaid
 graph TD
-    subgraph Layer4["Layer 4: SDK"]
-        SDK["miniaudioengine SDK"]
-    end
-
-    subgraph Layer3["Layer 3: Proxy"]
-        Proxy
+    subgraph Layer3["Layer 3: miniaudioengine SDK"]
+        AudioEngine
+        Track
+        DeviceHandle
+        FileHandle
+        AudioProcessor
     end
 
     subgraph Layer2["Layer 2: Services"]
@@ -379,9 +297,11 @@ graph TD
         FileService
     end
 
-    subgraph Layer1["Layer 1: Engine / Foundation"]
-        Engine
-        Core
+    subgraph Layer1["Layer 1: Engine"]
+        AudioController
+        MidiController
+        AudioDataplane
+        MidiDataplane
         Adapters
     end
 
@@ -391,34 +311,39 @@ graph TD
         sndfile
     end
 
-    SDK --> Proxy
+    subgraph Framework
+    end
 
-    Proxy --> TrackService
-    Proxy --> DeviceService
-    Proxy --> FileService
+    AudioEngine --> TrackService
+    AudioEngine --> DeviceService
+    AudioEngine --> FileService
 
-    TrackService --> Engine
-    TrackService --> Core
+    TrackService --> AudioController
+    TrackService --> MidiController
 
-    DeviceService --> Core
     DeviceService --> Adapters
-
-    FileService --> Core
     FileService --> Adapters
 
-    Engine --> Core
-    Engine --> Adapters
+    AudioController --> Adapters
+    MidiController --> Adapters
+    AudioDataplane --> Adapters
+    MidiDataplane --> Adapters
 
     Adapters --> RtAudio
     Adapters --> RtMidi
     Adapters --> sndfile
+
+    Layer3 --> Framework
+    Layer2 --> Framework
+    Layer1 --> Framework
+    Layer0 --> Framework
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-### 3.5 Information View
+## 3.5. Information View
 
-#### 3.5.1 Devices
+### 3.5.1. Devices
 
 ```mermaid
 classDiagram
@@ -447,7 +372,7 @@ classDiagram
     DeviceHandle --> eDeviceType : device_type
 ```
 
-#### 3.5.2 Files
+### 3.5.2. Files
 
 ```mermaid
 classDiagram
@@ -475,7 +400,7 @@ classDiagram
     FileHandle --> eFileType : file_type
 ```
 
-#### 3.5.3 Tracks
+### 3.5.3. Tracks
 
 ```mermaid
 classDiagram
@@ -493,8 +418,6 @@ classDiagram
         +remove_audio_input()
         +remove_midi_input()
         +add_audio_processor(IAudioProcessor)
-        +add_child_track(TrackPtr)
-        +remove_child_track(TrackPtr)
         +get_parent() TrackPtr
         +get_children() vector~TrackPtr~
         +set_output_gain(float)
@@ -541,36 +464,94 @@ classDiagram
     Track --> eTrackEvent
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-### 3.6 Interface View
+## 3.6. Interface View
 
-#### 3.6.1 Public SDK
+### 3.6.1. Public SDK
 
 The user uses the software via the main `miniaudioengine` SDK library.
 
-The following types need to be accessible to the user:
-- `DeviceHandle`
-- `FileHandle`
-- `Track`
-- `Processor`
+The following types need to be accessible to the user:\newline
+- `DeviceHandle`\newline
+- `FileHandle`\newline
+- `Track`\newline
+- `Processor`\newline
 
-The following operations need to be accessible to the user:
-- Get audio/MIDI devices.
-- Get audio/MIDI files.
-- Set audio/MIDI device as input or output.
-- Set audio/MIDI file as input or output.
+The following operations need to be accessible to the user:\newline
+- Get audio/MIDI devices.\newline
+- Get audio/MIDI files.\newline
+- Set audio/MIDI device as input or output.\newline
+- Set audio/MIDI file as input or output.\newline
 - Add a new track.
-- Add and audio or MIDI processor to a track.
-- Start/stop playback.
-- Start/stop recording.
-- Start/stop monitoring.
+- Add and audio or MIDI processor to a track.\newline
+- Start/stop playback.\newline
+- Start/stop recording.\newline
+- Start/stop monitoring.\newline
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-### 3.7 Interaction View
+```mermaid
+classDiagram
 
-#### 3.7.1 Audio Input to Audio Output
+    class AudioEngine {
+        +get_audio_devices() list~DeviceHandle~
+        +get_midi_devices() list~DeviceHandle~
+        +set_audio_output_device(DeviceHandle)
+        +set_audio_input_device(DeviceHandle)
+        +set_audio_input_file(FileHandle)
+        +set_midi_output_device(DeviceHandle)
+        +set_midi_input_device(DeviceHandle)
+        +set_midi_input_file(FileHandle)
+        +get_tracks() list~TrackPtr~
+        +add_track() TrackPtr
+        +remove_track(TrackPtr)
+        +clear_tracks()
+        +add_audio_processor(AudioProcessor)
+        +add_midi_processor(MidiProcessor)
+        +play()
+        +stop()
+        +record()
+        +mute()
+    }
+
+    class Track {
+        +set_audio_input_device(DeviceHandle)
+        +set_audio_input_file(FileHandle)
+        +set_midi_input_device(DeviceHandle)
+        +set_midi_input_file(FileHandle)
+        +add_audio_processor(AudioProcessor)
+        +add_midi_processor(MidiProcessor)
+        +play()
+        +stop()
+        +record()
+        +mute()
+    }
+
+    class DeviceHandle {
+
+    }
+
+    class FileHandle {
+
+    }
+
+    class AudioProcessor {
+
+    }
+
+    AudioEngine --> Track
+    AudioEngine --> DeviceHandle
+    AudioEngine --> FileHandle
+    AudioEngine --> AudioProcessor
+    Track --> DeviceHandle
+    Track --> FileHandle
+    Track --> AudioProcessor
+```
+
+## 3.7. Interaction View
+
+### 3.7.1. Audio Input to Audio Output
 
 **Control Plane**
 
@@ -606,7 +587,7 @@ sequenceDiagram
     AudioController->>AudioController: clear_registered_dataplanes()
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
 **Data Plane**
 
@@ -646,9 +627,9 @@ sequenceDiagram
     MainTrack-->>RtAudio: return 0 (success)
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-#### 3.7.3 MIDI Input Processing
+### 3.7.2. MIDI Input Processing
 
 **Control Plane**
 
@@ -673,11 +654,11 @@ sequenceDiagram
     Track->>MidiController (INPUT): Close input device/file
 ```
 
-<div style="page-break-after: always;"></div>
+\newpage
 
-### 3.8 Structure View
+## 3.8. Structure View
 
-#### 3.8.1 Library Structure
+### 3.8.1. Library Structure
 
 | Library | Description |
 |---|---|
@@ -688,29 +669,26 @@ sequenceDiagram
 | RtMidi |
 | sndfile |
 
-<div><br><br></div>
-
 ```mermaid
 graph TD
     subgraph miniaudioengine
 
-        Engine
+        AudioEngine
         Track
         DeviceHandle
         FileHandle
-        AudioProcessorUnit
+        AudioProcessor
 
         subgraph framework
             IService
             IAdapter
+            IHandle
         end
 
         subgraph services
             TrackService
-            AudioService
             DeviceService
             FileService
-            MidiService
         end
 
         subgraph adapters
@@ -727,20 +705,24 @@ graph TD
         sndfile
     end
 
-    Engine --> services
-    Engine --> Track
-    Engine --> DeviceHandle
-    Engine --> FileHandle
-    Engine --> AudioProcessorUnit
+    AudioEngine --> services
+    AudioEngine --> Track
+    AudioEngine --> DeviceHandle
+    AudioEngine --> FileHandle
+    AudioEngine --> AudioProcessor
+
+    DeviceHandle --> IHandle
+    FileHandle --> IHandle
+
     services --> adapters
     adapters --> External
     services --> framework
     adapters --> framework
 ```
 
-<div><br><br></div>
 
-#### 3.8.2 Project Structure
+
+### 3.8.2. Project Structure
 
 ```bash
 examples/                   # Example programs using miniaudioengine SDK
@@ -752,11 +734,10 @@ src/
     framework/
     services/
     adapters/
-    cli/
 tests/
 ```
 
-#### 3.8.3 Thread Structure
+### 3.8.3. Thread Structure
 
 | Thread | Description |
 |---|---|
@@ -764,16 +745,13 @@ tests/
 | RtAudio | Real-time audio data processing.
 | RtMidi | Real-time MIDI message handling. 
 
-<div><br><br></div>
 
 ```mermaid
 graph TD
     subgraph Main
-        TrackService
-        FileService
-        DeviceService
-        AudioService
-        MidiService
+        App
+        AudioController
+        MidiController
     end
 
     subgraph RtAudio
@@ -788,15 +766,13 @@ graph TD
     Main <--> RtMidi
 ```
 
-<div><br><br></div>
+\newpage
 
-<div style="page-break-after: always;"></div>
+# 4. Design Rationale
 
-## 4 Design Rationale
+## 4.1. Architectural Design
 
-### 4.1 Architectural Design
-
-#### 4.1.1 Layered Architecture
+### 4.1.1. Layered Architecture
 
 ```mermaid
 graph TD
@@ -810,18 +786,18 @@ graph TD
     Layer1 --> Layer0
 ```
 
-#### 4.1.2 Track Hierarchy
+### 4.1.2. Track Hierarchy
 
 ```mermaid
 graph TD
 
-    TrackManager --> MainTrack
+    TrackService --> MainTrack
     MainTrack --> Track1["Track"]
     MainTrack --> Track2["Track"]
     MainTrack --> Track3["Track"]
 ```
 
-#### 4.1.3 Software Design Patterns
+### 4.1.3. Software Design Patterns
 
 **C++ PImpl**
 
@@ -1023,4 +999,4 @@ classDiagram
     FileService --> FileResponse
 ```
 
-### 4.2 External Libraries
+## 4.2. External Libraries
