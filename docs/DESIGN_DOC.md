@@ -59,7 +59,7 @@ Describes the software in context with its external environment. Define users, e
 | **DC-14** | Build software SDK on x86_64 and ARM64 platforms. |
 | **DC-17** | Package software as an SDK used by third-party software. |
 
-```mermaid
+```mermaid caption="miniaudioengine SDK environment context" width=80%
 graph TD
     App["App"]
     SDK["miniaudioengine SDK"]
@@ -89,6 +89,8 @@ graph TD
 
 ## 3.2. Composition View
 
+### 3.8.1. SDK Components
+
 Describe the composition of the **miniaudioengine** SDK software libraries.
 
 | Design Concern | |
@@ -96,7 +98,7 @@ Describe the composition of the **miniaudioengine** SDK software libraries.
 | **DC-17** | Package software as an SDK used by third-party software. |
 | **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. |
 
-```mermaid
+```mermaid caption="miniaudioengine SDK composition" height=70%
 graph TD
     subgraph SDK["miniaudioengine SDK"]
         AudioSession
@@ -141,14 +143,18 @@ graph TD
 ```mermaid
 flowchart LR
 
-    Step1["Get Input Devices"]
-    Step2["Select Input Device"]
-    Step3["Record"]
-    Step4["Stop"]
+    getInputDevices("Get Input Devices")
 
-    Step1 --> Step2
-    Step2 --> Step3
-    Step3 -->|...| Step4
+    subgraph Track
+        selectInputDevice("Set Input Device")
+    end
+
+    record("Record")
+    stop("Stop")
+
+    getInputDevices --> selectInputDevice
+    selectInputDevice --> record
+    record -->|...| stop
 ```
 
 ### 3.3.2. Play Audio/MIDI File
@@ -161,14 +167,18 @@ flowchart LR
 ```mermaid
 flowchart LR
 
-    Step1["Read Filesystem"]
-    Step2["Open File"]
-    Step3["Play"]
-    Step4["Stop"]
+    readFiles("Read Filesystem")
 
-    Step1 --> Step2
-    Step2 --> Step3
-    Step3 -->|...| Step4
+    subgraph Track
+        openFile("Open File")
+    end
+
+    play("Play")
+    stop("Stop")
+
+    readFiles --> openFile
+    openFile --> play
+    play -->|...| stop
 ```
 
 ### 3.3.3. Playback to Output Device
@@ -181,65 +191,51 @@ flowchart LR
 ```mermaid
 flowchart LR
 
-    Step1["Get Output Devices"]
-    Step2["Select Output Device"]
-    Step3["Play"]
-    Step4["Stop"]
+    getOutputDevices("Get Output Devices")
 
-    Step1 --> Step2
-    Step2 --> Step3
-    Step3 -->|...| Step4
+    subgraph Track
+        selectOutputDevice("Set Output Device")
+    end
+
+    play("Play")
+    stop("Stop")
+
+    getOutputDevices --> selectOutputDevice
+    selectOutputDevice --> play
+    play -->|...| stop
 ```
 
-### 3.3.4. Read MIDI Messages
+### 3.3.4. Audio/MIDI Processing
 
 | Design Concern | |
 | -- | -- |
 | **DC-07** | Processing incoming MIDI messages.
-
-```mermaid
-flowchart LR
-
-    Step1["Get Input Devices"]
-    Step2["Select Input Device"]
-    Step4["Set Input Message Handler"]
-    Step5["Play"]
-    Step6["Stop"]
-
-    Step1 --> Step2
-    Step2 --> Step4
-    Step4 --> Step5
-    Step5 --> |...|Step6
-```
-
-\newpage
-
-### 3.3.5. Audio Processing
-
-| Design Concern | |
-| -- | -- |
 | **DC-08** | Processing incoming audio streams.
 
 ```mermaid
 flowchart LR
 
-    Step1["Get Input Devices"]
-    Step2["Select Audio Input Device"]
-    Step3["Select Audio Output Device"]
-    Step4["Add Audio Processor"]
-    Step5["Play"]
-    Step6["Stop"]
+    getInputDevices("Get Input Devices")
 
-    Step1 --> Step2
-    Step2 --> Step3
-    Step3 --> Step4
-    Step4 --> Step5
-    Step5 --> |...|Step6
+    subgraph Track
+        selectInputDevice("Set Input Device")
+        addProcessor("Add Processor")
+        selectOutputDevice("Set Output Device")
+    end
+
+    play("Play")
+    stop("Stop")
+
+    getInputDevices --> selectInputDevice
+    selectInputDevice --> addProcessor
+    addProcessor --> selectOutputDevice
+    selectOutputDevice --> play
+    play --> |...|stop
 ```
 
 \newpage
 
-### 3.3.6. Multiple Tracks
+### 3.3.5. Multiple Tracks
 
 | Design Concern |                                               |
 | -------------- | --------------------------------------------- |
@@ -251,30 +247,42 @@ flowchart LR
 ```mermaid
 flowchart LR
 
-    subgraph Node["Track"]
-        Step2["Select Input Device / File"]
+    getInputs("Get Inputs")
+    getOutputs("Get Outputs")
+
+    subgraph track1["Track"]
+        selectInputTrack1("Set Input")
+        addProcessorTrack1("Add Processor")
+        selectOutputTrack1("Set Output")
     end
 
-    subgraph Track2["Track"]
-        Step22["Select Input Device / File"]
+    subgraph track2["Track"]
+        selectInputTrack2("Set Input")
+        addProcessorTrack2("Add Processor")
+        selectOutputTrack2("Set Output")
     end
-
-    SelectOutput["Select Output Device"]
 
     J((" "))
 
-    Step4["Play"]
-    Step5["Stop"]
+    play("Play")
+    stop("Stop")
 
-    SelectOutput --> Step2
-    SelectOutput --> Step22 
+    getInputs --> getOutputs
+    getOutputs --> selectInputTrack1
+    getOutputs --> selectInputTrack2
 
-    Step4 -->|...| Step5
+    selectInputTrack1 --> addProcessorTrack1
+    addProcessorTrack1 --> selectOutputTrack1
 
-    Step2 --> J
-    Step22 --> J
+    selectInputTrack2 --> addProcessorTrack2
+    addProcessorTrack2 --> selectOutputTrack2
 
-    J --> Step4
+    play -->|...| stop
+
+    selectOutputTrack1 --> J
+    selectOutputTrack2 --> J
+
+    J --> play
 ```
 
 \newpage
@@ -294,24 +302,14 @@ graph TD
     end
 
     subgraph services
-        graphService
-        deviceService
-        fileService
-    end
-
-    subgraph graphService["TrackService"]
         TrackService
-        Track
-        Node
-    end
-
-    subgraph deviceService["Device Service"]
         DeviceService
-        Device
+        FileService
     end
 
-    subgraph fileService["File Service"]
-        FileService
+    subgraph entities
+        Track
+        Device
         File
     end
 
@@ -321,20 +319,17 @@ graph TD
         MidiAdapter
     end
 
-    AudioSession --> graphService
-    AudioSession --> deviceService
-    AudioSession --> fileService
-
-    AudioSession --> AudioAdapter
-    AudioSession --> MidiAdapter
-    AudioSession --> FileAdapter
-
-    TrackService --> Track
-    DeviceService --> Device
-    FileService --> File
-
-    Track --> Node
+    public --> adapters
+    public --> services
+    public --> entities
+    services --> entities
+    services --> adapters
+    adapters --> entities
 ```
+
+\newpage
+
+### 3.4.2. External Library Adapters
 
 \newpage
 
@@ -397,15 +392,14 @@ classDiagram
         +is_output() bool
         +is_default_input() bool
         +is_default_output() bool
-        +get_output_channels() unsigned int
-        +get_input_channels() unsigned int
-        +get_sample_rates() vector~unsigned int~
-        +get_preferred_sample_rate() unsigned int
         +to_string() string
     }
 
     class AudioDevice {
-
+        +get_output_channels() unsigned int
+        +get_input_channels() unsigned int
+        +get_sample_rates() vector~unsigned int~
+        +get_preferred_sample_rate() unsigned int
     }
 
     class MidiDevice {
@@ -431,6 +425,10 @@ classDiagram
         +get_file_type() eFileType
         +get_filepath() path
         +get_filename() string
+        +to_string() string
+    }
+
+    class AudioFile {
         +get_total_frames() unsigned int
         +get_sample_rate() unsigned int
         +get_channels() unsigned int
@@ -438,11 +436,6 @@ classDiagram
         +get_format_string() string
         +read_frames(vector~float~, long long) long long
         +seek(long long)
-        +to_string() string
-    }
-
-    class AudioFile {
-
     }
 
     class MidiFile {
@@ -465,37 +458,51 @@ classDiagram
     }
 
     class Track {
-        +get_nodes()
-        +add_input()
-        +add_processing_node()
-        +add_output()
-        +delete_node()
-        +clear_nodes()
+        -input : InputNode
+        -processors : list~ProcessorNode~
+        -output : OutputNode
+
+        +add_input() InputNode
+        +add_processor() ProcessorNode
+        +add_output() OutputNode
+
+        +get_input() optional~InputNode~
+        +get_processors() list~ProcessorNode~
+        +get_output() optional~OutputNode~
+
+        +remove_input()
+        +remove_processor()
+        +remove_output()
+
+        +clear_processors()
 
         +play()
         +record()
         +stop()
     }
 
-    class Node {
-        +play() bool
-        +stop() bool
+    class INode {
+
+
+        +play()
+        +record()
+        +stop()
+        
         +is_playing() bool
+        
         +has_parent() bool
-        +get_parent() optional~Node~
-        +get_children() list~Node~
-        #m_parent weak_ptr~Node~
-        #m_children list~shared_ptr~Node~~
+        +get_parent() optional~INode~
+        +get_children() list~INode~
     }
 
     class InputNode {
         -port : variant~Device, File~
-        -p_output : shared_ptr~Node~
+        -children : list~INode~
     }
 
     class OutputNode {
         -port : variant~Device, File~
-        -p_input : shared_ptr~Node~
+        -parent : shared_ptr~INode~
     }
 
     class ProcessorNode {
@@ -658,14 +665,25 @@ classDiagram
 
 ## 3.7. Interaction View
 
-### 3.7.1 Play Audio File
-
 | Design Concern | |
 | -- | -- |
 | **DC-03** | Open and read WAV audio files. |
 | **DC-05** | Route audio to output device. |
 | **DC-09** | Manage multiple audio tracks. |
 | **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. |
+
+### 3.7.1. Control Plane
+
+- Get audio/MIDI devices\newline
+- Get audio/MIDI files\newline
+- Set audio/MIDI device as input or output\newline
+- Set audio/MIDI file as input or output\newline
+- Add a new track\newline
+- Add and audio or MIDI processor to a track\newline
+- Start/stop playback\newline
+- Start/stop recording\newline
+
+\newpage
 
 ```mermaid
 sequenceDiagram
@@ -702,6 +720,57 @@ sequenceDiagram
     AudioSession->>TrackService: stop()
     TrackService->>Track: stop()
     Track->>AudioAdapter: stop()
+```
+
+\newpage
+
+### 3.7.2. Data Plane
+
+```mermaid
+flowchart LR
+    inputA("Input A") --> input1
+    inputB("Input B") --> input2
+
+    subgraph track1["Track"]
+        input1("Track Input") --> processor1("Track Processor")
+        processor1 --> output1("Track Output")
+    end
+
+    subgraph track2["Track"]
+        input2("Track Input") --> output2("Track Output")
+    end
+
+    output1 --> mixer("Mixer")
+    output2 --> mixer("Mixer")
+
+    mixer --> output("Output")
+```
+
+\newpage
+
+```mermaid
+graph TD
+
+    TrackService --> AudioCallbackHandler
+    AudioCallbackHandler --> Mixer
+    Mixer --> OutputNode1("Output")
+    Mixer --> OutputNode2("Output")
+    Mixer --> OutputNode3("Output")
+
+    subgraph Track1["Track"]
+        OutputNode1 --> ProcessorNode1("Processor")
+        ProcessorNode1 --> InputNode1("Input")
+    end
+
+    subgraph Track2["Track"]
+        OutputNode2 --> ProcessorNode2("Processor")
+        ProcessorNode2 --> InputNode2("Input")
+    end
+
+    subgraph Track3["Track"]
+        OutputNode3 --> ProcessorNode3("Processor")
+        ProcessorNode3 --> InputNode3("Input")
+    end
 ```
 
 \newpage
