@@ -95,32 +95,40 @@ Describe the composition of the **miniaudioengine** SDK software libraries.
 | **DC-17** | Package software as an SDK used by third-party software. |
 | **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. |
 
-### 3.2.1. miniaudioengine SDK
-
 ```mermaid
 graph TD
-
-    subgraph External["External Libraries"]
-        RtAudio
-        RtMidi
-        sndfile
-    end
-
     subgraph SDK["miniaudioengine SDK"]
-        AudioEngine
-        DeviceHandle
-        FileHandle
-        Track
+        AudioSession
+        subgraph deviceService["DeviceService"]
+            DeviceService
+            Device
+        end
+        subgraph fileService["FileService"]
+            FileService
+            File
+        end
+        subgraph graphService["TrackService"]
+            TrackService
+            Track
+            Node
+        end
     end
 
-    SDK -->|includes| External
+    AudioSession --> DeviceService
+    AudioSession --> FileService
+    AudioSession --> TrackService
+
+    DeviceService --> Device
+    FileService --> File
+    TrackService --> Track
+    Track --> Node
 ```
 
 \newpage
 
 ## 3.3. Logical View
 
-### 3.3.1. Record Audio Input
+### 3.3.1. Record Audio/MIDI Input
 
 | Design Concern |     |
 | -------------- | --- |
@@ -131,8 +139,8 @@ graph TD
 flowchart LR
 
     Step1["Get Input Devices"]
-    Step2["Select Input Device\newline(Audio or MIDI)"]
-    Step3["Play"]
+    Step2["Select Input Device"]
+    Step3["Record"]
     Step4["Stop"]
 
     Step1 --> Step2
@@ -140,7 +148,7 @@ flowchart LR
     Step3 -->|...| Step4
 ```
 
-### 3.3.2. Play Audio File
+### 3.3.2. Play Audio/MIDI File
 
 | Design Concern | |
 | -- | -- |
@@ -151,7 +159,7 @@ flowchart LR
 flowchart LR
 
     Step1["Read Filesystem"]
-    Step2["Open File\newline(.wav or .midi)"]
+    Step2["Open File"]
     Step3["Play"]
     Step4["Stop"]
 
@@ -160,7 +168,7 @@ flowchart LR
     Step3 -->|...| Step4
 ```
 
-### 3.3.3. Play to Audio Output Device
+### 3.3.3. Playback to Output Device
 
 | Design Concern |     |
 | -------------- | --- |
@@ -171,7 +179,7 @@ flowchart LR
 flowchart LR
 
     Step1["Get Output Devices"]
-    Step2["Select Output Device\newline(Audio or MIDI)"]
+    Step2["Select Output Device"]
     Step3["Play"]
     Step4["Stop"]
 
@@ -190,15 +198,13 @@ flowchart LR
 flowchart LR
 
     Step1["Get Input Devices"]
-    Step2["Select MIDI Input Device"]
-    Step3["Select Audio Output Device"]
-    Step4["Set MIDI Input Message Handler"]
+    Step2["Select Input Device"]
+    Step4["Set Input Message Handler"]
     Step5["Play"]
     Step6["Stop"]
 
     Step1 --> Step2
-    Step2 --> Step3
-    Step3 --> Step4
+    Step2 --> Step4
     Step4 --> Step5
     Step5 --> |...|Step6
 ```
@@ -215,7 +221,7 @@ flowchart LR
 flowchart LR
 
     Step1["Get Input Devices"]
-    Step2["Select Audio Input Device/File"]
+    Step2["Select Audio Input Device"]
     Step3["Select Audio Output Device"]
     Step4["Add Audio Processor"]
     Step5["Play"]
@@ -242,29 +248,25 @@ flowchart LR
 ```mermaid
 flowchart LR
 
-    subgraph Track["Track"]
-        Step1["Create Track"]
+    subgraph Node["Track"]
         Step2["Select Input Device / File"]
     end
 
     subgraph Track2["Track"]
-        Step12["Create Track"]
         Step22["Select Input Device / File"]
     end
 
     SelectOutput["Select Output Device"]
-    SelectOutput --> Step1
-    SelectOutput --> Step12
 
     J((" "))
 
     Step4["Play"]
     Step5["Stop"]
 
-    Step1 --> Step2
-    Step4 -->|...| Step5
+    SelectOutput --> Step2
+    SelectOutput --> Step22 
 
-    Step12 --> Step22 
+    Step4 -->|...| Step5
 
     Step2 --> J
     Step22 --> J
@@ -283,72 +285,70 @@ Separating devices and files into different services divides the dependency.
 
 ```mermaid
 graph TD
-    subgraph Layer3["Layer 3: miniaudioengine SDK"]
-        AudioEngine
-        Track
-        DeviceHandle
-        FileHandle
-        AudioProcessor
+
+    subgraph public
+        AudioSession
     end
 
-    subgraph Layer2["Layer 2: Services"]
+    subgraph services
+        graphService
+        deviceService
+        fileService
+    end
+
+    subgraph graphService["TrackService"]
         TrackService
+        Track
+        Node
+    end
+
+    subgraph deviceService["Device Service"]
         DeviceService
+        Device
+    end
+
+    subgraph fileService["File Service"]
         FileService
+        File
     end
 
-    subgraph Layer1["Layer 1: Engine"]
-        AudioController
-        MidiController
-        AudioDataplane
-        MidiDataplane
-        Adapters
+    subgraph adapters
+        FileAdapter
+        AudioAdapter
+        MidiAdapter
     end
 
-    subgraph Layer0["Layer 0: External"]
-        RtAudio
-        RtMidi
-        sndfile
-    end
+    AudioSession --> graphService
+    AudioSession --> deviceService
+    AudioSession --> fileService
 
-    subgraph Framework
-    end
+    AudioSession --> AudioAdapter
+    AudioSession --> MidiAdapter
+    AudioSession --> FileAdapter
 
-    AudioEngine --> TrackService
-    AudioEngine --> DeviceService
-    AudioEngine --> FileService
+    TrackService --> Track
+    DeviceService --> Device
+    FileService --> File
 
-    TrackService --> AudioController
-    TrackService --> MidiController
-
-    DeviceService --> Adapters
-    FileService --> Adapters
-
-    AudioController --> Adapters
-    MidiController --> Adapters
-    AudioDataplane --> Adapters
-    MidiDataplane --> Adapters
-
-    Adapters --> RtAudio
-    Adapters --> RtMidi
-    Adapters --> sndfile
-
-    Layer3 --> Framework
-    Layer2 --> Framework
-    Layer1 --> Framework
-    Layer0 --> Framework
+    Track --> Node
 ```
 
 \newpage
 
 ## 3.5. Information View
 
-### 3.5.1. Devices
+### 3.5.1. Audio Session
+
+### 3.5.2. Device Service
 
 ```mermaid
 classDiagram
 
-    class DeviceHandle {
+    class DeviceService {
+        -devices : list<Device>
+    }
+
+    class Device {
         +get_id() unsigned int
         +get_name() string
         +get_device_type() eDeviceType
@@ -363,21 +363,29 @@ classDiagram
         +to_string() string
     }
 
-    class eDeviceType {
-        <<enumeration>>
-        Audio
-        Midi
+    class AudioDevice {
+
     }
 
-    DeviceHandle --> eDeviceType : device_type
+    class MidiDevice {
+
+    }
+
+    DeviceService *-- Device
+    Device <|-- AudioDevice
+    Device <|-- MidiDevice
 ```
 
-### 3.5.2. Files
+### 3.5.3. File Service
 
 ```mermaid
 classDiagram
 
-    class FileHandle {
+    class FileService {
+        -files : list<File>
+    }
+
+    class File {
         +get_file_type() eFileType
         +get_filepath() path
         +get_filename() string
@@ -391,77 +399,74 @@ classDiagram
         +to_string() string
     }
 
-    class eFileType {
-        <<enumeration>>
-        Wav
-        Midi
+    class AudioFile {
+
     }
 
-    FileHandle --> eFileType : file_type
+    class MidiFile {
+
+    }
+
+    FileService *-- File
+    File <|-- AudioFile
+    File <|-- MidiFile
 ```
 
-### 3.5.3. Tracks
+### 3.5.4. Track Service
 
 ```mermaid
 classDiagram
 
     class Track {
+        +get_nodes()
+        +add_input_node()
+        +add_processing_node()
+        +add_output_node()
+        +delete_node()
+        +clear_nodes()
+
+        +play()
+        +record()
+        +stop()
+    }
+
+    class Node {
         +play() bool
         +stop() bool
         +is_playing() bool
-        +is_main_track() bool
         +has_parent() bool
-        +has_audio_input() bool
-        +has_midi_input() bool
-        +add_audio_input(SourceVariant)
-        +add_midi_input(MidiIOVariant)
-        +remove_audio_input()
-        +remove_midi_input()
-        +add_audio_processor(IAudioProcessor)
-        +get_parent() TrackPtr
-        +get_children() vector~TrackPtr~
-        +set_output_gain(float)
-        +get_output_gain() float
-        +enable_output(bool)
-        +is_output_enabled() bool
-        +get_audio_dataplane() AudioDataPlanePtr
-        +get_midi_dataplane() MidiDataPlanePtr
-        +get_statistics() TrackStatistics
-        +set_event_callback(TrackEventCallback)
-        +set_midi_note_on_callback(MidiNoteOnCallbackFunc)
-        +set_midi_note_off_callback(MidiNoteOffCallbackFunc)
-        +set_midi_control_change_callback(MidiControlCallbackFunc)
-        #p_audio_dataplane AudioDataPlanePtr
-        #p_midi_dataplane MidiDataPlanePtr
-        #m_audio_input SourceVariant
-        #m_midi_input MidiIOVariant
-        #m_output_gain float
-        #m_output_enabled bool
-        #m_is_main_track bool
-        #m_parent weak_ptr~Track~
-        #m_children vector~TrackPtr~
+        +get_parent() Node
+        +get_children() list~Node~
+        #m_parent weak_ptr~Node~
+        #m_children list~Node~
     }
 
-    class MainTrack {
-        +set_audio_output_device(DeviceHandlePtr)
-        +open_midi_input_port(DeviceHandlePtr)
-        +register_audio_dataplane(AudioDataPlanePtr)
-        +register_midi_dataplane(MidiDataPlanePtr)
-        +start() bool
-        +stop() bool
-        +is_playing() bool
-        -p_audio_output_device DeviceHandlePtr
-        -p_audio_controller AudioControllerPtr
-        -p_midi_controller MidiControllerPtr
+    class InputNode {
+        -port : Port~Device, File~
+        -output : Node
     }
 
-    class eTrackEvent {
-        <<enumeration>>
-        PlaybackFinished
+    class OutputNode {
+        -port : Port~Device, File~
+        -input : Node
     }
 
-    MainTrack --|> Track
-    Track --> eTrackEvent
+    class ProcessorNode {
+        -input : Node
+        -output : Node
+    }
+
+    class MixerNode {
+        -inputs : list~Node~
+        -output : Node
+    }
+
+    Track *-- Node
+
+    Node <|-- InputNode
+    Node <|-- ProcessorNode
+    Node <|-- MixerNode
+    Node <|-- OutputNode
 ```
 
 \newpage
@@ -473,9 +478,9 @@ classDiagram
 The user uses the software via the main `miniaudioengine` SDK library.
 
 The following types need to be accessible to the user:\newline
-- `DeviceHandle`\newline
-- `FileHandle`\newline
-- `Track`\newline
+- `Device`\newline
+- `File`\newline
+- `Node`\newline
 - `Processor`\newline
 
 The following operations need to be accessible to the user:\newline
@@ -494,21 +499,10 @@ The following operations need to be accessible to the user:\newline
 ```mermaid
 classDiagram
 
-    class AudioEngine {
-        +get_audio_devices() list~DeviceHandle~
-        +get_midi_devices() list~DeviceHandle~
-        +set_audio_output_device(DeviceHandle)
-        +set_audio_input_device(DeviceHandle)
-        +set_audio_input_file(FileHandle)
-        +set_midi_output_device(DeviceHandle)
-        +set_midi_input_device(DeviceHandle)
-        +set_midi_input_file(FileHandle)
-        +get_tracks() list~TrackPtr~
-        +add_track() TrackPtr
-        +remove_track(TrackPtr)
-        +clear_tracks()
-        +add_audio_processor(AudioProcessor)
-        +add_midi_processor(MidiProcessor)
+    class AudioSession {
+        +get_audio_devices() list~AudioDevice~
+        +get_midi_devices() list~MidiDevice~
+        +add_track()
         +play()
         +stop()
         +record()
@@ -516,142 +510,63 @@ classDiagram
     }
 
     class Track {
-        +set_audio_input_device(DeviceHandle)
-        +set_audio_input_file(FileHandle)
-        +set_midi_input_device(DeviceHandle)
-        +set_midi_input_file(FileHandle)
-        +add_audio_processor(AudioProcessor)
-        +add_midi_processor(MidiProcessor)
+        +add_input_node(InputNode)
+        +add_output_node(OutputNode)
+        +add_processor_node(ProcessorNode)
         +play()
         +stop()
         +record()
         +mute()
     }
 
-    class DeviceHandle {
+    Track --> InputNode
+    Track --> OutputNode
+    Track --> ProcessorNode
 
-    }
-
-    class FileHandle {
-
-    }
-
-    class AudioProcessor {
-
-    }
-
-    AudioEngine --> Track
-    AudioEngine --> DeviceHandle
-    AudioEngine --> FileHandle
-    AudioEngine --> AudioProcessor
-    Track --> DeviceHandle
-    Track --> FileHandle
-    Track --> AudioProcessor
+    AudioSession --> Track
+    AudioSession --> Device
+    AudioSession --> File
 ```
 
 ## 3.7. Interaction View
 
-### 3.7.1. Audio Input to Audio Output
-
-**Control Plane**
+### 3.7.1 Play Audio File
 
 ```mermaid
 sequenceDiagram
 
     participant App
+    participant AudioSession
+    participant FileService
+    participant DeviceService
+    participant TrackService
     participant Track
-    participant MainTrack
-    participant AudioController
-    participant RtAudio
+    participant AudioAdapter
+    participant FileAdapter
 
-    App->>Track: play()
+    App->>AudioSession: get_audio_devices()
+    AudioSession->>DeviceService: get_audio_devices()
+    DeviceService->>AudioAdapter: get_audio_devices()
 
-    opt File source
-        Track->>Track: AudioDataPlane.preload_wav_file()
-    end
-    Track->>Track: AudioDataPlane.start()
-    Track->>MainTrack: register_audio_dataplane(AudioDataPlane)
-    Track->>MainTrack: start()
-    MainTrack->>AudioController: start()
-    AudioController->>AudioController: validate_start_preconditions()
-    AudioController->>AudioController: register_dataplanes() → active_tracks
-    AudioController->>RtAudio: openStream(output device)
-    AudioController->>RtAudio: startStream()
+    App->>AudioSession: get_audio_files()
+    AudioSession->>FileService: get_audio_files()
+    FileService->>FileAdapter: get_audio_files()
 
-    App->>Track: stop()
-    Track->>Track: AudioDataPlane.stop()
-    Track->>MainTrack: stop()
-    MainTrack->>AudioController: stop()
-    AudioController->>RtAudio: stopStream()
-    AudioController->>RtAudio: closeStream()
-    AudioController->>AudioController: clear_registered_dataplanes()
-```
+    App->>AudioSession: add_track()
+    AudioSession->>TrackService: add_track()
 
-\newpage
+    App->>Track: add_output_device()
+    App->>Track: add_input_device()
 
-**Data Plane**
+    App->>AudioSession: play()
+    AudioSession->>TrackService: play()
+    TrackService->>Track: play()
+    Track->>AudioAdapter: play()
 
-```mermaid
-sequenceDiagram
-
-    participant RtAudio
-    participant MainTrack
-    participant Track
-    participant AudioDataPlane_IN as AudioDataPlane (INPUT)
-    participant AudioDataPlane_OUT as AudioDataPlane (OUTPUT)
-
-    Note over RtAudio,AudioDataPlane_OUT: Real-time callback thread — fires every n_frames / sample_rate seconds
-
-    RtAudio->>MainTrack: audio_callback(output_buffer, input_buffer, n_frames)
-    MainTrack->>AudioDataPlane_OUT: Zero output_buffer
-
-    loop For each registered Track
-        MainTrack->>Track: process_audio(input_buffer, n_frames)
-        Track->>AudioDataPlane_IN: prepare_output_buffer(n_frames)
-
-        alt Live device input (input_buffer != nullptr)
-            AudioDataPlane_IN->>AudioDataPlane_IN: Copy input_buffer → m_output_buffer
-        else Preloaded file input
-            AudioDataPlane_IN->>AudioDataPlane_IN: Read preloaded_frames_buffer at read_position
-            AudioDataPlane_IN->>AudioDataPlane_IN: Advance read_position += n_frames
-        end
-
-        loop For each non-bypassed processor
-            AudioDataPlane_IN->>AudioDataPlane_IN: processor.process_audio(m_output_buffer)
-        end
-
-        Track-->>MainTrack: m_output_buffer
-        MainTrack->>AudioDataPlane_OUT: Mix m_output_buffer into output_buffer (× gain)
-    end
-
-    MainTrack-->>RtAudio: return 0 (success)
-```
-
-\newpage
-
-### 3.7.2. MIDI Input Processing
-
-**Control Plane**
-
-```mermaid
-sequenceDiagram
-
-    participant App
-    participant MainTrack
-    participant Track
-    participant MidiController (INPUT)
-
-    App->>Track: Set MIDI Handler
-
-    App->>MainTrack: Play
-    MainTrack->>Track: Play
-
-    Track->>MidiController (INPUT): Open input device/file
-
-    App->>MainTrack: Stop
-    MainTrack->>Track: Stop
-
-    Track->>MidiController (INPUT): Close input device/file
+    App->>AudioSession: stop()
+    AudioSession->>TrackService: stop()
+    TrackService->>Track: stop()
+    Track->>AudioAdapter: stop()
 ```
 
 \newpage
@@ -673,22 +588,23 @@ sequenceDiagram
 graph TD
     subgraph miniaudioengine
 
-        AudioEngine
-        Track
-        DeviceHandle
-        FileHandle
-        AudioProcessor
+        AudioSession
 
         subgraph framework
             IService
             IAdapter
             IHandle
+            INode
         end
 
         subgraph services
-            TrackService
             DeviceService
             FileService
+            TrackService
+            Track
+            Node
+            File
+            Device
         end
 
         subgraph adapters
@@ -705,14 +621,12 @@ graph TD
         sndfile
     end
 
-    AudioEngine --> services
-    AudioEngine --> Track
-    AudioEngine --> DeviceHandle
-    AudioEngine --> FileHandle
-    AudioEngine --> AudioProcessor
+    AudioSession --> services
 
-    DeviceHandle --> IHandle
-    FileHandle --> IHandle
+    TrackService --> Track
+    Track --> Node
+    DeviceService --> Device
+    FileService --> File
 
     services --> adapters
     adapters --> External
@@ -720,20 +634,69 @@ graph TD
     adapters --> framework
 ```
 
-
-
 ### 3.8.2. Project Structure
 
 ```bash
-examples/                   # Example programs using miniaudioengine SDK
-samples/
+examples/           # Example programs using miniaudioengine SDK
 include/
     miniaudioengine/
-        miniaudioengine.h   # Public facing SDK
+        audiosession.h          # using namespace miniaudioengine
+        track/
+            track.h             # using namespace miniaudioengine
+            input.h             # using namespace miniaudioengine
+            output.h            # using namespace miniaudioengine
+            processor.h         # using namespace miniaudioengine
+        device/
+            audiodevice.h       # using namespace miniaudioengine
+            mididevice.h        # using namespace miniaudioengine
+        file/
+            audiofile.h         # using namespace miniaudioengine
+            midifile.h          # using namespace miniaudioengine
 src/
     framework/
+        include/
+          interfaces/
+              service.h         # using namespace miniaudioengine::interfaces
+              adapter.h         # using namespace miniaudioengine::interfaces
+              handle.h          # using namespace miniaudioengine::interfaces
+              node.h            # using namespace miniaudioengine::interfaces
+        src/
+            audiosession.cpp
     services/
+        track/
+            include/
+                trackservice.h          # using namespace miniaudioengine::services
+                mixer.h
+            src/
+                trackservice.cpp        # using namespace miniaudioengine::services
+                track.cpp
+                input.cpp
+                output.cpp
+                processor.cpp
+                mixer.cpp
+        device/
+            include/
+                deviceservice.h         # using namespace miniaudioengine::services
+            src/
+                deviceservice.cpp       # using namespace miniaudioengine::services
+                audiofile.cpp
+                midifile.cpp
+        file/
+            include/
+                fileservice.h           # using namespace miniaudioengine::services
+            src/
+                fileservice.cpp         # using namespace miniaudioengine::services
+                audiofile.cpp
+                midifile.cpp
     adapters/
+        include/
+            audioadapter.h              # using namespace miniaudioengine::adapters
+            midiadapter.h               # using namespace miniaudioengine::adapters
+            fileadapter.h               # using namespace miniaudioengine::adapters
+        src/
+            audioadapter.cpp            # using namespace miniaudioengine::adapters
+            midiadapter.cpp             # using namespace miniaudioengine::adapters
+            fileadapter.cpp             # using namespace miniaudioengine::adapters
 tests/
 ```
 
@@ -750,8 +713,6 @@ tests/
 graph TD
     subgraph Main
         App
-        AudioController
-        MidiController
     end
 
     subgraph RtAudio
@@ -772,76 +733,89 @@ graph TD
 
 ## 4.1. Architectural Design
 
+I am keeping the control and data components of this library separate. The main component of the control section is the `AudioSession`. The `AudioSession` owns `Services` for different functionalities. `AudioSession` wraps function calls to the internal `Services` and exposes them to the programmer. `Services` own `Adapters` to interface with external hardware / libraries. `Services` return `Handle` objects for the programmer to interact with.
+
 ### 4.1.1. Layered Architecture
 
-```mermaid
-graph TD
-    Layer3["Layer 3: Public"]
-    Layer2["Layer 2: Interface"]
-    Layer1["Layer 1: Implementation"]
-    Layer0["Layer 0: External"]
+**Structural Roles**
 
-    Layer3 --> Layer2
-    Layer2 --> Layer1
-    Layer1 --> Layer0
-```
+| Concept | Control Plane |	Data Plane
+| --- | --- | --- |
+Entry point |	AudioSession	 | MainTrack (audio callback)
+Per-track unit	| Node (configuration) |	AudioDataPlane / MidiDataPlane
+Cross-thread comms	| Services (locks OK) |	LockfreeRingBuffer
+Lifetime manager |	TrackService |	AudioController |
 
-### 4.1.2. Track Hierarchy
+### 4.1.2. Node Hierarchy
 
 ```mermaid
 graph TD
 
     TrackService --> MainTrack
-    MainTrack --> Track1["Track"]
-    MainTrack --> Track2["Track"]
-    MainTrack --> Track3["Track"]
+    MainTrack --> Track1["Node"]
+    MainTrack --> Track2["Node"]
+    MainTrack --> Track3["Node"]
 ```
 
 ### 4.1.3. Software Design Patterns
 
 **C++ PImpl**
 
-**Singleton**
+**Facade**
 
-This SDK uses the Singleton pattern for the `AudioEngine` component. There should only ever be one instance of `AudioEngine`. It owns all other components used in this SDK.
+This SDK uses the Facade pattern for the `AudioSession` object. `AudioSession` is a wrapper around the internal logic exposed to the programmer. An `AudioSession` owns a `DeviceService`, `FileService`, and `TrackService` that divides and implements the internal engine logic.
 
 ```mermaid
 classDiagram
-    class ISingleton {
-        -instance
-        +instance() *ISingleton
-        -ISingleton()
+
+    class IFacade {
+        +foo() int
+        -object : IObject
     }
+
+    class IObject {
+        +foo() int
+    }
+
+    IFacade *-- IObject
 ```
 
-*AudioEngine:*
+where
+
+```cpp
+int IFacade::foo() {
+    return object.foo();
+}
+```
+
+*e.g.*
 
 ```mermaid
 classDiagram
 
-    class ISingleton
+    class IFacade
+    class IObject
 
-    class AudioEngine {
-        -device_service : DeviceService
-        -file_service : FileService
-    }
-
+    class AudioSession
     class DeviceService
     class FileService
+    class TrackService
 
-    ISingleton <|-- AudioEngine
+    IFacade <|-- AudioSession
+    IObject <|-- DeviceService
+    IObject <|-- FileService
+    IObject <|-- TrackService
 
-    AudioEngine --> DeviceService
-    AudioEngine --> FileService
-
+    DeviceService --* AudioSession
+    FileService --* AudioSession
+    TrackService --* AudioSession
 ```
-**Facade**
 
 **Adapter**
 
 **Factory**
 
-This SDK uses the Factory pattern to create `DeviceHandle`, `FileHandle`, and `Track` objects.
+This SDK uses the Factory pattern to create `Device`, `File`, and `Node` objects.
 
 ```mermaid
 classDiagram
@@ -854,21 +828,7 @@ classDiagram
         -IObject()
     }
 
-    class Factory {
-        +createObject() Object
-    }
-
-    class Object {
-        -data
-        +method()
-    }
-
-    IFactory <|-- Factory
-    IObject <|-- Object
-
     IFactory --> IObject
-    
-    Factory --> Object
 ```
 
 *e.g.*
@@ -882,121 +842,9 @@ classDiagram
     class DeviceAdapter
 
     IFactory <|-- DeviceAdapter
-    IObject <|-- DeviceHandle
+    IObject <|-- Device
 
-    DeviceAdapter --> DeviceHandle
-```
-
-**Proxy**
-
-This SDK uses the Proxy pattern. The `User` interacts with the `DeviceService` and `FileService` via the `AudioEngine`
-
-Client requests data from a Service via a Proxy.
-
-```mermaid
-graph LR
-
-    Client -->|request| Proxy
-    Proxy -->|request| ServiceA
-    Proxy -->|request| ServiceB
-
-    ServiceA -->|respond| Proxy
-    ServiceB -->|respond| Proxy
-    Proxy -->|respond| Client
-```
-
-*e.g.*
-```mermaid
-graph LR
-
-    User --> AudioEngine
-    AudioEngine --> User
-    AudioEngine --> DeviceService
-    DeviceService --> AudioEngine
-    AudioEngine --> FileService
-    FileService --> AudioEngine
-```
-
-*Note:* The request method in this example is blocking.
-
-```mermaid
-classDiagram
-
-    class IProxy {
-        -services : list~IService~
-        +register_service(service : IService)
-        +unregister_service(service : IService)
-        +request(message : IRequest) IResponse
-    }
-
-    class IService {
-        -proxy : IProxy
-        +request(message: IRequest) IResponse
-    }
-
-    class IClient {
-        -proxy : IProxy
-    }
-
-    class IRequest {
-
-    }
-
-    class IResponse {
-
-    }
-
-    IProxy --> IService
-    IProxy --> IClient
-
-    IProxy --> IRequest
-    IProxy --> IResponse
-```
-
-*Device Service:*
-
-```mermaid
-classDiagram
-
-    class IService
-    class IRequest
-    class IResponse
-
-    class DeviceService {
-        +request(message: DeviceRequest) DeviceResponse
-    }
-
-    class DeviceRequest
-    class DeviceResponse
-
-    DeviceService <|-- IService
-    DeviceRequest <|-- IRequest
-    DeviceResponse <|-- IResponse
-    DeviceService --> DeviceRequest
-    DeviceService --> DeviceResponse
-```
-
-*File Service:*
-
-```mermaid
-classDiagram
-
-    class IService
-    class IRequest
-    class IResponse
-
-    class FileService {
-        +request(message: FileRequest) FileResponse
-    }
-
-    class FileRequest
-    class FileResponse
-
-    FileService <|-- IService
-    FileRequest <|-- IRequest
-    FileResponse <|-- IResponse
-    FileService --> FileRequest
-    FileService --> FileResponse
+    DeviceAdapter --> Device
 ```
 
 ## 4.2. External Libraries
