@@ -26,24 +26,24 @@ titlepage: true
 
 | ID | Description | Relevant Views |
 | -- | -- | -- |
-| **DC-01** | Monitor audio input device. | Logical
-| **DC-02** | Monitor MIDI input device. | Logical
-| **DC-03** | Open and read WAV audio files. | Logical
-| **DC-04** | Open and read MIDI files. | Logical
-| **DC-05** | Route audio to output device. | Logical
-| **DC-06** | Route MIDI to output device. | Logical
-| **DC-07** | Processing incoming MIDI messages. | Logical
-| **DC-08** | Processing incoming audio streams. | Logical
-| **DC-09** | Manage multiple audio tracks. | Logical
-| **DC-10** | Add one audio or MIDI input to a track. | Logical
-| **DC-11** | Attach one audio or MIDI output to a track. | Logical
-| **DC-12** | Chain multiple audio processors in one track. | Logical
-| **DC-13** | Build software SDK on Windows and Linux. | Context
-| **DC-14** | Build software SDK on x86_64 and ARM64 platforms. |
-| **DC-15** | CI/CD pipeline builds and packages software on all compatible platforms. |
-| **DC-16** | Complete unit testing and code coverage. |
-| **DC-17** | Package software as an SDK used by third-party software. | Context, Composition
-| **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. | Composition
+| **DC-01** | Monitor audio input device. | Logical, Interface, Interaction
+| **DC-02** | Monitor MIDI input device. | Logical, Interface, Interaction
+| **DC-03** | Open and read WAV audio files. | Logical, Information, Interaction
+| **DC-04** | Open and read MIDI files. | Logical, Information
+| **DC-05** | Route audio to output device. | Logical, Interface, Interaction
+| **DC-06** | Route MIDI to output device. | Logical, Interface
+| **DC-07** | Processing incoming MIDI messages. | Logical, Interface
+| **DC-08** | Processing incoming audio streams. | Logical, Information, Interface
+| **DC-09** | Manage multiple audio tracks. | Logical, Information, Interface, Interaction
+| **DC-10** | Add one audio or MIDI input to a track. | Logical, Information, Interface
+| **DC-11** | Attach one audio or MIDI output to a track. | Logical, Information, Interface
+| **DC-12** | Chain multiple audio processors in one track. | Logical, Information, Interface
+| **DC-13** | Build software SDK on Windows and Linux. | Context, Structure
+| **DC-14** | Build software SDK on x86_64 and ARM64 platforms. | Context, Structure
+| **DC-15** | CI/CD pipeline builds and packages software on all compatible platforms. | Structure
+| **DC-16** | Complete unit testing and code coverage. | Structure
+| **DC-17** | Package software as an SDK used by third-party software. | Context, Composition, Structure
+| **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. | Composition, Interface, Interaction
 
 \newpage
 
@@ -56,6 +56,7 @@ Describes the software in context with its external environment. Define users, e
 | Design Concern | |
 | -- | -- |
 | **DC-13** | Build software SDK on Windows and Linux. |
+| **DC-14** | Build software SDK on x86_64 and ARM64 platforms. |
 | **DC-17** | Package software as an SDK used by third-party software. |
 
 ```mermaid
@@ -99,29 +100,31 @@ Describe the composition of the **miniaudioengine** SDK software libraries.
 graph TD
     subgraph SDK["miniaudioengine SDK"]
         AudioSession
-        subgraph deviceService["DeviceService"]
+
+        subgraph Services
+            TrackService
             DeviceService
-            Device
-        end
-        subgraph fileService["FileService"]
             FileService
+        end
+
+        subgraph Entities
+            Track
+            Device
             File
         end
-        subgraph graphService["TrackService"]
-            TrackService
-            Track
-            Node
+
+        subgraph Adapters
+            AudioAdapter
+            MidiAdapter
+            FileAdapter
         end
     end
 
-    AudioSession --> DeviceService
-    AudioSession --> FileService
-    AudioSession --> TrackService
+    App --> AudioSession
 
-    DeviceService --> Device
-    FileService --> File
-    TrackService --> Track
-    Track --> Node
+    AudioSession --> Services
+    AudioSession --> Adapters
+    Services --> Entities
 ```
 
 \newpage
@@ -337,7 +340,44 @@ graph TD
 
 ## 3.5. Information View
 
+| Design Concern | |
+| -- | -- |
+| **DC-03** | Open and read WAV audio files. |
+| **DC-04** | Open and read MIDI files. |
+| **DC-08** | Processing incoming audio streams. |
+| **DC-09** | Manage multiple audio tracks. |
+| **DC-10** | Add one audio or MIDI input to a track. |
+| **DC-11** | Attach one audio or MIDI output to a track. |
+| **DC-12** | Chain multiple audio processors in one track. |
+
 ### 3.5.1. Audio Session
+
+```mermaid
+classDiagram
+
+    class AudioSession {
+        -track_service : TrackService
+        -device_service : DeviceService
+        -file_service : FileService
+        -audio_adapter: AudioAdapter
+        -midi_adapter: MidiAdapter
+        -file_adapter: FileAdapter
+        +get_audio_devices() list~AudioDevice~
+        +get_midi_devices() list~MidiDevice~
+        +get_audio_files() list~AudioFile~
+        +get_midi_files() list~MidiFile~
+        +play()
+        +record()
+        +stop()
+    }
+
+    AudioSession *-- TrackService
+    AudioSession *-- DeviceService
+    AudioSession *-- FileService
+    AudioSession *-- AudioAdapter
+    AudioSession *-- FileAdapter
+    AudioSession *-- MidiAdapter
+```
 
 ### 3.5.2. Device Service
 
@@ -346,6 +386,7 @@ classDiagram
 
     class DeviceService {
         -devices : list<Device>
+        +DeviceService(audio_adapter : AudioAdapter, midi_adapter: MidiAdapter)
     }
 
     class Device {
@@ -383,6 +424,7 @@ classDiagram
 
     class FileService {
         -files : list<File>
+        +FileService(adapter : FileAdapter)
     }
 
     class File {
@@ -417,11 +459,16 @@ classDiagram
 ```mermaid
 classDiagram
 
+    class TrackService {
+        -tracks : list~Track~
+        +TrackService(audio_adapter : AudioAdapter, midi_adapter: MidiAdapter)
+    }
+
     class Track {
         +get_nodes()
-        +add_input_node()
+        +add_input()
         +add_processing_node()
-        +add_output_node()
+        +add_output()
         +delete_node()
         +clear_nodes()
 
@@ -435,31 +482,33 @@ classDiagram
         +stop() bool
         +is_playing() bool
         +has_parent() bool
-        +get_parent() Node
+        +get_parent() optional~Node~
         +get_children() list~Node~
         #m_parent weak_ptr~Node~
-        #m_children list~Node~
+        #m_children list~shared_ptr~Node~~
     }
 
     class InputNode {
-        -port : Port~Device, File~
-        -output : Node
+        -port : variant~Device, File~
+        -p_output : shared_ptr~Node~
     }
 
     class OutputNode {
-        -port : Port~Device, File~
-        -input : Node
+        -port : variant~Device, File~
+        -p_input : shared_ptr~Node~
     }
 
     class ProcessorNode {
-        -input : Node
-        -output : Node
+        -p_input : shared_ptr~Node~
+        -p_output : shared_ptr~Node~
     }
 
     class MixerNode {
-        -inputs : list~Node~
-        -output : Node
+        -p_inputs : list~shared_ptr~Node~~
+        -p_output : shared_ptr~Node~
     }
+
+    TrackService *-- Track
 
     Track *-- Node
 
@@ -475,26 +524,44 @@ classDiagram
 
 ### 3.6.1. Public SDK
 
+| Design Concern | |
+| -- | -- |
+| **DC-01** | Monitor audio input device. |
+| **DC-02** | Monitor MIDI input device. |
+| **DC-05** | Route audio to output device. |
+| **DC-06** | Route MIDI to output device. |
+| **DC-07** | Processing incoming MIDI messages. |
+| **DC-08** | Processing incoming audio streams. |
+| **DC-09** | Manage multiple audio tracks. |
+| **DC-10** | Add one audio or MIDI input to a track. |
+| **DC-11** | Attach one audio or MIDI output to a track. |
+| **DC-12** | Chain multiple audio processors in one track. |
+| **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. |
+
 The user uses the software via the main `miniaudioengine` SDK library.
 
 The following types need to be accessible to the user:\newline
+- `AudioSession`\newline
 - `Device`\newline
 - `File`\newline
-- `Node`\newline
-- `Processor`\newline
+- `Track`\newline
+- `InputNode`\newline
+- `OutputNode`\newline
+- `ProcessorNode`\newline
 
-The following operations need to be accessible to the user:\newline
-- Get audio/MIDI devices.\newline
-- Get audio/MIDI files.\newline
-- Set audio/MIDI device as input or output.\newline
-- Set audio/MIDI file as input or output.\newline
-- Add a new track.
-- Add and audio or MIDI processor to a track.\newline
-- Start/stop playback.\newline
-- Start/stop recording.\newline
-- Start/stop monitoring.\newline
+The following operations need to be accessible to the user:
 
-\newpage
+| Operation | Component |
+| --- | --- |
+| Get audio/MIDI devices | `AudioSession`, `Device` |
+| Get audio/MIDI files | `AudioSession`, `File` |
+| Set audio/MIDI device as input or output | `Track`, `InputNode`, `OutputNode`|
+| Set audio/MIDI file as input or output | `Track`, `InputNode`, `OutputNode`|
+| Add a new track | `AudioSession`, `Track` |
+| Add and audio or MIDI processor to a track | `Track`, `ProcessorNode` |
+| Start/stop playback | `AudioSession`, `Track` |
+| Start/stop recording | `AudioSession`, `Track` |
+| Start/stop monitoring | `AudioSession`, `Track` |
 
 ```mermaid
 classDiagram
@@ -502,35 +569,103 @@ classDiagram
     class AudioSession {
         +get_audio_devices() list~AudioDevice~
         +get_midi_devices() list~MidiDevice~
-        +add_track()
+        +get_audio_files() list~AudioFile~
+        +get_midi_files() list~MidiFile~
+        +add_track() Track
         +play()
-        +stop()
         +record()
-        +mute()
+        +stop()
+        +monitor()
     }
 
     class Track {
-        +add_input_node(InputNode)
-        +add_output_node(OutputNode)
-        +add_processor_node(ProcessorNode)
+        +add_input(InputNode)
+        +add_output(OutputNode)
+        +add_processor(ProcessorNode)
+        +remove_node(Node)
         +play()
-        +stop()
         +record()
-        +mute()
+        +stop()
+        +monitor()
     }
 
-    Track --> InputNode
-    Track --> OutputNode
-    Track --> ProcessorNode
+    class InputNode {
+        +InputNode(device : Device)
+        +InputNode(file : File)
+        +set_midi_handler(handler)
+    }
+
+    class OutputNode {
+        +OutputNode(device : Device)
+    }
+
+    class ProcessorNode {
+        +ProcessorNode(processor : Processor)
+    }
+
+    class Device {
+        +get_id() unsigned int
+        +get_name() string
+        +is_input() bool
+        +is_output() bool
+    }
+
+    class AudioDevice {
+        +get_input_channels() unsigned int
+        +get_output_channels() unsigned int
+        +get_sample_rates() vector~unsigned int~
+        +get_preferred_sample_rate() unsigned int
+    }
+
+    class MidiDevice {
+    }
+
+    class File {
+        +get_file_type() eFileType
+        +get_filepath() path
+        +get_filename() string
+        +to_string() string
+    }
+
+    class AudioFile {
+        +get_total_frames() unsigned int
+        +get_sample_rate() unsigned int
+        +get_channels() unsigned int
+        +get_duration_seconds() double
+        +read_frames(vector~float~, long long) long long
+        +seek(long long)
+    }
+
+    class MidiFile {
+        +get_tempo() unsigned int
+        +get_ticks_per_beat() unsigned int
+        +get_track_count() unsigned int
+    }
 
     AudioSession --> Track
     AudioSession --> Device
     AudioSession --> File
+    Track --> InputNode
+    Track --> OutputNode
+    Track --> ProcessorNode
+    Device <|-- AudioDevice
+    Device <|-- MidiDevice
+    File <|-- AudioFile
+    File <|-- MidiFile
 ```
+
+\newpage
 
 ## 3.7. Interaction View
 
 ### 3.7.1 Play Audio File
+
+| Design Concern | |
+| -- | -- |
+| **DC-03** | Open and read WAV audio files. |
+| **DC-05** | Route audio to output device. |
+| **DC-09** | Manage multiple audio tracks. |
+| **DC-18** | Third-party software developers manage audio tracks, system audio/MIDI devices, and filesystem. |
 
 ```mermaid
 sequenceDiagram
@@ -573,16 +708,23 @@ sequenceDiagram
 
 ## 3.8. Structure View
 
+| Design Concern | |
+| -- | -- |
+| **DC-13** | Build software SDK on Windows and Linux. |
+| **DC-14** | Build software SDK on x86_64 and ARM64 platforms. |
+| **DC-15** | CI/CD pipeline builds and packages software on all compatible platforms. |
+| **DC-16** | Complete unit testing and code coverage. |
+| **DC-17** | Package software as an SDK used by third-party software. |
+
 ### 3.8.1. Library Structure
 
-| Library | Description |
-|---|---|
-| framework |
+| Internal Library | Components |
+| --- | --- |
+| miniaudioengine |
 | services |
 | adapters |
-| RtAudio |
-| RtMidi |
-| sndfile |
+| entities |
+| framework |
 
 ```mermaid
 graph TD
@@ -601,16 +743,19 @@ graph TD
             DeviceService
             FileService
             TrackService
-            Track
-            Node
-            File
-            Device
         end
 
         subgraph adapters
             FileAdapter
             AudioAdapter
             MidiAdapter
+        end
+
+        subgraph entities
+            Track
+            Node
+            File
+            Device
         end
 
     end
@@ -622,16 +767,16 @@ graph TD
     end
 
     AudioSession --> services
+    AudioSession --> entities
+    AudioSession --> adapters
 
-    TrackService --> Track
     Track --> Node
-    DeviceService --> Device
-    FileService --> File
 
-    services --> adapters
+    services --> entities
     adapters --> External
     services --> framework
     adapters --> framework
+    entities --> framework
 ```
 
 ### 3.8.2. Project Structure
@@ -646,6 +791,7 @@ include/
             input.h             # using namespace miniaudioengine
             output.h            # using namespace miniaudioengine
             processor.h         # using namespace miniaudioengine
+            mixer.h             # using namespace miniaudioengine
         device/
             audiodevice.h       # using namespace miniaudioengine
             mididevice.h        # using namespace miniaudioengine
@@ -659,6 +805,8 @@ src/
               service.h         # using namespace miniaudioengine::interfaces
               adapter.h         # using namespace miniaudioengine::interfaces
               handle.h          # using namespace miniaudioengine::interfaces
+              device.h          # using namespace miniaudioengine::interfaces
+              file.h            # using namespace miniaudioengine::interfaces
               node.h            # using namespace miniaudioengine::interfaces
         src/
             audiosession.cpp
@@ -666,28 +814,30 @@ src/
         track/
             include/
                 trackservice.h          # using namespace miniaudioengine::services
-                mixer.h
             src/
                 trackservice.cpp        # using namespace miniaudioengine::services
-                track.cpp
-                input.cpp
-                output.cpp
-                processor.cpp
-                mixer.cpp
         device/
             include/
                 deviceservice.h         # using namespace miniaudioengine::services
             src/
                 deviceservice.cpp       # using namespace miniaudioengine::services
-                audiofile.cpp
-                midifile.cpp
         file/
             include/
                 fileservice.h           # using namespace miniaudioengine::services
             src/
                 fileservice.cpp         # using namespace miniaudioengine::services
-                audiofile.cpp
-                midifile.cpp
+    entities/
+        include/
+        src/
+            audiodevice.cpp
+            mididevice.cpp
+            audiofile.cpp
+            midifile.cpp
+            track.cpp
+            input.cpp
+            output.cpp
+            processor.cpp
+            mixer.cpp
     adapters/
         include/
             audioadapter.h              # using namespace miniaudioengine::adapters
@@ -735,33 +885,7 @@ graph TD
 
 I am keeping the control and data components of this library separate. The main component of the control section is the `AudioSession`. The `AudioSession` owns `Services` for different functionalities. `AudioSession` wraps function calls to the internal `Services` and exposes them to the programmer. `Services` own `Adapters` to interface with external hardware / libraries. `Services` return `Handle` objects for the programmer to interact with.
 
-### 4.1.1. Layered Architecture
-
-**Structural Roles**
-
-| Concept | Control Plane |	Data Plane
-| --- | --- | --- |
-Entry point |	AudioSession	 | MainTrack (audio callback)
-Per-track unit	| Node (configuration) |	AudioDataPlane / MidiDataPlane
-Cross-thread comms	| Services (locks OK) |	LockfreeRingBuffer
-Lifetime manager |	TrackService |	AudioController |
-
-### 4.1.2. Node Hierarchy
-
-```mermaid
-graph TD
-
-    TrackService --> MainTrack
-    MainTrack --> Track1["Node"]
-    MainTrack --> Track2["Node"]
-    MainTrack --> Track3["Node"]
-```
-
-### 4.1.3. Software Design Patterns
-
-**C++ PImpl**
-
-**Facade**
+### 4.1.1. Audio Session
 
 This SDK uses the Facade pattern for the `AudioSession` object. `AudioSession` is a wrapper around the internal logic exposed to the programmer. An `AudioSession` owns a `DeviceService`, `FileService`, and `TrackService` that divides and implements the internal engine logic.
 
@@ -793,23 +917,24 @@ int IFacade::foo() {
 ```mermaid
 classDiagram
 
-    class IFacade
-    class IObject
+    App *-- AudioSession
 
-    class AudioSession
-    class DeviceService
-    class FileService
-    class TrackService
-
-    IFacade <|-- AudioSession
-    IObject <|-- DeviceService
-    IObject <|-- FileService
-    IObject <|-- TrackService
-
-    DeviceService --* AudioSession
-    FileService --* AudioSession
-    TrackService --* AudioSession
+    AudioSession *-- DeviceService
+    AudioSession *-- FileService
+    AudioSession *-- TrackService
 ```
+
+### 4.1.2. Services
+
+### 4.1.3. Adapters
+
+This library uses the Adapter pattern to interface with external hardware / libraries. This adds an abstraction layer between the library and the external dependendies, providing isolation of implementation.
+
+### 4.1.4. Handles
+
+### 4.1.3. Software Design Patterns
+
+**C++ PImpl**
 
 **Adapter**
 
