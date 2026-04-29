@@ -15,7 +15,7 @@ namespace miniaudioengine::audio
 
 struct AudioCallbackContext
 {
-  std::vector<core::IDataPlanePtr> active_tracks;
+  std::vector<framework::IDataPlanePtr> active_tracks;
 };
 
 /** @class AudioController
@@ -25,19 +25,19 @@ struct AudioCallbackContext
  *  hardware-specific stream start/stop behaviour.
  *  @note This class is part of the control plane. Operations are synchronous and called from the main thread.
  */
-class AudioController : public core::IController
+class AudioController : public framework::IController
 {
 public:
   explicit AudioController();
   ~AudioController() override = default;
 
   /** @brief Enumerate available audio devices.
-   *  @return Vector of DeviceHandle objects, one per physical audio device.
+   *  @return Vector of Device objects, one per physical audio device.
    */
   virtual std::vector<DeviceHandlePtr> get_audio_devices();
 
   /** @brief Set the output device for the audio stream.
-   *  @param device DeviceHandle representing an audio output device.
+   *  @param device Device representing an audio output device.
    *  @throws std::invalid_argument if device is null or not an output device.
    */
   void set_output_device(DeviceHandlePtr device);
@@ -71,7 +71,7 @@ protected:
   DeviceHandlePtr m_device_handle;
 
 private:
-  adapter::AudioAdapter m_adapter;
+  adapters::AudioAdapter m_adapter;
 
   /** @brief Start Audio Stream
    *  @return true if the audio stream was started successfully, false otherwise

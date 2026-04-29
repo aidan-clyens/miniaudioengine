@@ -56,7 +56,7 @@ This prompt updates all custom Copilot instructions and agent documentation file
 
 ### Component Organization
 - [ ] File structure matches actual src/ directory layout
-- [ ] Namespace organization is correct (`miniaudioengine::core`, `miniaudioengine::audio`, `miniaudioengine::midi`, root `miniaudioengine`)
+- [ ] Namespace organization is correct (`miniaudioengine::framework`, `miniaudioengine::audio`, `miniaudioengine::midi`, root `miniaudioengine`)
 - [ ] Include paths reference actual file locations
 
 ### Threading & Concurrency

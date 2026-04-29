@@ -1,0 +1,328 @@
+#ifndef __TRACK_H__
+#define __TRACK_H__
+
+#include <queue>
+#include <mutex>
+#include <memory>
+#include <optional>
+#include <variant>
+#include <atomic>
+#include <string>
+#include <functional>
+
+#include "fileservice.h"
+#include "deviceservice.h"
+#include "device.h"
+#include "file.h"
+#include "audiocontroller.h"
+#include "audiodataplane.h"
+#include "midicontroller.h"
+#include "mididataplane.h"
+#include "miditypes.h"
+#include "audioprocessor.h"
+
+namespace miniaudioengine
+{
+
+// Forward declarations
+class MainTrack;
+
+// Type definitions
+typedef std::shared_ptr<class Track> TrackPtr;
+typedef std::variant<DeviceHandlePtr, FileHandlePtr, std::nullopt_t> SourceVariant;
+typedef std::variant<DeviceHandlePtr, FileHandlePtr, std::nullopt_t> MidiIOVariant;
+
+typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOnCallbackFunc;
+typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;
+typedef std::function<void(const midi::MidiControlMessage&, TrackPtr)> MidiControlCallbackFunc;
+
+/** @enum eTrackEvent
+ *  @brief Track events to handle in callbacks.
+ */
+enum class eTrackEvent
+{
+  PlaybackFinished
+};
+
+typedef std::function<void(eTrackEvent)> TrackEventCallback;
+
+/** @struct TrackStatistics
+ *  @brief Statistics related to Track operations.
+ */
+struct TrackStatistics
+{
+  framework::AudioOutputStatistics audio_output_stats;
+  framework::MidiInputStatistics midi_input_stats;
+
+  std::string to_string() const
+  {
+    return "TrackStatistics(\nAudio Output = " + audio_output_stats.to_string() + "\nMIDI Input = " + midi_input_stats.to_string() + "\n)";
+  }
+};
+
+/** @class Track
+ *  @brief The Track can handle audio or MIDI input with single-layer routing.
+ *  MainTrack is the sole parent; regular Tracks may not have children.
+ *  Each track has a virtual output that routes to MainTrack.
+ */
+class Track : public std::enable_shared_from_this<Track>
+{
+public:
+  explicit Track(bool is_main_track = false):
+    m_is_main_track(is_main_track),
+    m_output_gain(1.0f),
+    m_output_enabled(true),
+    m_audio_input(std::nullopt),
+    m_midi_input(std::nullopt),
+    m_midi_output(std::nullopt),
+    p_audio_dataplane(std::make_shared<framework::AudioDataPlane>()),
+    p_midi_dataplane(std::make_shared<framework::MidiDataPlane>())
+  {}
+
+  virtual ~Track() = default;
+
+  // Hierarchy management (Control Plane)
+
+  /** @brief Add a child track to this track (MainTrack only).
+   *  @param child The child track to add.
+   *  @throws std::runtime_error if called on a non-MainTrack or if the child already has a parent.
+   */
+  void add_child_track(TrackPtr child);
+
+  /** @brief Remove a child track from this track (MainTrack only).
+   *  @param child The child track to remove.
+   */
+  void remove_child_track(TrackPtr child);
+
+  /** @brief Remove this track from its parent.
+   */
+  void remove_from_parent();
+
+  /** @brief Get the parent track.
+   *  @return Shared pointer to parent track, or nullptr if no parent.
+   */
+  TrackPtr get_parent() const;
+
+  /** @brief Get all child tracks.
+   *  @return Vector of child track pointers.
+   */
+  std::vector<TrackPtr> get_children() const { return m_children; }
+
+  /** @brief Check if this is the main track (root of hierarchy).
+   *  @return True if this is the MainTrack.
+   */
+  bool is_main_track() const { return m_is_main_track; }
+
+  /** @brief Check if this track has a parent.
+   *  @return True if track has a parent.
+   */
+  bool has_parent() const;
+
+  /** @brief Get the number of child tracks.
+   *  @return Number of children.
+   */
+  size_t get_child_count() const { return m_children.size(); }
+
+  // Virtual output controls (Control Plane)
+
+  /** @brief Set the output gain for mixing into parent.
+   *  @param gain Output gain (0.0 to 1.0+).
+   */
+  void set_output_gain(float gain) { m_output_gain = gain; }
+
+  /** @brief Get the output gain.
+   *  @return Current output gain.
+   */
+  float get_output_gain() const { return m_output_gain; }
+
+  /** @brief Enable or disable output routing to parent.
+   *  @param enable True to enable output.
+   */
+  void enable_output(bool enable) { m_output_enabled.store(enable, std::memory_order_release); }
+
+  /** @brief Check if output is enabled.
+   *  @return True if output is enabled.
+   */
+  bool is_output_enabled() const { return m_output_enabled.load(std::memory_order_acquire); }
+
+  // Audio/MIDI IO
+
+  /** @brief Add an audio input to the track. 
+   *  @param device The audio input device or file retrieved from DeviceService or FileService.
+   */
+  void add_audio_input(SourceVariant input);
+
+  /** @brief Add a MIDI input to the track.
+   *  @param device The MIDI input device or file retrieved from DeviceService or FileService.
+   */
+  void add_midi_input(MidiIOVariant input);
+
+  /** @brief Add a MIDI output to the track.
+   *  @param device The MIDI output device or file retrieved from DeviceService or FileService.
+   */
+  void add_midi_output(MidiIOVariant output);
+
+  /** @brief Remove the audio input from the track. */
+  void remove_audio_input();
+
+  /** @brief Remove the MIDI input from the track. */
+  void remove_midi_input();
+
+  /** @brief Remove the MIDI output from the track. */
+  void remove_midi_output();
+
+  /** @brief Check if the track has an audio input.
+   *  @return True if an audio input is configured, false otherwise.
+   */
+  bool has_audio_input() const;
+
+  /** @brief Check if the track has a MIDI input.
+   *   @return True if a MIDI input is configured, false otherwise.
+   */
+  bool has_midi_input() const;
+
+  /** @brief Check if the track has a MIDI output.
+   *  @return True if a MIDI output is configured, false otherwise.
+   */
+  bool has_midi_output() const;
+
+  /** @brief Gets the audio input of the track.
+   *  @return An audio input variant type (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
+   */
+  SourceVariant get_audio_input() const;
+
+  /** @brief Gets the MIDI input of the track.
+   *  @return A MIDI input variant type (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
+   */
+  MidiIOVariant get_midi_input() const;
+
+  /** @brief Gets the MIDI output of the track.
+   *  @return The MIDI output variant (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
+   */
+  MidiIOVariant get_midi_output() const;
+
+  /** @brief Add an audio processor to the track's audio data plane.
+   *  @param processor Shared pointer to the audio processor to add.
+   */
+  void add_audio_processor(std::shared_ptr<audio::IAudioProcessor> processor)
+  {
+    p_audio_dataplane->add_processor(processor);
+  }
+
+  // Playback control
+  /** @brief Start playback of the track. */
+  bool play();
+
+  /** @brief Stop playback of the track. */
+  bool stop();
+
+  /** @brief Check if the track is currently playing.
+   *  @return True if the track is playing, false otherwise.
+   */
+  bool is_playing() const;
+
+  /** @brief Get the audio dataplane for this track.
+   *  @return Shared pointer to the audio dataplane.
+   */
+  framework::AudioDataPlanePtr get_audio_dataplane() const
+  {
+    return p_audio_dataplane;
+  }
+
+  /** @brief Get the MIDI dataplane for this track.
+   *  @return Shared pointer to the MIDI dataplane.
+   */
+  framework::MidiDataPlanePtr get_midi_dataplane() const
+  {
+    return p_midi_dataplane;
+  }
+
+  /** @brief Get track statistics.
+   *  @return TrackStatistics structure containing audio and MIDI statistics.
+   */
+  TrackStatistics get_statistics() const
+  {
+    TrackStatistics stats;
+    stats.audio_output_stats = *std::dynamic_pointer_cast<framework::AudioOutputStatistics>(p_audio_dataplane->get_statistics());
+    stats.midi_input_stats = *std::dynamic_pointer_cast<framework::MidiInputStatistics>(p_midi_dataplane->get_statistics());
+    return stats;
+  }
+
+  /** @brief Set a callback function for track events.
+   *  @param callback The callback function to set e.g. `void playback_func(miniaudioengine::eTrackEvent event)`.
+   */
+  void set_event_callback(TrackEventCallback callback)
+  {
+    m_event_callback = callback;
+  }
+
+  // MIDI Callbacks
+
+  /** @brief Set a callback function for MIDI note on events.
+   *  @param callback The callback function to set e.g. `void note_on_func(const miniaudioengine::MidiNoteMessage& message)`.
+   */
+  void set_midi_note_on_callback(MidiNoteOnCallbackFunc callback)
+  {
+    m_note_on_callback = callback;
+  }
+  
+  /** @brief Set a callback function for MIDI note off events.
+   *  @param callback The callback function to set e.g. `void note_off_func(const miniaudioengine::MidiNoteMessage& message)`.
+   */
+  void set_midi_note_off_callback(MidiNoteOffCallbackFunc callback)
+  {
+    m_note_off_callback = callback;
+  }
+
+  /** @brief Set a callback function for MIDI control change events.
+   *  @param callback The callback function to set e.g. `void control_change_func(const miniaudioengine::MidiControlMessage& message)`.
+   */
+  void set_midi_control_change_callback(MidiControlCallbackFunc callback)
+  {
+    m_control_change_callback = callback;
+  }
+
+  /** @brief Get string representation of the track.
+   *  @return String representation of the track.
+   */
+  std::string to_string() const;
+
+protected:
+  /** @brief Get the root MainTrack (traverses up hierarchy).
+   *  @return Shared pointer to MainTrack, or nullptr if no root found.
+   */
+  std::shared_ptr<class MainTrack> get_main_track() const;
+
+  void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
+
+  // Hierarchy
+  std::weak_ptr<Track> m_parent;
+  std::vector<TrackPtr> m_children;
+  std::mutex m_hierarchy_mutex;
+  bool m_is_main_track;
+
+  // Virtual output settings
+  float m_output_gain;
+  std::atomic<bool> m_output_enabled;
+
+  // Legacy members
+  std::queue<midi::MidiMessage> m_message_queue; // TODO - Remove?
+  std::mutex m_queue_mutex; // TODO - Remove?
+
+  framework::AudioDataPlanePtr p_audio_dataplane;
+  framework::MidiDataPlanePtr p_midi_dataplane;
+
+  TrackEventCallback m_event_callback;
+
+  SourceVariant m_audio_input;
+  MidiIOVariant m_midi_input;
+  MidiIOVariant m_midi_output; // Will be deprecated in favor of parent routing
+
+  MidiNoteOnCallbackFunc m_note_on_callback;
+  MidiNoteOffCallbackFunc m_note_off_callback;
+  MidiControlCallbackFunc m_control_change_callback;
+};
+
+}  // namespace miniaudioengine
+
+#endif  // __TRACK_H__

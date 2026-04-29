@@ -2,14 +2,14 @@
 #include <iostream>
 
 #include "audiodataplane.h"
-#include "miniaudioengine/fileservice.h"
+#include "fileservice.h"
 #include "logger.h"
 
 #define TEST_WAV_FILE_PATH "C:\\Projects\\miniaudioengine\\examples\\wav-audio-player\\samples\\test2.wav"
 
 using namespace miniaudioengine;
 using namespace miniaudioengine::audio;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 
 class AudioDataPlaneTest : public ::testing::Test
 {

@@ -1,4 +1,4 @@
-#include "miniaudioengine/cli.h"
+#include "cli.h"
 
 #include <iostream>
 #include <cstring>

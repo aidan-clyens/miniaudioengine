@@ -2,14 +2,14 @@
 #include <thread>
 #include <chrono>
 
-#include "miniaudioengine/deviceservice.h"
+#include "deviceservice.h"
 
 // Mocks
 #include "audiocontroller_mock.h"
 #include "device_mock.h"
 #include "devicehandle_factory.h"
 
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 using namespace miniaudioengine::test;
 
 class AudioControllerTest : public ::testing::Test

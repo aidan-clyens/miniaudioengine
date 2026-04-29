@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "audiocontroller.h"
-#include "miniaudioengine/trackservice.h"
+#include "trackservice.h"
 #include "logger.h"
 
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 using namespace miniaudioengine;
 using namespace miniaudioengine::audio;
 

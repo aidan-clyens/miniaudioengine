@@ -2,15 +2,15 @@
 #include "devicehandle_factory.h"
 #include "audiodataplane.h"
 
-#include "miniaudioengine/trackservice.h"
+#include "trackservice.h"
 #include "logger.h"
 
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 using namespace miniaudioengine::audio;
 using namespace miniaudioengine;
 
 AudioController::AudioController()
-  : core::IController("AudioController"),
+  : framework::IController("AudioController"),
     m_callback_context(std::make_shared<AudioCallbackContext>())
 {}
 
@@ -124,7 +124,7 @@ bool AudioController::_start()
     return false;
   }
 
-  adapter::AudioStreamParameters params = {
+  adapters::AudioStreamParameters params = {
     .deviceId  = device->get_id(),
     .nChannels = device->get_output_channels(),
     .firstChannel = 0

@@ -1,7 +1,7 @@
 #include "audioadapter.h"
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::adapter;
+using namespace miniaudioengine::adapters;
 
 unsigned int AudioAdapter::get_device_count()
 {

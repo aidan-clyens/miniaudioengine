@@ -300,8 +300,8 @@ package "Public / CLI / Examples (Layer 4)" #lightgray {
   [Track] <<public>>
   [DeviceManager] <<public>>
   [FileManager] <<public>>
-  [DeviceHandle] <<public>>
-  [FileHandle] <<public>>
+  [Device] <<public>>
+  [File] <<public>>
   [CLI] <<public>>
 }
 
@@ -319,8 +319,8 @@ package "Public / CLI / Examples (Layer 4)" #lightgray {
 
 [Track] --> [AudioDataPlane]
 [Track] --> [MidiDataPlane]
-[Track] --> [DeviceHandle] : audio/midi input
-[Track] --> [FileHandle] : audio/midi input
+[Track] --> [Device] : audio/midi input
+[Track] --> [File] : audio/midi input
 [Track] --> "IAudioProcessor" : add_audio_processor()
 
 [MainTrack] --> [AudioController]
@@ -328,9 +328,9 @@ package "Public / CLI / Examples (Layer 4)" #lightgray {
 
 [DeviceManager] --> [AudioController]
 [DeviceManager] --> [MidiController]
-[DeviceManager] --> [DeviceHandle]
+[DeviceManager] --> [Device]
 
-[FileManager] --> [FileHandle]
+[FileManager] --> [File]
 
 ' Processing relationships
 [SamplePlayer] ..|> "IAudioProcessor"

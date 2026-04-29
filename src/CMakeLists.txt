@@ -1,6 +1,7 @@
-add_subdirectory(core)
+add_subdirectory(framework)
 add_subdirectory(processing)
 add_subdirectory(services)
 add_subdirectory(engine)
 add_subdirectory(adapters)
+add_subdirectory(dataplane)
 add_subdirectory(cli)

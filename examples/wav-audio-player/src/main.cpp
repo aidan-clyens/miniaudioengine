@@ -6,12 +6,12 @@
 #include <thread>
 #include <chrono>
 
-#include "miniaudioengine/trackservice.h"
-#include "miniaudioengine/deviceservice.h"
-#include "miniaudioengine/track.h"
-#include "miniaudioengine/fileservice.h"
-#include "miniaudioengine/cli.h"
-#include "miniaudioengine/filehandle.h"
+#include "trackservice.h"
+#include "deviceservice.h"
+#include "track.h"
+#include "fileservice.h"
+#include "cli.h"
+#include "file.h"
 #include "logger.h"
 
 // TODO - Get version from CMake
@@ -20,7 +20,7 @@
 #endif
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 
 static bool running = true;
 static std::optional<std::string> input_file_path = std::nullopt;

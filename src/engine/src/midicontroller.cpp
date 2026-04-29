@@ -4,7 +4,7 @@
 #include "logger.h"
 
 using namespace miniaudioengine::midi;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 
 /** @brief Opens a MIDI input device port.
  *  @param port_number The MIDI device port number to open (default is 0).

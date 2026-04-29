@@ -13,7 +13,7 @@ This agent performs comprehensive code reviews for the Minimal Audio Engine proj
 - After implementing new audio processing features
 - When adding platform-specific code (Linux/Windows)
 - When modifying concurrency or multi-threading logic
-- During refactoring of core engine components
+- During refactoring of framework engine components
 - When updating CMake build configurations
 
 ## Scope and Responsibilities

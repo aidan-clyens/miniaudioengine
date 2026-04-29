@@ -27,8 +27,9 @@ target_include_directories(engine
 )
 
 target_link_libraries(engine PUBLIC
-  core
+  framework
   adapters
+  services
   processor-audio
 )
 

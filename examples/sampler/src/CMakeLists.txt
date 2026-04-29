@@ -5,10 +5,8 @@ add_executable(
 
 target_link_libraries(
   ${PROJECT_NAME} PRIVATE
-    core
-    trackservice
-    deviceservice
-    fileservice
+    framework
+    services
     engine
     processor-audio
     processor-sampleplayer

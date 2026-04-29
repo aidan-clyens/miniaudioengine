@@ -27,11 +27,11 @@ namespace: miniaudioengine::audio
 
 Layer 1: src/data/
 - AudioDataPlane, MidiDataPlane (real-time callbacks)
-namespace: miniaudioengine::core
+namespace: miniaudioengine::framework
 
 framework (shared — accessible by all layers): src/framework/
-- LockfreeRingBuffer, DoubleBuffer, Logger, IXxx, DeviceHandle, FileHandle
-namespace: miniaudioengine::core / miniaudioengine
+- LockfreeRingBuffer, DoubleBuffer, Logger, IXxx, Device, File
+namespace: miniaudioengine::framework / miniaudioengine
 ```
 
 ## Step 1 — Collect Headers
@@ -118,8 +118,8 @@ package "Framework (shared)" {
   [Logger]
   [IController]
   [IDataPlane]
-  [DeviceHandle]
-  [FileHandle]
+  [Device]
+  [File]
 }
 
 [TrackManager] --> [AudioStreamController]

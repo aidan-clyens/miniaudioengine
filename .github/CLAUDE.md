@@ -44,7 +44,7 @@ Layer 1: data                     (real-time lock-free callbacks)
 ─────────────────────────────────────────────────────────────────────────────────────
 framework (shared — accessible by all layers):
            LockfreeRingBuffer, DoubleBuffer, Logger, interfaces,
-           DeviceHandle, FileHandle (PImpl wrappers for RtAudio/RtMidi/libsndfile)
+           Device, File (PImpl wrappers for RtAudio/RtMidi/libsndfile)
 ```
 
 ### Layer 3 — Control Plane
@@ -72,8 +72,8 @@ Accessible by all layers (1–4). Not a numbered layer — a cross-cutting found
 - `MessageQueue<T>` — lock-based blocking queue (not used in real-time paths)
 - `IController`, `IDataPlane`, `IProcessor`, `IManager` — base interfaces for control/data/processing
 - `IInput`, `IDevice`, `IAudioDevice` — shared data models for routing and device metadata
-- `DeviceHandle` / `DeviceHandlePtr` — PImpl wrapper for audio/MIDI device metadata (hides RtAudio/RtMidi)
-- `FileHandle` / `FileHandlePtr` — PImpl wrapper for audio/MIDI file I/O (hides libsndfile)
+- `Device` / `DeviceHandlePtr` — PImpl wrapper for audio/MIDI device metadata (hides RtAudio/RtMidi)
+- `File` / `FileHandlePtr` — PImpl wrapper for audio/MIDI file I/O (hides libsndfile)
 - `RealtimeAssert` — header stub present but not implemented yet
 
 ### Track Hierarchy
@@ -91,7 +91,7 @@ Each `Track` supports audio/MIDI input from either a hardware device or a file (
 
 | Namespace | Layer |
 |-----------|-------|
-| `miniaudioengine::core` | Framework + Data Plane (Layers 0-1) |
+| `miniaudioengine::framework` | Framework + Data Plane (Layers 0-1) |
 | `miniaudioengine::audio` | Audio control + processing (Layers 2-3) |
 | `miniaudioengine::midi` | MIDI control (Layer 3) |
 | `miniaudioengine` | Public API managers + CLI (Layer 4) |
@@ -159,7 +159,7 @@ When writing or modifying any code that executes inside a callback (`AudioDataPl
 
 ## Key Pending Work
 
-- **Processing Plane Orchestration**: `core::IProcessor` uses per-processor threads, but there is no global DSP scheduler yet
+- **Processing Plane Orchestration**: `framework::IProcessor` uses per-processor threads, but there is no global DSP scheduler yet
 - **RealtimeAssert**: Header stubs exist in `framework/include/realtime_assert.h` but not yet implemented
 - **CLI application**: Basic implementation exists but is not yet a finished application
 

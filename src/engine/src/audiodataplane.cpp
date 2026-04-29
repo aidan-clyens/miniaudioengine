@@ -2,10 +2,10 @@
 
 using namespace miniaudioengine::audio;
 using namespace miniaudioengine;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 
 void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                                        double stream_time, adapter::AudioStreamStatus status) noexcept
+                                        double stream_time, adapters::AudioStreamStatus status) noexcept
 {
   (void)status; // Unused for now, but can be used to handle underflow/overflow conditions in the future
   float *in_buffer = static_cast<float *>(input_buffer);
@@ -89,7 +89,7 @@ void AudioDataPlane::process_audio(void *output_buffer, void *input_buffer, unsi
 }
 
 /** @brief Preload audio file data into the audio data plane.
- *  @param file_handle Shared pointer to a FileHandle (must be eFileType::Wav).
+ *  @param file_handle Shared pointer to a File (must be eFileType::Wav).
  */
 void AudioDataPlane::preload_wav_file(const FileHandlePtr& file_handle)
 {

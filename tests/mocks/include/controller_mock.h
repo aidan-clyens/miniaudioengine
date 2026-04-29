@@ -5,7 +5,7 @@
 
 #include "interfaces/controller.h"
 
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 
 namespace miniaudioengine::test
 {

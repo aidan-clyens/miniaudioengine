@@ -13,7 +13,7 @@ namespace miniaudioengine::midi
 struct MidiMessage;
 } // namespace miniaudioengine::midi
 
-namespace miniaudioengine::core
+namespace miniaudioengine::framework
 {
 
 /** @struct MidiInputStatistics
@@ -76,6 +76,6 @@ private:
 
 typedef std::shared_ptr<MidiDataPlane> MidiDataPlanePtr;
 
-} // namespace miniaudioengine::core
+} // namespace miniaudioengine::framework
 
 #endif // __TRACK_MIDI_DATA_PLANE_H__

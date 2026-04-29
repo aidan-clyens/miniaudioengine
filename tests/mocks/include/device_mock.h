@@ -5,23 +5,23 @@
 #include <string>
 #include <vector>
 
-// Framework device interface (still used by IController core-level tests)
+// Framework device interface (still used by IController framework-level tests)
 #include "interfaces/device.h"
-// DeviceHandle PImpl header and factory (used by IAudioController audio-level tests)
-#include "miniaudioengine/devicehandle.h"
+// Device PImpl header and factory (used by IAudioController audio-level tests)
+#include "device.h"
 #include "devicehandle_factory.h"
 
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 
 namespace miniaudioengine::test
 {
 
 // ---------------------------------------------------------------------------
-// MockDevice: IAudioDevice implementation for IController (core) tests
+// MockDevice: IAudioDevice implementation for IController (framework) tests
 // ---------------------------------------------------------------------------
 
 /** @class MockDevice
- *  @brief A mock implementation of IAudioDevice for core-level controller tests.
+ *  @brief A mock implementation of IAudioDevice for framework-level controller tests.
  */
 class MockDevice : public IAudioDevice
 {
@@ -42,13 +42,13 @@ public:
 using MockDevicePtr = std::shared_ptr<MockDevice>;
 
 // ---------------------------------------------------------------------------
-// DeviceHandle helpers for IAudioController (audio-level) tests
+// Device helpers for IAudioController (audio-level) tests
 // ---------------------------------------------------------------------------
 
 // Convenience alias: audio tests use DeviceHandlePtr directly
 using MockAudioOutputDevicePtr = DeviceHandlePtr;
 
-/** @brief Creates a mock audio output DeviceHandle for use in tests. */
+/** @brief Creates a mock audio output Device for use in tests. */
 inline DeviceHandlePtr make_mock_audio_output_device(
   unsigned int id = 0,
   const std::string& name = "Mock Output Device",
@@ -63,7 +63,7 @@ inline DeviceHandlePtr make_mock_audio_output_device(
     preferred_sample_rate, {44100, 48000});
 }
 
-/** @brief Creates a mock audio input DeviceHandle for use in tests. */
+/** @brief Creates a mock audio input Device for use in tests. */
 inline DeviceHandlePtr make_mock_audio_input_device(
   unsigned int id = 1,
   const std::string& name = "Mock Input Device",

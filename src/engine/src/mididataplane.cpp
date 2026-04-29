@@ -4,7 +4,7 @@
 #include "logger.h"
 
 using namespace miniaudioengine::midi;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 
 void MidiDataPlane::process_midi_message(const MidiMessage &midi_message)
 {

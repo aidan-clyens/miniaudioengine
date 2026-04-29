@@ -13,7 +13,7 @@ namespace miniaudioengine::audio
 {
 
 /** @brief Interface for audio processors. Real application or test mock */
-class IAudioProcessor : public core::IProcessor
+class IAudioProcessor : public framework::IProcessor
 {
 public:
   virtual ~IAudioProcessor() = default;

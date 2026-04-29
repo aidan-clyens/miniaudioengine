@@ -2,7 +2,7 @@
 
 ## Code Style
 - C++20 required; keep layer-specific namespaces aligned with the current codebase:
-	- `miniaudioengine::core` for framework primitives and data planes
+	- `miniaudioengine::framework` for framework primitives and data planes
 	- `miniaudioengine::audio` for audio control/processing types
 	- `miniaudioengine::midi` for MIDI control types
 	- `miniaudioengine` (root) for public API managers and CLI
@@ -61,8 +61,8 @@ See [docs/DESIGN_DOC.md](docs/DESIGN_DOC.md) for full rationale and sequence dia
   Layer 2: processing      (IAudioProcessor, Sample, SamplePlayer — partial/experimental)
   Layer 1: adapters        (AudioAdapter, FileAdapter, MidiAdapter — PImpl wrappers for RtAudio/RtMidi/libsndfile)
   ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-  core (shared — accessible by all layers):
-       LockfreeRingBuffer, DoubleBuffer, Logger, interfaces, DeviceHandle, FileHandle
+  framework (shared — accessible by all layers):
+       LockfreeRingBuffer, DoubleBuffer, Logger, interfaces, Device, File
   ```
 
 - **Track hierarchy**: `MainTrack` is always the root; regular `Track` objects are its direct children (single-level). Audio output mixes upward from children to parent.
@@ -70,16 +70,16 @@ See [docs/DESIGN_DOC.md](docs/DESIGN_DOC.md) for full rationale and sequence dia
   ```
   TrackService (singleton manager)
   └── MainTrack (root — owns AudioController, MidiController)
-      ├── Track (owns AudioDataPlane + MidiDataPlane; source = DeviceHandle or FileHandle via std::variant)
+      ├── Track (owns AudioDataPlane + MidiDataPlane; source = Device or File via std::variant)
       └── Track
   ```
 
 - Service layer is synchronous singletons (main thread, locks allowed):
 	- `src/services/` — `TrackService`, `DeviceService`, `FileService`
 	- `src/cli/` — CLI entry point
-- Engine layer executes in RtAudio/RtMidi callbacks in `src/engine/` — use `LockfreeRingBuffer<T, Size>` from `src/core/` for cross-thread messaging.
+- Engine layer executes in RtAudio/RtMidi callbacks in `src/engine/` — use `LockfreeRingBuffer<T, Size>` from `src/framework/` for cross-thread messaging.
 - Adapter layer in `src/adapters/` wraps all external library calls; never access RtAudio/RtMidi/libsndfile directly above this layer.
-- Processing plane is minimal: `IAudioProcessor`, `Sample`, `SamplePlayer` (per-processor threading via `core::IProcessor`; no orchestration layer yet).
+- Processing plane is minimal: `IAudioProcessor`, `Sample`, `SamplePlayer` (per-processor threading via `framework::IProcessor`; no orchestration layer yet).
 
 ## Build and Test
 - Configure: `cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON`
@@ -94,14 +94,14 @@ See [docs/DESIGN_DOC.md](docs/DESIGN_DOC.md) for full rationale and sequence dia
 
 ## Project Conventions
 - Singletons via `::instance()`; unit tests often call `TrackService::instance().clear_tracks()` to reset state.
-- **Public types**: Use `DeviceHandle` / `DeviceHandlePtr` and `FileHandle` / `FileHandlePtr` as the canonical public API types. `AudioDevice`, `MidiDevice`, `WavFile`, `MidiFile` in `include/miniaudioengine/` are deprecated stubs kept for backward compatibility.
+- **Public types**: Use `Device` / `DeviceHandlePtr` and `File` / `FileHandlePtr` as the canonical public API types. `AudioDevice`, `MidiDevice`, `WavFile`, `MidiFile` in `include/miniaudioengine/` are deprecated stubs kept for backward compatibility.
 - **Real-time safety rules** (any code in `src/engine/` callbacks):
   1. No mutexes — no `std::mutex`, `std::lock_guard`, or any blocking primitive
   2. No heap allocation — no `new`, `malloc`, `std::vector::push_back`, or dynamic allocation
   3. No blocking I/O — no file reads, no sleep calls
   4. Use `LockfreeRingBuffer` for all cross-thread communication
   5. Keep total callback work under 1 ms
-- `MessageQueue<T>` in `src/core/` is lock-based — never use it in real-time paths.
+- `MessageQueue<T>` in `src/framework/` is lock-based — never use it in real-time paths.
 - Mocks live in `tests/mocks/include/` under namespace `miniaudioengine::test`; mirror interface names with `Mock` prefix (e.g., `MockAudioController`).
 
 ## Integration Points

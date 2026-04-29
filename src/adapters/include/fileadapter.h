@@ -6,7 +6,7 @@
 #include <memory>
 #include <stdexcept>
 
-namespace miniaudioengine::adapter
+namespace miniaudioengine::adapters
 {
 
 typedef SNDFILE SndFile;
@@ -29,6 +29,6 @@ private:
   SndFileInfo m_info = {};
 };
 
-} // namespace miniaudioengine::adapter
+} // namespace miniaudioengine::adapters
 
 #endif // __FILE_ADAPTER_H__

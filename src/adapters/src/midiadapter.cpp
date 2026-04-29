@@ -1,6 +1,6 @@
 #include "midiadapter.h"
 
-using namespace miniaudioengine::adapter;
+using namespace miniaudioengine::adapters;
 
 std::vector<MidiPort> MidiAdapter::get_ports()
 {

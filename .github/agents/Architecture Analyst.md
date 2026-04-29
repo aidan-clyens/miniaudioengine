@@ -27,7 +27,7 @@ You are an Architecture Analyst specializing in modern C++20 software engineerin
 
 ### Project-Specific Architecture
 
-#### Processor Pattern (`core::IProcessor`)
+#### Processor Pattern (`framework::IProcessor`)
 The codebase provides a lightweight processor base class for background work:
 ```cpp
 class IProcessor {
@@ -96,7 +96,7 @@ class MessageQueue {
 When reviewing code or proposing changes, evaluate:
 
 1. **Threading Model**
-  - [ ] Are threads created via `core::IProcessor` or explicit `std::jthread`?
+  - [ ] Are threads created via `framework::IProcessor` or explicit `std::jthread`?
    - [ ] Is there a clear ownership model for thread lifecycle?
    - [ ] Are threads started with readiness checks and stopped cooperatively?
    - [ ] Are thread names set for debugging (`set_thread_name()`)?
@@ -210,11 +210,11 @@ void process(std::stop_token token) {
 Review these files for architectural understanding:
 
 **Framework (Layer 0)**:
-- **[framework/include/controller.h](../src/framework/include/controller.h)** - `core::IController` base
-- **[framework/include/dataplane.h](../src/framework/include/dataplane.h)** - `core::IDataPlane` base
-- **[framework/include/processor.h](../src/framework/include/processor.h)** - `core::IProcessor` base
-- **[framework/include/manager.h](../src/framework/include/manager.h)** - `core::IManager` base
-- **[framework/include/device.h](../src/framework/include/device.h)** - `core::IDevice` / `core::IAudioDevice`
+- **[framework/include/controller.h](../src/framework/include/controller.h)** - `framework::IController` base
+- **[framework/include/dataplane.h](../src/framework/include/dataplane.h)** - `framework::IDataPlane` base
+- **[framework/include/processor.h](../src/framework/include/processor.h)** - `framework::IProcessor` base
+- **[framework/include/manager.h](../src/framework/include/manager.h)** - `framework::IManager` base
+- **[framework/include/device.h](../src/framework/include/device.h)** - `framework::IDevice` / `framework::IAudioDevice`
 - **[framework/include/input.h](../src/framework/include/input.h)** - Input abstraction
 - **[framework/include/messagequeue.h](../src/framework/include/messagequeue.h)** - Thread-safe message queue
 - **[framework/include/lockfree_ringbuffer.h](../src/framework/include/lockfree_ringbuffer.h)** - Lock-free SPSC queue

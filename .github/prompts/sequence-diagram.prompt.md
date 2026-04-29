@@ -93,6 +93,6 @@ After the diagram(s), add a brief Markdown table listing every **thread boundary
 | 3 Engine | `src/engine/` | `miniaudioengine::audio` / `::midi` | **Callbacks yes** |
 | 2 Processing | `src/processing/` | `miniaudioengine::audio` | No |
 | 1 Adapters | `src/adapters/` | `miniaudioengine` | No |
-| 0 Core/framework | `src/framework/` | `miniaudioengine::core` | No |
+| 0 Core/framework | `src/framework/` | `miniaudioengine::framework` | No |
 
 **Real-time safety reminder**: any code path that touches `src/engine/` callbacks must obey the four rules — no mutexes, no heap allocation, no blocking I/O, and use `LockfreeRingBuffer` for cross-thread messaging.

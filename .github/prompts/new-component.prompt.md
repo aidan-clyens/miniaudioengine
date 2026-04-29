@@ -17,8 +17,8 @@ Determine from the user's message:
 
 | Layer | Name | `src/` path | `tests/unit/` path | Default namespace | Typical base interface | CMake static lib target(s) |
 |-------|------|-------------|-------------------|-------------------|------------------------|---------------------------|
-| 0 | Framework | `src/framework/` | `tests/unit/framework/` | `miniaudioengine::core` | `IController` / `IDataPlane` / none | `framework` |
-| 1 | Data (real-time) | `src/data/<domain>/` | `tests/unit/data/` | `miniaudioengine::core` | `IDataPlane` | `data-audio` or `data-midi` |
+| 0 | Framework | `src/framework/` | `tests/unit/framework/` | `miniaudioengine::framework` | `IController` / `IDataPlane` / none | `framework` |
+| 1 | Data (real-time) | `src/data/<domain>/` | `tests/unit/data/` | `miniaudioengine::framework` | `IDataPlane` | `data-audio` or `data-midi` |
 | 2 | Processing | `src/processing/<domain>/` | `tests/unit/processing/` | `miniaudioengine::audio` | `IAudioProcessor` | `processor-audio` |
 | 3 | Control | `src/control/<domain>/` | `tests/unit/control/` | `miniaudioengine::audio` or `miniaudioengine::midi` | `IController` | `control-audio` or `control-midi` |
 | 4 | Public API | `src/public/<domain>/` | `tests/unit/control/` | `miniaudioengine` | `IManager` | `trackmanager` / `devicemanager` / `filemanager` |
@@ -65,7 +65,7 @@ using <ComponentName>Ptr = std::shared_ptr<<ComponentName>>;
 ```
 
 **Layer-appropriate includes to add:**
-- Framework (shared): `"logger.h"`, `"devicehandle.h"`, `"filehandle.h"` as needed
+- Framework (shared): `"logger.h"`, `"device.h"`, `"file.h"` as needed
 - Layer 1: `"dataplane.h"`, `"logger.h"` — add `noexcept` to any callback methods; no mutex, no allocation
 - Layer 2: `"audioprocessor.h"`, `"logger.h"`
 - Layer 3: `"controller.h"`, `"logger.h"` — mutex allowed

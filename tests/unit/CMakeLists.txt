@@ -1,4 +1,4 @@
-add_subdirectory(core)
+add_subdirectory(framework)
 add_subdirectory(control)
 add_subdirectory(data)
 
@@ -9,19 +9,19 @@ add_executable(miniaudioengine-unit-tests
 target_link_libraries(miniaudioengine-unit-tests PRIVATE
   GTest::gtest
   GTest::gtest_main
-  miniaudioengine-unit-test-core
+  miniaudioengine-unit-test-framework
   miniaudioengine-unit-test-control
   miniaudioengine-unit-test-data
   engine
-  trackservice
-  fileservice
-  deviceservice
+  services
+  services
+  services
   test-mocks
 )
 
 target_link_options(miniaudioengine-unit-tests PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/WHOLEARCHIVE:miniaudioengine-unit-test-core>
-  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive,$<TARGET_FILE:miniaudioengine-unit-test-core>,--no-whole-archive>
+  $<$<CXX_COMPILER_ID:MSVC>:/WHOLEARCHIVE:miniaudioengine-unit-test-framework>
+  $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive,$<TARGET_FILE:miniaudioengine-unit-test-framework>,--no-whole-archive>
   $<$<CXX_COMPILER_ID:MSVC>:/WHOLEARCHIVE:miniaudioengine-unit-test-control>
   $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wl,--whole-archive,$<TARGET_FILE:miniaudioengine-unit-test-control>,--no-whole-archive>
   $<$<CXX_COMPILER_ID:MSVC>:/WHOLEARCHIVE:miniaudioengine-unit-test-data>

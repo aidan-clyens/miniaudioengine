@@ -12,7 +12,7 @@ Read headers from each layer to identify what exists:
 | Layer | Path | What to look for |
 |-------|------|-----------------|
 | Framework (0) | `src/framework/include/interfaces/` | All `I*` interfaces |
-| Framework (0) | `src/framework/include/` | PImpl handles (`DeviceHandle`, `FileHandle`), utilities |
+| Framework (0) | `src/framework/include/` | PImpl handles (`Device`, `File`), utilities |
 | Control (3) | `src/control/audio/include/`, `src/control/midi/include/` | Controller classes |
 | Data (1) | `src/data/audio/include/`, `src/data/midi/include/` | DataPlane + CallbackHandler classes |
 | Processing (2) | `src/processing/audio/include/`, `src/processing/sampleplayer/include/` | Processor interfaces and implementations |

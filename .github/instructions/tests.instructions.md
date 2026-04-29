@@ -95,7 +95,7 @@ Use explicit `using namespace` declarations at file scope (not inside functions)
 ```cpp
 using namespace miniaudioengine;           // public API types
 using namespace miniaudioengine::audio;    // AudioDataPlane, etc.
-using namespace miniaudioengine::core;     // LockfreeRingBuffer, DoubleBuffer, etc.
+using namespace miniaudioengine::framework;     // LockfreeRingBuffer, DoubleBuffer, etc.
 using namespace miniaudioengine::test;     // mocks
 ```
 

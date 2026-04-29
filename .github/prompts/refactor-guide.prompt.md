@@ -18,8 +18,8 @@ Determine from the user's message:
 
 | Layer | Path | Namespace | Real-time? |
 |-------|------|-----------|------------|
-| 0 | `src/framework/` | `miniaudioengine::core` | No |
-| 1 | `src/data/` | `miniaudioengine::core` | **Yes** |
+| 0 | `src/framework/` | `miniaudioengine::framework` | No |
+| 1 | `src/data/` | `miniaudioengine::framework` | **Yes** |
 | 2 | `src/processing/` | `miniaudioengine::audio` | No |
 | 3 | `src/control/` | `miniaudioengine::audio` / `::midi` | No |
 | 4 | `src/public/` + `include/` | `miniaudioengine` | No |

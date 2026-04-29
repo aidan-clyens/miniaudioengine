@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "miniaudioengine/deviceservice.h"
+#include "deviceservice.h"
 #include "logger.h"
 #include "audiocontroller_mock.h"
 

@@ -8,7 +8,7 @@
 
 using namespace miniaudioengine;
 using namespace miniaudioengine::midi;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 
 class MidiDataPlaneTest : public ::testing::Test
 { 

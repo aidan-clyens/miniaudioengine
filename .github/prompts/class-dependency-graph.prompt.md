@@ -1,7 +1,7 @@
 ---
 description: "Generate a Mermaid class dependency graph showing inheritance, composition, and association relationships between C++ classes in the miniaudioengine project."
 agent: "agent"
-argument-hint: "Optional: scope to a layer or namespace (e.g. 'engine', 'services', 'core', 'processing')"
+argument-hint: "Optional: scope to a layer or namespace (e.g. 'engine', 'services', 'framework', 'processing')"
 ---
 
 Generate a **Mermaid class dependency graph** for this project by scanning the C++ source and header files.
@@ -10,7 +10,7 @@ Generate a **Mermaid class dependency graph** for this project by scanning the C
 
 Read headers under `src/` and `include/` to identify all classes and interfaces. For each type, record:
 
-- **Class name** and its **namespace** (`miniaudioengine::core`, `miniaudioengine::audio`, `miniaudioengine::midi`, or root `miniaudioengine`)
+- **Class name** and its **namespace** (`miniaudioengine::framework`, `miniaudioengine::audio`, `miniaudioengine::midi`, or root `miniaudioengine`)
 - **Base classes** (inheritance — `class Foo : public IFoo`)
 - **Composed members** — `shared_ptr<T>`, `unique_ptr<T>`, or direct object members of project types
 - **Association / weak references** — `weak_ptr<T>` members or raw non-owning pointer members to project types
@@ -19,7 +19,7 @@ Read headers under `src/` and `include/` to identify all classes and interfaces.
 Focus on project-defined types; ignore standard library and third-party types (RtAudio, RtMidi, libsndfile, etc.) unless they appear as a named base class.
 
 Key directories to scan:
-- `src/framework/include/` — core primitives and interfaces (`IController`, `IDataPlane`, `LockfreeRingBuffer`, `Logger`)
+- `src/framework/include/` — framework primitives and interfaces (`IController`, `IDataPlane`, `LockfreeRingBuffer`, `Logger`)
 - `src/adapters/include/` — adapter wrappers (`AudioAdapter`, `FileAdapter`, `MidiAdapter`)
 - `src/engine/include/` — engine types (`AudioController`, `AudioDataPlane`, `MidiController`, `MidiDataPlane`)
 - `src/processing/include/` — processing types (`IAudioProcessor`, `Sample`, `SamplePlayer`)
@@ -32,7 +32,7 @@ Assign each class a layer for styling:
 
 | Layer | Namespace / path | Style |
 |-------|-----------------|-------|
-| `core` | `miniaudioengine::core` / framework | `fill:#lightblue` |
+| `framework` | `miniaudioengine::framework` / framework | `fill:#lightblue` |
 | `adapters` | `src/adapters/` | `fill:#ffe0b2` |
 | `engine` | `src/engine/` | `fill:#lightgreen` |
 | `processing` | `miniaudioengine::audio` / processing | `fill:#lightyellow` |

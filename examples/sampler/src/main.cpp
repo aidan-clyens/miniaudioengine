@@ -6,19 +6,19 @@
 #include <functional>
 
 #include "logger.h"
-#include "miniaudioengine/trackservice.h"
-#include "miniaudioengine/deviceservice.h"
-#include "miniaudioengine/fileservice.h"
+#include "trackservice.h"
+#include "deviceservice.h"
+#include "fileservice.h"
 #include "sample.h"
 #include "midicontroltypes.h"
 #include "sampleplayer.h"
-#include "miniaudioengine/cli.h"
-#include "miniaudioengine/mididevice.h"
+#include "cli.h"
+#include "mididevice.h"
 
 static const std::filesystem::path SAMPLE_FOLDER = "C:\\Projects\\miniaudioengine\\samples\\drums";
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 using namespace miniaudioengine::audio;
 using namespace miniaudioengine::midi;
 

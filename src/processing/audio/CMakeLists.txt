@@ -21,9 +21,9 @@ target_include_directories(processor-audio
 
 target_link_libraries(processor-audio
   PUBLIC
-    core
+    framework
   PRIVATE
-    fileservice
+    services
 )
 
 set_target_properties(processor-audio PROPERTIES LINKER_LANGUAGE CXX)

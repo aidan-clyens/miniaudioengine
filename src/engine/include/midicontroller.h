@@ -17,7 +17,7 @@ namespace miniaudioengine::midi
  */
 struct MidiCallbackContext
 {
-  std::vector<core::MidiDataPlanePtr> active_tracks;
+  std::vector<framework::MidiDataPlanePtr> active_tracks;
 };
 
 /** @class MidiController
@@ -26,10 +26,10 @@ struct MidiCallbackContext
  *  The MidiController provides methods to open and close MIDI input ports.
  *  @note This class is part of the control plane. Operations are synchronous and called from the main thread.
  */
-class MidiController : public core::IController
+class MidiController : public framework::IController
 {
 public:
-  MidiController() : core::IController("MidiController"),
+  MidiController() : framework::IController("MidiController"),
                      m_callback_context(std::make_shared<MidiCallbackContext>()) {}
 
   ~MidiController() override
@@ -40,7 +40,7 @@ public:
   /** @brief Gets the list of available MIDI input ports.
    *  @return A vector of MidiPort structures representing the available MIDI ports.
    */
-  virtual std::vector<adapter::MidiPort> get_ports()
+  virtual std::vector<adapters::MidiPort> get_ports()
   {
     return m_midi_adapter.get_ports();
   }
@@ -68,7 +68,7 @@ protected:
   std::shared_ptr<MidiCallbackContext> m_callback_context;
 
 private:
-  adapter::MidiAdapter m_midi_adapter;
+  adapters::MidiAdapter m_midi_adapter;
 
   bool _start() override { throw std::runtime_error("MidiController start/stop operations not implemented."); }
   bool _stop() override { throw std::runtime_error("MidiController start/stop operations not implemented."); }

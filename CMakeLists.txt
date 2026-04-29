@@ -85,11 +85,10 @@ install(
     TARGETS
         engine
         adapters
+        dataplane
         processor-audio
-        trackservice
-        fileservice
-        deviceservice
-        core
+        services
+        framework
         cli
     EXPORT miniaudioengine-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

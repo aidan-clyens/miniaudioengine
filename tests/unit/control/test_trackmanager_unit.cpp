@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
-#include "miniaudioengine/trackservice.h"
+#include "trackservice.h"
 
 using namespace miniaudioengine;
 

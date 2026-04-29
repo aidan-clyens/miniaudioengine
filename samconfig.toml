@@ -1,0 +1,13 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "miniaudioengine"
+resolve_s3 = true
+s3_prefix = "miniaudioengine"
+confirm_changeset = true
+capabilities = "CAPABILITY_NAMED_IAM"
+parameter_overrides = "ProjectName=\"miniaudioengine\" GitHubRepoUrl=\"https://github.com/aidan-clyens/miniaudioengine.git\" GitHubBranch=\"main\" BuildImage=\"ghcr.io/aidan-clyens/miniaudioengine-dev:latest@sha256:695c1a412aadcbb8b1357bfccbfa6ad05790a2b8d5304f1d1d6bc60a82d94432\" ComputeType=\"BUILD_GENERAL1_SMALL\""
+image_repositories = []
+
+[default.global.parameters]
+region = "us-east-1"

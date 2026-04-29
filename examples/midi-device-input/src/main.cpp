@@ -6,9 +6,9 @@
 #include <map>
 
 #include <logger.h>
-#include <miniaudioengine/cli.h>
-#include <miniaudioengine/deviceservice.h>
-#include <miniaudioengine/trackservice.h>
+#include <cli.h>
+#include <deviceservice.h>
+#include <trackservice.h>
 #include <midicontroltypes.h>
 
 #ifndef PROGRAM_NAME
@@ -20,7 +20,7 @@
 #endif
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 using namespace miniaudioengine::midi;
 
 static bool running = false;

@@ -20,7 +20,7 @@ target_include_directories(processor-sampleplayer
 
 target_link_libraries(processor-sampleplayer
   PRIVATE
-    core
+    framework
   PUBLIC
     processor-audio
 )

@@ -1,0 +1,98 @@
+#ifndef __FILE_HANDLE_H__
+#define __FILE_HANDLE_H__
+
+#include <filesystem>
+#include <memory>
+#include <string>
+#include <vector>
+
+namespace miniaudioengine
+{
+
+/** @class File
+ *  @brief Unified PImpl handle for audio and MIDI file sources.
+ *  Hides libsndfile and other library dependencies from public headers.
+ */
+class File
+{
+public:
+  /** @enum eFileType
+   *  @brief Discriminates between WAV/audio and MIDI file handles.
+   */
+  enum class eFileType
+  {
+    Wav,
+    Midi
+  };
+
+  ~File();
+
+  File(const File&) = delete;
+  File& operator=(const File&) = delete;
+
+  // -------------------------------------------------------------------------
+  // Common accessors
+  // -------------------------------------------------------------------------
+
+  /** @brief Returns the type of this file handle. */
+  eFileType get_file_type() const;
+
+  /** @brief Returns the absolute filesystem path of this file. */
+  std::filesystem::path get_filepath() const;
+
+  /** @brief Returns only the filename component of the path. */
+  std::string get_filename() const;
+
+  /** @brief Returns a human-readable description of this file. */
+  std::string to_string() const;
+
+  // -------------------------------------------------------------------------
+  // Audio (WAV) accessors — valid when get_file_type() == eFileType::Wav
+  // -------------------------------------------------------------------------
+
+  /** @brief Total number of sample frames in the file. Returns 0 for MIDI files. */
+  unsigned int get_total_frames() const;
+
+  /** @brief Bits per sample (16, 24, 32, or 64). Returns 0 for MIDI files. */
+  unsigned int get_bits_per_sample() const;
+
+  /** @brief Sample rate in Hz. Returns 0 for MIDI files. */
+  unsigned int get_sample_rate() const;
+
+  /** @brief Number of interleaved audio channels. Returns 0 for MIDI files. */
+  unsigned int get_channels() const;
+
+  /** @brief Duration in seconds. Returns 0.0 for MIDI files. */
+  double get_duration_seconds() const;
+
+  /** @brief Format string, e.g. "WAV", "AIFF", "FLAC". Returns empty string for MIDI files. */
+  std::string get_format_string() const;
+
+  /** @brief Read up to @p frames_to_read interleaved float frames into @p buffer.
+   *  @param buffer Destination buffer; must be pre-sized to at least frames_to_read * channels.
+   *  @param frames_to_read Number of frames to read.
+   *  @return Actual number of frames read, or 0 for MIDI files.
+   *  @note Real-time safe: no allocation, no locks.
+   */
+  long long read_frames(std::vector<float>& buffer, long long frames_to_read);
+
+  /** @brief Seek to a specific frame offset from the start of the file.
+   *  @param frame_offset Frame index to seek to.
+   *  @note Real-time safe: no allocation, no locks.
+   */
+  void seek(long long frame_offset);
+
+private:
+  struct Impl;
+  explicit File(std::unique_ptr<Impl> impl);
+  std::unique_ptr<Impl> p_impl;
+
+  // Internal factory methods — called only within the library implementation
+  friend class FileHandleFactory;
+};
+
+using FileHandlePtr = std::shared_ptr<File>;
+
+} // namespace miniaudioengine
+
+#endif // __FILE_HANDLE_H__

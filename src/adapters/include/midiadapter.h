@@ -7,7 +7,7 @@
 
 #include "logger.h"
 
-namespace miniaudioengine::adapter
+namespace miniaudioengine::adapters
 {
   
 /** @struct MidiPort
@@ -60,6 +60,6 @@ private:
   RtMidiIn m_rtmidi_in;
 };
 
-} // namespace miniaudioengine::adapter
+} // namespace miniaudioengine::adapters
 
 #endif // __MIDI_ADAPTER_H__

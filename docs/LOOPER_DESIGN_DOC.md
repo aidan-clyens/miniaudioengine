@@ -447,8 +447,8 @@ classDiagram
 
     LooperSession --> Metronome : owns
     LooperSession --> LoopEngine : owns
-    LooperSession --> DeviceHandle : input device
-    LooperSession --> DeviceHandle : output device
+    LooperSession --> Device : input device
+    LooperSession --> Device : output device
 ```
 
 \newpage

@@ -1,6 +1,6 @@
 #include "fileadapter.h"
 
-using namespace miniaudioengine::adapter;
+using namespace miniaudioengine::adapters;
 
 
 bool FileAdapter::open(const char *filename)

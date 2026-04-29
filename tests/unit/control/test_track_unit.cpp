@@ -2,14 +2,14 @@
 #include <iostream>
 #include <memory>
 
-// miniaudioengine::core
+// miniaudioengine::framework
 #include "logger.h"
 // miniaudioengine::control
-#include "miniaudioengine/trackservice.h"
-#include "miniaudioengine/deviceservice.h"
-#include "miniaudioengine/track.h"
+#include "trackservice.h"
+#include "deviceservice.h"
+#include "track.h"
 #include "audiocontroller.h"
-#include "miniaudioengine/fileservice.h"
+#include "fileservice.h"
 
 // Mocks
 #include "device_mock.h"
@@ -17,7 +17,7 @@
 #define TEST_WAV_FILE_PATH "C:\\Projects\\miniaudioengine\\samples\\test.wav"
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::core;
+using namespace miniaudioengine::framework;
 using namespace miniaudioengine::test;
 
 class TrackTest : public ::testing::Test

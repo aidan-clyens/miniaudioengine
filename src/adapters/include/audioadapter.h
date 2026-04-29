@@ -6,7 +6,7 @@
 
 #include <rtaudio/RtAudio.h>
 
-namespace miniaudioengine::adapter
+namespace miniaudioengine::adapters
 {
 
 typedef RtAudioStreamStatus AudioStreamStatus;
@@ -16,7 +16,7 @@ class AudioCallbackHandler
 {
 public:
   static int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                            double stream_time, adapter::AudioStreamStatus status, void *user_data) noexcept {
+                            double stream_time, AudioStreamStatus status, void *user_data) noexcept {
                               return 1;
                             }
 };
@@ -64,6 +64,6 @@ private:
   }
 };
 
-} // namespace miniaudioengine::adapter
+} // namespace miniaudioengine::adapters
 
 #endif // __AUDIO_ADAPTER_H__
