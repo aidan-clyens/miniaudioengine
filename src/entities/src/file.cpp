@@ -125,7 +125,7 @@ std::string File::to_string() const
 // FileHandleFactory
 // =============================================================================
 
-FileHandlePtr FileHandleFactory::make_wav(const std::filesystem::path& path)
+FilePtr FileHandleFactory::make_wav(const std::filesystem::path& path)
 {
   auto impl = std::make_unique<File::Impl>();
   impl->file_type = File::eFileType::Wav;
@@ -136,15 +136,15 @@ FileHandlePtr FileHandleFactory::make_wav(const std::filesystem::path& path)
     throw std::runtime_error("Failed to open WAV file: " + path.string());
   }
 
-  return FileHandlePtr(new File(std::move(impl)));
+  return FilePtr(new File(std::move(impl)));
 }
 
-FileHandlePtr FileHandleFactory::make_midi(const std::filesystem::path& path)
+FilePtr FileHandleFactory::make_midi(const std::filesystem::path& path)
 {
   auto impl = std::make_unique<File::Impl>();
   impl->file_type = File::eFileType::Midi;
   impl->filepath  = path;
-  return FileHandlePtr(new File(std::move(impl)));
+  return FilePtr(new File(std::move(impl)));
 }
 
 } // namespace miniaudioengine

@@ -143,7 +143,7 @@ void TrackService::clear_tracks()
 /** @brief Set the audio output device for the main track.
  *  @param device The audio output device to use.
  */
-void TrackService::set_audio_output_device(DeviceHandlePtr device)
+void TrackService::set_audio_output_device(DevicePtr device)
 {
   LOG_INFO("TrackService: Set audio output device: ", device->get_name());
   m_main_track->set_audio_output_device(device);

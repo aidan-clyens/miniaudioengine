@@ -12,6 +12,9 @@
 namespace miniaudioengine
 {
 
+using FilePtr = std::shared_ptr<File>;
+using FileList = std::vector<FilePtr>;
+
 /** @enum PathType
  *  @brief Enum to specify the type of path to filter when listing directory contents.
  */
@@ -28,15 +31,24 @@ enum class PathType
 class FileService
 {
 public:
+  FileService() = default;
+  ~FileService() = default;
+
   static FileService& instance()
   {
     static FileService instance;
     return instance;
   }
 
-	std::vector<std::filesystem::path> list_directory(const std::filesystem::path &path, PathType type = PathType::All);
-  std::vector<std::filesystem::path> list_wav_files_in_directory(const std::filesystem::path &path);
-  std::vector<std::filesystem::path> list_midi_files_in_directory(const std::filesystem::path &path);
+	std::vector<std::filesystem::path> list_directory(const std::filesystem::path &path, PathType type = PathType::All) const;
+  std::vector<std::filesystem::path> list_wav_files_in_directory(const std::filesystem::path &path) const;
+  std::vector<std::filesystem::path> list_midi_files_in_directory(const std::filesystem::path &path) const;
+
+  FileList get_audio_files(const std::filesystem::path &directory) const;
+  FileList get_midi_files(const std::filesystem::path &directory) const;
+
+  FilePtr get_audio_file(const std::filesystem::path &file_path) const;
+  FilePtr get_midi_file(const std::filesystem::path &file_path) const;
 
   /** @brief Checks if a specified path exists.
    *  @param path The path to check.
@@ -112,22 +124,15 @@ public:
 
   /** @brief Loads audio data from a WAV (or libsndfile-compatible audio) file.
    *  @param path The path to the audio file.
-   *  @return FileHandlePtr on success, or std::nullopt if the file could not be opened.
+   *  @return FilePtr on success, or std::nullopt if the file could not be opened.
    */
-  std::optional<FileHandlePtr> read_wav_file(const std::filesystem::path &path);
+  FilePtr read_wav_file(const std::filesystem::path &path) const;
 
   /** @brief Creates a File for a MIDI file.
    *  @param path The path to the MIDI file.
-   *  @return FileHandlePtr on success, or std::nullopt if the path is invalid.
+   *  @return FilePtr on success, or std::nullopt if the path is invalid.
    */
-  std::optional<FileHandlePtr> read_midi_file(const std::filesystem::path &path);
-
-private:
-  FileService() = default;
-  virtual ~FileService() = default;
-
-  FileService(const FileService&) = delete;
-  FileService& operator=(const FileService&) = delete;
+  FilePtr read_midi_file(const std::filesystem::path &path) const;
 };
 
 }  // namespace miniaudioengine

@@ -87,7 +87,7 @@ private:
   friend class DeviceHandleFactory;
 };
 
-using DeviceHandlePtr = std::shared_ptr<Device>;
+using DevicePtr = std::shared_ptr<Device>;
 
 /** @class DeviceHandleFactory
  *  @brief Internal factory for constructing Device objects.
@@ -110,7 +110,7 @@ public:
    *  @param sample_rates         Supported sample rates.
    *  @return Shared pointer to the constructed Device.
    */
-  static DeviceHandlePtr make_audio(unsigned int id,
+  static DevicePtr make_audio(unsigned int id,
                                     const std::string &name,
                                     bool is_default_input,
                                     bool is_default_output,
@@ -127,7 +127,7 @@ public:
    *  @param is_output    True if the port is an output port.
    *  @return Shared pointer to the constructed Device.
    */
-  static DeviceHandlePtr make_midi(unsigned int id,
+  static DevicePtr make_midi(unsigned int id,
                                    const std::string &name,
                                    bool is_input,
                                    bool is_output);

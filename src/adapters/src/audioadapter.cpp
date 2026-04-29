@@ -8,9 +8,9 @@ unsigned int AudioAdapter::get_device_count()
   return m_rtaudio.getDeviceCount();
 }
 
-std::vector<DeviceHandlePtr> AudioAdapter::get_devices()
+std::vector<DevicePtr> AudioAdapter::get_devices()
 {
-  std::vector<DeviceHandlePtr> devices;
+  std::vector<DevicePtr> devices;
   unsigned int device_count = m_rtaudio.getDeviceCount();
   devices.reserve(device_count);
 

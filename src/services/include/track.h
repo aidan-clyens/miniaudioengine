@@ -24,8 +24,8 @@ class MainTrack;
 
 // Type definitions
 typedef std::shared_ptr<class Track> TrackPtr;
-typedef std::variant<DeviceHandlePtr, FileHandlePtr, std::nullopt_t> SourceVariant;
-typedef std::variant<DeviceHandlePtr, FileHandlePtr, std::nullopt_t> MidiIOVariant;
+typedef std::variant<DevicePtr, FilePtr, std::nullopt_t> SourceVariant;
+typedef std::variant<DevicePtr, FilePtr, std::nullopt_t> MidiIOVariant;
 
 typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOnCallbackFunc;
 typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;
@@ -147,6 +147,8 @@ public:
    */
   void add_midi_input(MidiIOVariant input);
 
+  void add_audio_output(SourceVariant output);
+
   /** @brief Add a MIDI output to the track.
    *  @param device The MIDI output device or file retrieved from DeviceService or FileService.
    */
@@ -177,17 +179,17 @@ public:
   bool has_midi_output() const;
 
   /** @brief Gets the audio input of the track.
-   *  @return An audio input variant type (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
+   *  @return An audio input variant type (DevicePtr, FilePtr, std::nullopt_t).
    */
   SourceVariant get_audio_input() const;
 
   /** @brief Gets the MIDI input of the track.
-   *  @return A MIDI input variant type (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
+   *  @return A MIDI input variant type (DevicePtr, FilePtr, std::nullopt_t).
    */
   MidiIOVariant get_midi_input() const;
 
   /** @brief Gets the MIDI output of the track.
-   *  @return The MIDI output variant (DeviceHandlePtr, FileHandlePtr, std::nullopt_t).
+   *  @return The MIDI output variant (DevicePtr, FilePtr, std::nullopt_t).
    */
   MidiIOVariant get_midi_output() const;
 

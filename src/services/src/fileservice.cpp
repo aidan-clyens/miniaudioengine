@@ -9,7 +9,7 @@ using namespace miniaudioengine;
  *  @return A vector of fileservice paths representing the contents of the directory.
  *  @throws std::runtime_error if the path does not exist or is not a directory.
  */ 
-std::vector<std::filesystem::path> FileService::list_directory(const std::filesystem::path &path, PathType type)
+std::vector<std::filesystem::path> FileService::list_directory(const std::filesystem::path &path, PathType type) const
 {
   std::vector<std::filesystem::path> contents;
 
@@ -51,7 +51,7 @@ std::vector<std::filesystem::path> FileService::list_directory(const std::filesy
  *  @return A vector of fileservice paths representing the WAV files in the specified directory.
  *  @throws std::runtime_error if the path does not exist or is not a directory
  */
-std::vector<std::filesystem::path> FileService::list_wav_files_in_directory(const std::filesystem::path &path)
+std::vector<std::filesystem::path> FileService::list_wav_files_in_directory(const std::filesystem::path &path) const
 {
   std::vector<std::filesystem::path> contents = list_directory(path, PathType::File);
   std::vector<std::filesystem::path> wav_files;
@@ -72,7 +72,7 @@ std::vector<std::filesystem::path> FileService::list_wav_files_in_directory(cons
  *  @return A vector of fileservice paths representing the MIDI files in the specified directory.
  *  @throws std::runtime_error if the path does not exist or is not a directory
  */
-std::vector<std::filesystem::path> FileService::list_midi_files_in_directory(const std::filesystem::path &path)
+std::vector<std::filesystem::path> FileService::list_midi_files_in_directory(const std::filesystem::path &path) const
 {
   std::vector<std::filesystem::path> contents = list_directory(path, PathType::File);
   std::vector<std::filesystem::path> midi_files;
@@ -88,6 +88,52 @@ std::vector<std::filesystem::path> FileService::list_midi_files_in_directory(con
   return midi_files;
 }
 
+FileList FileService::get_audio_files(const std::filesystem::path &directory) const
+{
+  FileList audio_files;
+  std::vector<std::filesystem::path> wav_paths = list_wav_files_in_directory(directory);
+
+  for (const auto& wav_path : wav_paths)
+  {
+    FilePtr audio_file = get_audio_file(wav_path);
+    if (audio_file)
+    {
+      audio_files.push_back(audio_file);
+    }
+  }
+
+  return audio_files;
+}
+
+FileList FileService::get_midi_files(const std::filesystem::path &directory) const
+{
+  FileList midi_files;
+  std::vector<std::filesystem::path> midi_paths = list_midi_files_in_directory(directory);
+
+  for (const auto& midi_path : midi_paths)
+  {
+    FilePtr midi_file = get_midi_file(midi_path);
+    if (midi_file)
+    {
+      midi_files.push_back(midi_file);
+    }
+  }
+
+  return midi_files;
+}
+
+FilePtr FileService::get_audio_file(const std::filesystem::path &file_path) const
+{
+  FilePtr audio_file = read_wav_file(file_path);
+  return audio_file;
+}
+
+FilePtr FileService::get_midi_file(const std::filesystem::path &file_path) const
+{
+  FilePtr midi_file = read_midi_file(file_path);
+  return midi_file;
+}
+
 void FileService::save_to_wav_file(std::vector<float> audio_buffer, const std::filesystem::path &path)
 {
   (void)audio_buffer; // Suppress unused variable warning
@@ -98,7 +144,7 @@ void FileService::save_to_wav_file(std::vector<float> audio_buffer, const std::f
  *  @param path The path to the WAV file to load.
  *  @return An AudioFile object containing the loaded audio data.
  */
-std::optional<FileHandlePtr> FileService::read_wav_file(const std::filesystem::path &path)
+FilePtr FileService::read_wav_file(const std::filesystem::path &path) const
 {
   std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
   std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
@@ -106,13 +152,13 @@ std::optional<FileHandlePtr> FileService::read_wav_file(const std::filesystem::p
   if (!path_exists(absolute_path))
   {
     LOG_ERROR("WAV file does not exist: ", absolute_path.string());
-    return std::nullopt;
+    return nullptr;
   }
 
   if (!is_wav_file(absolute_path))
   {
     LOG_ERROR("File is not a WAV file: ", absolute_path.string());
-    return std::nullopt;
+    return nullptr;
   }
 
   try
@@ -122,11 +168,11 @@ std::optional<FileHandlePtr> FileService::read_wav_file(const std::filesystem::p
   catch (const std::exception& ex)
   {
     LOG_ERROR("Failed to open WAV file: ", ex.what());
-    return std::nullopt;
+    return nullptr;
   }
 }
 
-std::optional<FileHandlePtr> FileService::read_midi_file(const std::filesystem::path &path)
+FilePtr FileService::read_midi_file(const std::filesystem::path &path) const
 {
   std::filesystem::path normalized_path = std::filesystem::weakly_canonical(path);
   std::filesystem::path absolute_path = convert_to_absolute(normalized_path);
@@ -134,7 +180,7 @@ std::optional<FileHandlePtr> FileService::read_midi_file(const std::filesystem::
   if (!path_exists(absolute_path) || !is_midi_file(absolute_path))
   {
     LOG_ERROR("MIDI file does not exist or is not a file: ", absolute_path.string());
-    return std::nullopt;
+    return nullptr;
   }
 
   return FileHandleFactory::make_midi(absolute_path);

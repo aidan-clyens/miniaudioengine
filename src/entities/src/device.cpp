@@ -96,7 +96,7 @@ bool Device::operator==(const Device& other) const
 // DeviceHandleFactory
 // =============================================================================
 
-DeviceHandlePtr DeviceHandleFactory::make_audio(unsigned int id,
+DevicePtr DeviceHandleFactory::make_audio(unsigned int id,
                                                 const std::string& name,
                                                 bool is_default_input,
                                                 bool is_default_output,
@@ -117,10 +117,10 @@ DeviceHandlePtr DeviceHandleFactory::make_audio(unsigned int id,
   impl->duplex_channels       = duplex_channels;
   impl->sample_rates          = sample_rates;
   impl->preferred_sample_rate = preferred_sample_rate;
-  return DeviceHandlePtr(new Device(std::move(impl)));
+  return DevicePtr(new Device(std::move(impl)));
 }
 
-DeviceHandlePtr DeviceHandleFactory::make_midi(unsigned int id,
+DevicePtr DeviceHandleFactory::make_midi(unsigned int id,
                                                const std::string& name,
                                                bool is_input,
                                                bool is_output)
@@ -131,7 +131,7 @@ DeviceHandlePtr DeviceHandleFactory::make_midi(unsigned int id,
   impl->name              = name;
   impl->is_default_input  = is_input;
   impl->is_default_output = is_output;
-  return DeviceHandlePtr(new Device(std::move(impl)));
+  return DevicePtr(new Device(std::move(impl)));
 }
 
 } // namespace miniaudioengine

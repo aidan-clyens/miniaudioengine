@@ -91,7 +91,7 @@ private:
   friend class FileHandleFactory;
 };
 
-using FileHandlePtr = std::shared_ptr<File>;
+using FilePtr = std::shared_ptr<File>;
 
 /** @class FileHandleFactory
  *  @brief Internal factory for constructing File objects.
@@ -105,13 +105,13 @@ public:
    *  @return Shared pointer to the constructed File.
    *  @throws std::runtime_error if the file cannot be opened by libsndfile.
    */
-  static FileHandlePtr make_wav(const std::filesystem::path &path);
+  static FilePtr make_wav(const std::filesystem::path &path);
 
   /** @brief Create a MIDI file handle (stub — no data is parsed yet).
    *  @param path Absolute path to the MIDI file.
    *  @return Shared pointer to the constructed File.
    */
-  static FileHandlePtr make_midi(const std::filesystem::path &path);
+  static FilePtr make_midi(const std::filesystem::path &path);
 };
 
 } // namespace miniaudioengine

@@ -23,13 +23,13 @@ public:
   bool stop() { return true; /* Placeholder implementation */ }
   bool is_playing() const { return false; /* Placeholder implementation */ }
 
-  void set_audio_output_device(DeviceHandlePtr device)
+  void set_audio_output_device(DevicePtr device)
   {
     p_audio_output_device = device;
   }
 
 private:
-  DeviceHandlePtr p_audio_output_device;
+  DevicePtr p_audio_output_device;
 };
 
 /** @class TrackService
@@ -41,6 +41,9 @@ class TrackService
 using MainTrackPtr = std::shared_ptr<MainTrack>;
 
 public:
+  TrackService();
+  ~TrackService() = default;
+
   static TrackService& instance()
   {
     static TrackService instance;
@@ -94,7 +97,7 @@ public:
   /** @brief Set the audio output device for the main track.
    *  @param device The audio output device to use.
    */
-  void set_audio_output_device(DeviceHandlePtr device);
+  void set_audio_output_device(DevicePtr device);
 
   // Legacy compatibility methods
 
@@ -119,9 +122,6 @@ public:
   std::vector<TrackPtr> get_tracks() const;
 
 private:
-  TrackService();
-  virtual ~TrackService() = default;
-
   MainTrackPtr m_main_track; // Root of track tree (owns hardware audio output)
   mutable std::mutex m_manager_mutex;
 };

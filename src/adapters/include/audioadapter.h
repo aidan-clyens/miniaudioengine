@@ -33,7 +33,7 @@ public:
   virtual ~AudioAdapter() = default;
 
   unsigned int get_device_count();
-  std::vector<DeviceHandlePtr> get_devices();
+  std::vector<DevicePtr> get_devices();
 
   bool open_stream(AudioStreamParameters &params,
                   unsigned int sample_rate,
@@ -49,7 +49,7 @@ public:
 private:
   RtAudio m_rtaudio;
 
-  static DeviceHandlePtr make_device_handle(const RtAudio::DeviceInfo &info, unsigned int id)
+  static DevicePtr make_device_handle(const RtAudio::DeviceInfo &info, unsigned int id)
   {
     return DeviceHandleFactory::make_audio(
         id,

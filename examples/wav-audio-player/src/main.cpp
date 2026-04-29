@@ -8,10 +8,8 @@
 
 #include <CLI11.hpp>
 
-#include "trackservice.h"
-#include "deviceservice.h"
+#include "audiosession.h"
 #include "track.h"
-#include "fileservice.h"
 #include "file.h"
 #include "logger.h"
 
@@ -27,6 +25,53 @@ static bool running = true;
 static std::optional<std::string> input_file_path = std::nullopt;
 static std::optional<unsigned int> audio_output_device_id = std::nullopt;
 
+/** @brief Parses command line arguments and configures the audio session.
+ *  @param argc Argument count from main()
+ *  @param argv Argument vector from main()
+ *  @param session Reference to the AudioSession to configure.
+ *  @return 0 on success, non-zero on failure.
+ */
+int parse_cli_arguments(int argc, char *argv[], AudioSession &session)
+{
+  // Parse command line arguments
+  CLI::App app{"WAV Audio Player - A simple audio player using the miniaudioengine library that can play .wav files"};
+  argv = app.ensure_utf8(argv);
+
+  // --input-file option
+  app.add_option_function<std::string>("--input-file", [](const std::string &arg)
+                                       { input_file_path = arg; }, "Specify input WAV file");
+
+  // --list-audio-devices flag
+  app.add_flag_callback("--list-audio-devices", [&session]()
+                        {
+    DeviceList audio_devices = session.get_audio_devices();
+    std::cout << "Available Audio Devices:\n";
+    for (const auto& device : audio_devices) {
+      std::cout << device->to_string() << "\n";
+    }
+    std::exit(0); }, "List available audio devices");
+
+  // --set-audio-output option
+  app.add_option_function<unsigned int>("--set-audio-output", [&session](const unsigned int &device_id)
+                                        {
+    DevicePtr audio_device = session.get_audio_device(device_id);
+    if (audio_device->get_id() != device_id) {
+      std::cerr << "Error: No audio device found with ID " << device_id << ".\n";
+      std::exit(1);
+    }
+    std::cout << "Selected Audio Output Device: " << audio_device->to_string() << "\n";
+    audio_output_device_id = device_id; }, "Specify audio output device by ID");
+
+  // --verbose flag
+  app.add_flag_callback("--verbose", []()
+                        { Logger::instance().enable_console_output(true); }, "Enable verbose logging");
+
+  CLI11_PARSE(app, argc, argv);
+  return 0;
+}
+
+/** @brief Main entry point for the WAV audio player application.
+ */
 int main(int argc, char *argv[])
 {
   // Setup logging
@@ -34,63 +79,30 @@ int main(int argc, char *argv[])
   Logger::instance().set_log_file("WavAudioPlayer.log");
   set_thread_name("Main");
 
-  // Parse command line arguments
-  CLI::App app{"WAV Audio Player - A simple audio player using the miniaudioengine library that can play .wav files"};
-  argv = app.ensure_utf8(argv);
+  // Create Audio Session
+  AudioSession session;
 
-  // --input-file option
-  app.add_option_function<std::string>("--input-file", [](const std::string& arg) {
-    input_file_path = arg;
-  }, "Specify input WAV file");
-
-  // --list-audio-devices flag
-  app.add_flag_callback("--list-audio-devices", []() {
-    auto& device_manager = DeviceService::instance();
-    auto audio_devices = device_manager.get_audio_devices();
-    std::cout << "Available Audio Devices:\n";
-    for (const auto& device : audio_devices) {
-      std::cout << "  ID: " << device->get_id() << ", Name: " << device->get_name()
-                << ", (Input Channels: " << device->get_input_channels()
-                << ", Output Channels: " << device->get_output_channels()
-                << ", Preferred Sample Rate: " << device->get_preferred_sample_rate() << " Hz)\n";
-    }
-    std::exit(0);
-  }, "List available audio devices");
-
-  // --set-audio-output option
-  app.add_option_function<unsigned int>("--set-audio-output", [](const unsigned int& device_id) {
-    auto& device_manager = DeviceService::instance();
-    auto audio_device = device_manager.get_audio_device(device_id);
-    if (audio_device->get_id() != device_id) {
-      std::cerr << "Error: No audio device found with ID " << device_id << ".\n";
-      std::exit(1);
-    }
-    std::cout << "Selected Audio Output Device: " << audio_device->to_string() << "\n";
-    audio_output_device_id = device_id;
-  }, "Specify audio output device by ID");
-
-  // --verbose flag
-  app.add_flag_callback("--verbose", []() {
-    Logger::instance().enable_console_output(true);
-  }, "Enable verbose logging");
-
-  CLI11_PARSE(app, argc, argv);
+  if (parse_cli_arguments(argc, argv, session) != 0) {
+    return -1;
+  }
 
   LOG_INFO("Initializing wav-audio-player...");
 
-  // Resource managers
-  TrackService &track_manager = TrackService::instance();
-  DeviceService &device_manager = DeviceService::instance();
-  FileService &file_manager = FileService::instance();
+  // Audio file input
+  FilePtr audio_file = nullptr;
+  
+  // Audio device output
+  DevicePtr output_device = nullptr;
 
   if (input_file_path.has_value()) {
-    if (!file_manager.is_wav_file(input_file_path.value())) {
-      LOG_ERROR("Specified input file is not a valid WAV file: ", input_file_path.value());
+    audio_file = session.get_audio_file(input_file_path.value());
+    if (audio_file == nullptr) {
+      LOG_ERROR("Audio file does not exist or is not a valid audio file: ", input_file_path.value());
       return -1;
     }
-    LOG_INFO("WAV file to be played: ", input_file_path.value());
+    LOG_INFO("Selected audio file: ", input_file_path.value());
   } else {
-    LOG_INFO("No input file specified. Exiting.");
+    LOG_WARNING("No input file selected. Exiting.");
     return 0;
   }
 
@@ -100,20 +112,19 @@ int main(int argc, char *argv[])
   });
 
   // Add one track
-  size_t track_id = track_manager.add_track();
-  auto track = track_manager.get_track(track_id);
-  if (!track) {
+  TrackPtr track = session.add_track();
+  if (track == nullptr) {
     LOG_ERROR("Failed to create track.");
     return -1;
   }
 
   // Set audio output device
-  auto output_device = (audio_output_device_id.has_value()) ? 
-    device_manager.get_audio_device(audio_output_device_id.value()) : device_manager.get_default_audio_output_device();
-  
+  output_device = (audio_output_device_id.has_value()) ?
+    session.get_audio_device(audio_output_device_id.value()) : session.get_default_audio_output_device();
+
   if (output_device) {
     std::cout << "Using Audio Output Device: " << output_device->to_string() << "\n";
-    track_manager.set_audio_output_device(output_device);
+    track->add_audio_output(output_device);
     LOG_INFO("Set audio output device: ", output_device->to_string());
   } else {
     LOG_ERROR("No audio output device found.");
@@ -121,15 +132,15 @@ int main(int argc, char *argv[])
   }
 
   // Open WAV file and add as audio input
-  auto wav_file = file_manager.read_wav_file(input_file_path.value());
-  if (!wav_file.has_value()) {
+  FilePtr wav_file = session.get_audio_file(input_file_path.value());
+  if (wav_file == nullptr) {
     LOG_ERROR("Failed to read WAV file: ", input_file_path.value());
     return -1;
   }
   
-  std::cout << "Playing WAV file: " << wav_file.value()->to_string() << "\n";
-  track->add_audio_input(wav_file.value());
-  LOG_INFO("Set WAV file as audio input: ", wav_file.value()->to_string());
+  std::cout << "Playing WAV file: " << wav_file->to_string() << "\n";
+  track->add_audio_input(wav_file);
+  LOG_INFO("Set WAV file as audio input: ", wav_file->to_string());
   
   if (!track->has_audio_input()) {
     LOG_ERROR("Failed to set audio input on track.");
