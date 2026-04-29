@@ -12,17 +12,17 @@ DeviceHandlePtr DeviceService::get_audio_device(const unsigned int id) const
   throw std::out_of_range("Audio device with ID " + std::to_string(id) + " does not exist");
 }
 
+std::vector<DeviceHandlePtr> DeviceService::get_audio_devices() const
+{
+  std::vector<DeviceHandlePtr> devices;
+  // TODO - populate devices vector with actual audio devices from the system
+  return devices;
+}
+
 std::vector<DeviceHandlePtr> DeviceService::get_midi_devices() const
 {
   std::vector<DeviceHandlePtr> devices;
-  // for (const auto& port : p_midi_controller->get_ports())
-  // {
-  //   devices.push_back(DeviceHandleFactory::make_midi(
-  //     port.port_number,
-  //     port.port_name,
-  //     /*is_input=*/true,
-  //     /*is_output=*/false));
-  // }
+  // TODO - populate devices vector with actual MIDI devices from the system
   return devices;
 }
 

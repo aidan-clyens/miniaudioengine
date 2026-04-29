@@ -6,11 +6,12 @@
 #include <thread>
 #include <chrono>
 
+#include <CLI11.hpp>
+
 #include "trackservice.h"
 #include "deviceservice.h"
 #include "track.h"
 #include "fileservice.h"
-#include "cli.h"
 #include "file.h"
 #include "logger.h"
 
@@ -26,35 +27,6 @@ static bool running = true;
 static std::optional<std::string> input_file_path = std::nullopt;
 static std::optional<unsigned int> audio_output_device_id = std::nullopt;
 
-static const std::vector<Command> commands = {
-  Command("--input-file", "-i", "Specify input WAV file", [](const char *arg){
-    input_file_path = std::string(arg);
-  }),
-  Command("--list-audio-devices", "-ld", "List available audio devices", [](const char *){
-    auto& device_manager = DeviceService::instance();
-    auto audio_devices = device_manager.get_audio_devices();
-    std::cout << "Available Audio Devices:\n";
-    for (const auto& device : audio_devices) {
-      std::cout << "  ID: " << device->get_id() << ", Name: " << device->get_name() << ", (Input Channels: " << device->get_input_channels() << ", Output Channels: " << device->get_output_channels() << ", Preferred Sample Rate: " << device->get_preferred_sample_rate() << " Hz)\n";
-    }
-    std::exit(0);
-  }),
-  Command("--set-audio-output", "-o", "Specify audio output device by ID", [](const char *arg){
-    unsigned int device_id = std::stoi(arg);
-    auto& device_manager = DeviceService::instance();
-    auto audio_device = device_manager.get_audio_device(device_id);
-    if (audio_device->get_id() != device_id) {
-      std::cerr << "Error: No audio device found with ID " << device_id << ".\n";
-      std::exit(1);
-    }
-    std::cout << "Selected Audio Output Device: " << audio_device->to_string() << "\n";
-    audio_output_device_id = device_id;
-  }),
-  Command("--verbose", "-vb", "Enable verbose logging", [](const char *){
-    Logger::instance().enable_console_output(true);
-  })
-};
-
 int main(int argc, char *argv[])
 {
   // Setup logging
@@ -63,8 +35,46 @@ int main(int argc, char *argv[])
   set_thread_name("Main");
 
   // Parse command line arguments
-  CLI cli("wav-audio-player", "WAV Audio Player - A simple audio player using the miniaudioengine library that can play .wav files", VERSION_NUMBER, commands);
-  cli.parse_command_line_arguments(argc, argv);
+  CLI::App app{"WAV Audio Player - A simple audio player using the miniaudioengine library that can play .wav files"};
+  argv = app.ensure_utf8(argv);
+
+  // --input-file option
+  app.add_option_function<std::string>("--input-file", [](const std::string& arg) {
+    input_file_path = arg;
+  }, "Specify input WAV file");
+
+  // --list-audio-devices flag
+  app.add_flag_callback("--list-audio-devices", []() {
+    auto& device_manager = DeviceService::instance();
+    auto audio_devices = device_manager.get_audio_devices();
+    std::cout << "Available Audio Devices:\n";
+    for (const auto& device : audio_devices) {
+      std::cout << "  ID: " << device->get_id() << ", Name: " << device->get_name()
+                << ", (Input Channels: " << device->get_input_channels()
+                << ", Output Channels: " << device->get_output_channels()
+                << ", Preferred Sample Rate: " << device->get_preferred_sample_rate() << " Hz)\n";
+    }
+    std::exit(0);
+  }, "List available audio devices");
+
+  // --set-audio-output option
+  app.add_option_function<unsigned int>("--set-audio-output", [](const unsigned int& device_id) {
+    auto& device_manager = DeviceService::instance();
+    auto audio_device = device_manager.get_audio_device(device_id);
+    if (audio_device->get_id() != device_id) {
+      std::cerr << "Error: No audio device found with ID " << device_id << ".\n";
+      std::exit(1);
+    }
+    std::cout << "Selected Audio Output Device: " << audio_device->to_string() << "\n";
+    audio_output_device_id = device_id;
+  }, "Specify audio output device by ID");
+
+  // --verbose flag
+  app.add_flag_callback("--verbose", []() {
+    Logger::instance().enable_console_output(true);
+  }, "Enable verbose logging");
+
+  CLI11_PARSE(app, argc, argv);
 
   LOG_INFO("Initializing wav-audio-player...");
 
