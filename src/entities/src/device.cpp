@@ -1,4 +1,3 @@
-#include "devicehandle_factory.h"
 #include "device.h"
 
 #include <string>

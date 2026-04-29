@@ -83,10 +83,9 @@ include(CMakePackageConfigHelpers)
 # Install library targets and header files
 install(
     TARGETS
-        engine
+        entities
         adapters
         dataplane
-        processor-audio
         services
         framework
         cli

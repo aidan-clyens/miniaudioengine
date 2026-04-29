@@ -7,6 +7,7 @@ target_link_libraries(
   ${PROJECT_NAME} 
   framework
   services
+  entities
   cli
 )
 

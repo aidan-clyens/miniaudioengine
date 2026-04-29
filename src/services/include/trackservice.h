@@ -3,8 +3,6 @@
 
 #include "track.h"
 #include "device.h"
-#include "audiocontroller.h"
-#include "midicontroller.h"
 
 #include <memory>
 #include <vector>
@@ -18,52 +16,20 @@ namespace miniaudioengine
 class MainTrack : public Track
 {
 public:
-  MainTrack() : Track(true),
-                p_audio_controller(std::make_shared<audio::AudioController>()),
-                p_midi_controller(std::make_shared<midi::MidiController>()) {} // is_main_track = true
+  MainTrack() : Track(true) {} // main_track = true
   ~MainTrack() override = default;
 
-  /** @brief Set the audio output device for the MainTrack.
-   *  @param device Device for the audio output device.
-   */
+  bool start() { return true; /* Placeholder implementation */ }
+  bool stop() { return true; /* Placeholder implementation */ }
+  bool is_playing() const { return false; /* Placeholder implementation */ }
+
   void set_audio_output_device(DeviceHandlePtr device)
   {
     p_audio_output_device = device;
-    p_audio_controller->set_output_device(device);
   }
-
-  void open_midi_input_port(const DeviceHandlePtr device)
-  {
-    p_midi_controller->open_input_port(device->get_id());
-  }
-
-  void register_audio_dataplane(framework::AudioDataPlanePtr data_plane)
-  {
-    p_audio_controller->register_dataplane(data_plane);
-  }
-
-  void register_midi_dataplane(framework::MidiDataPlanePtr midi_dataplane)
-  {
-    p_midi_controller->register_dataplane(midi_dataplane);
-  }
-
-  bool start()
-  {
-    return p_audio_controller->start() && p_midi_controller->start();
-  }
-
-  bool stop()
-  {
-    p_midi_controller->close_input_port();
-    return p_audio_controller->stop() && p_midi_controller->stop();
-  }
-
-  bool is_playing() const;
 
 private:
   DeviceHandlePtr p_audio_output_device;
-  std::shared_ptr<audio::AudioController> p_audio_controller; // Only MainTrack owns the controller
-  std::shared_ptr<midi::MidiController> p_midi_controller; // Only MainTrack owns the controller
 };
 
 /** @class TrackService

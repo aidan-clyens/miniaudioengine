@@ -1,7 +1,7 @@
 #ifndef __AUDIO_ADAPTER_H__
 #define __AUDIO_ADAPTER_H__
 
-#include "devicehandle_factory.h"
+#include "device.h"
 #include "logger.h"
 
 #include <rtaudio/RtAudio.h>

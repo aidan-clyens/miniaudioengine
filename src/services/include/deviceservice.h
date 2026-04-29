@@ -7,8 +7,6 @@
 #include <stdexcept>
 
 #include "device.h"
-#include "audiocontroller.h"
-#include "midicontroller.h"
 
 namespace miniaudioengine
 {
@@ -70,29 +68,14 @@ public:
    */
   DeviceHandlePtr get_default_midi_output_device();
 
-  /** @brief Replace the audio controller. Intended for unit testing only.
-   *  @param controller The controller to use in place of the default AudioController.
-   */
-  void set_audio_controller(std::shared_ptr<audio::AudioController> controller);
-
-  /** @brief Replace the MIDI controller. Intended for unit testing only.
-   *  @param controller The controller to use in place of the default MidiController.
-   */
-  void set_midi_controller(std::shared_ptr<midi::MidiController> controller);
-
 private:
-  DeviceService():
-    p_audio_controller(std::make_shared<audio::AudioController>()),
-    p_midi_controller(std::make_shared<midi::MidiController>())
-  {}
+  DeviceService() = default;
   ~DeviceService() = default;
 
   DeviceService(const DeviceService&) = delete;
   DeviceService& operator=(const DeviceService&) = delete;
 
 private:
-  std::shared_ptr<audio::AudioController> p_audio_controller;
-  std::shared_ptr<midi::MidiController> p_midi_controller;
 };
 
 } // namespace miniaudioengine

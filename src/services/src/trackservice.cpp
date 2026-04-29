@@ -1,14 +1,7 @@
 #include "trackservice.h"
+#include "logger.h"
 
-using namespace miniaudioengine::framework;
 using namespace miniaudioengine;
-using namespace miniaudioengine::audio;
-using namespace miniaudioengine::midi;
-
-bool MainTrack::is_playing() const
-{
-  return p_audio_controller->get_stream_state() == eStreamState::Playing;
-}
 
 // ============================================================================
 // Constructor

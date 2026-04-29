@@ -1,14 +1,6 @@
 #include "deviceservice.h"
-#include "devicehandle_factory.h"
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::audio;
-using namespace miniaudioengine::midi;
-
-std::vector<DeviceHandlePtr> DeviceService::get_audio_devices() const
-{
-  return p_audio_controller->get_audio_devices();
-}
 
 DeviceHandlePtr DeviceService::get_audio_device(const unsigned int id) const
 {
@@ -20,27 +12,17 @@ DeviceHandlePtr DeviceService::get_audio_device(const unsigned int id) const
   throw std::out_of_range("Audio device with ID " + std::to_string(id) + " does not exist");
 }
 
-void DeviceService::set_audio_controller(std::shared_ptr<audio::AudioController> controller)
-{
-  p_audio_controller = std::move(controller);
-}
-
-void DeviceService::set_midi_controller(std::shared_ptr<midi::MidiController> controller)
-{
-  p_midi_controller = std::move(controller);
-}
-
 std::vector<DeviceHandlePtr> DeviceService::get_midi_devices() const
 {
   std::vector<DeviceHandlePtr> devices;
-  for (const auto& port : p_midi_controller->get_ports())
-  {
-    devices.push_back(DeviceHandleFactory::make_midi(
-      port.port_number,
-      port.port_name,
-      /*is_input=*/true,
-      /*is_output=*/false));
-  }
+  // for (const auto& port : p_midi_controller->get_ports())
+  // {
+  //   devices.push_back(DeviceHandleFactory::make_midi(
+  //     port.port_number,
+  //     port.port_name,
+  //     /*is_input=*/true,
+  //     /*is_output=*/false));
+  // }
   return devices;
 }
 

@@ -11,19 +11,10 @@ target_sources(framework
       include/doublebuffer.h
       include/logger.h
       include/miditypes.h
-      include/device.h
-      include/file.h
-      include/interfaces/controller.h
-      include/interfaces/dataplane.h
-      include/interfaces/processor.h
-      include/interfaces/device.h
 )
 
 target_sources(framework PRIVATE
   src/logger.cpp
-  src/controller.cpp
-  src/device.cpp
-  src/file.cpp
 )
 
 target_include_directories(framework
@@ -34,6 +25,7 @@ target_include_directories(framework
 
 target_link_libraries(framework
   PRIVATE
+    entities
     adapters
 )
 

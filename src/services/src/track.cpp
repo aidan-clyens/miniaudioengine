@@ -1,7 +1,6 @@
 #include "track.h"
 #include "trackservice.h"
-
-#include "midicontroller.h"
+#include "miditypes.h"
 #include "logger.h"
 
 #include <iostream>
@@ -15,8 +14,6 @@
 
 using namespace miniaudioengine::framework;
 using namespace miniaudioengine;
-using namespace miniaudioengine::audio;
-using namespace miniaudioengine::midi;
 
 // ============================================================================
 // Hierarchy Management
@@ -63,20 +60,6 @@ void Track::add_child_track(TrackPtr child)
     std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
     m_children.push_back(child);
     child->m_parent = shared_from_this();
-  }
-
-  auto main_track = get_main_track();
-  if (main_track)
-  {
-    // Register child dataplanes with MainTrack controllers
-    main_track->register_audio_dataplane(child->p_audio_dataplane);
-    main_track->register_midi_dataplane(child->p_midi_dataplane);
-
-    // Update child dataplanes with output settings from MainTrack
-    child->p_audio_dataplane->set_input_channels(0);
-    child->p_audio_dataplane->set_input_channels(0);
-    child->p_midi_dataplane->set_output_channels(0);
-    child->p_midi_dataplane->set_output_channels(0);
   }
 
   LOG_INFO("Track: Added child track. Total children: ", m_children.size());
@@ -166,7 +149,6 @@ void Track::add_audio_input(SourceVariant input)
   {
     auto file = std::get<FileHandlePtr>(input);
     LOG_INFO("Track: Added audio input file: ", file->to_string());
-    p_audio_dataplane->set_input_channels(file->get_channels());
     m_audio_input = input;
   }
 }
@@ -316,8 +298,6 @@ bool Track::play()
   {
     FileHandlePtr wav_file = std::get<FileHandlePtr>(m_audio_input);
     LOG_INFO("Track: Preloading WAV file data into AudioDataPlane ", wav_file->to_string());
-    p_audio_dataplane->preload_wav_file(wav_file); // Preload WAV file data
-    p_audio_dataplane->start();
   }
 
   // TODO - Get MIDI input and configure dataplane
@@ -326,13 +306,7 @@ bool Track::play()
   {
     DeviceHandlePtr midi_device = std::get<DeviceHandlePtr>(m_midi_input);
     LOG_INFO("Track: Opening MIDI input port ", midi_device->to_string());
-
-    p_midi_dataplane->start();
-    main_track->open_midi_input_port(midi_device);
   }
-
-  main_track->register_audio_dataplane(p_audio_dataplane);
-  main_track->register_midi_dataplane(p_midi_dataplane);
 
   if (!main_track->start())
   {
@@ -358,9 +332,6 @@ bool Track::stop()
   }
 
   // Clear data buffers and stop any data processing threads
-  p_audio_dataplane->stop();
-  p_midi_dataplane->stop();
-
   auto main_track = get_main_track();
   if (main_track)
   {
@@ -377,30 +348,30 @@ bool Track::stop()
  *  This function processes the MIDI message received from the MidiEngine.
  *  @param message The MIDI message to handle.
  */
-void Track::handle_midi_message(const MidiMessage& message)
+void Track::handle_midi_message(const midi::MidiMessage& message)
 {
   LOG_INFO("Track: Handling MIDI message: ", message.to_string());
 
   // Process the MIDI message here
   switch (message.type)
   {
-    case eMidiMessageType::NoteOn:
+    case midi::eMidiMessageType::NoteOn:
     {
-      MidiNoteMessage note_on_msg = static_cast<const MidiNoteMessage&>(message);
+      midi::MidiNoteMessage note_on_msg = static_cast<const midi::MidiNoteMessage&>(message);
       LOG_INFO("Track: Note On - ", note_on_msg.to_string());
       m_note_on_callback(note_on_msg, shared_from_this());
       break;
     }
-    case eMidiMessageType::NoteOff:
+    case midi::eMidiMessageType::NoteOff:
     {
-      MidiNoteMessage note_off_msg = static_cast<const MidiNoteMessage&>(message);
+      midi::MidiNoteMessage note_off_msg = static_cast<const midi::MidiNoteMessage&>(message);
       LOG_INFO("Track: Note Off - ", note_off_msg.to_string());
       m_note_off_callback(note_off_msg, shared_from_this());
       break;
     }
-    case eMidiMessageType::ControlChange:
+    case midi::eMidiMessageType::ControlChange:
     {
-      MidiControlMessage control_change_msg = static_cast<const MidiControlMessage&>(message);
+      midi::MidiControlMessage control_change_msg = static_cast<const midi::MidiControlMessage &>(message);
       LOG_INFO("Track: Control Change - ", control_change_msg.to_string());
       m_control_change_callback(control_change_msg, shared_from_this());
       break;

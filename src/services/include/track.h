@@ -14,12 +14,7 @@
 #include "deviceservice.h"
 #include "device.h"
 #include "file.h"
-#include "audiocontroller.h"
-#include "audiodataplane.h"
-#include "midicontroller.h"
-#include "mididataplane.h"
 #include "miditypes.h"
-#include "audioprocessor.h"
 
 namespace miniaudioengine
 {
@@ -51,12 +46,9 @@ typedef std::function<void(eTrackEvent)> TrackEventCallback;
  */
 struct TrackStatistics
 {
-  framework::AudioOutputStatistics audio_output_stats;
-  framework::MidiInputStatistics midi_input_stats;
-
   std::string to_string() const
   {
-    return "TrackStatistics(\nAudio Output = " + audio_output_stats.to_string() + "\nMIDI Input = " + midi_input_stats.to_string() + "\n)";
+    return "TrackStatistics()";
   }
 };
 
@@ -74,9 +66,7 @@ public:
     m_output_enabled(true),
     m_audio_input(std::nullopt),
     m_midi_input(std::nullopt),
-    m_midi_output(std::nullopt),
-    p_audio_dataplane(std::make_shared<framework::AudioDataPlane>()),
-    p_midi_dataplane(std::make_shared<framework::MidiDataPlane>())
+    m_midi_output(std::nullopt)
   {}
 
   virtual ~Track() = default;
@@ -201,14 +191,6 @@ public:
    */
   MidiIOVariant get_midi_output() const;
 
-  /** @brief Add an audio processor to the track's audio data plane.
-   *  @param processor Shared pointer to the audio processor to add.
-   */
-  void add_audio_processor(std::shared_ptr<audio::IAudioProcessor> processor)
-  {
-    p_audio_dataplane->add_processor(processor);
-  }
-
   // Playback control
   /** @brief Start playback of the track. */
   bool play();
@@ -221,30 +203,12 @@ public:
    */
   bool is_playing() const;
 
-  /** @brief Get the audio dataplane for this track.
-   *  @return Shared pointer to the audio dataplane.
-   */
-  framework::AudioDataPlanePtr get_audio_dataplane() const
-  {
-    return p_audio_dataplane;
-  }
-
-  /** @brief Get the MIDI dataplane for this track.
-   *  @return Shared pointer to the MIDI dataplane.
-   */
-  framework::MidiDataPlanePtr get_midi_dataplane() const
-  {
-    return p_midi_dataplane;
-  }
-
   /** @brief Get track statistics.
    *  @return TrackStatistics structure containing audio and MIDI statistics.
    */
   TrackStatistics get_statistics() const
   {
     TrackStatistics stats;
-    stats.audio_output_stats = *std::dynamic_pointer_cast<framework::AudioOutputStatistics>(p_audio_dataplane->get_statistics());
-    stats.midi_input_stats = *std::dynamic_pointer_cast<framework::MidiInputStatistics>(p_midi_dataplane->get_statistics());
     return stats;
   }
 
@@ -304,13 +268,6 @@ protected:
   // Virtual output settings
   float m_output_gain;
   std::atomic<bool> m_output_enabled;
-
-  // Legacy members
-  std::queue<midi::MidiMessage> m_message_queue; // TODO - Remove?
-  std::mutex m_queue_mutex; // TODO - Remove?
-
-  framework::AudioDataPlanePtr p_audio_dataplane;
-  framework::MidiDataPlanePtr p_midi_dataplane;
 
   TrackEventCallback m_event_callback;
 

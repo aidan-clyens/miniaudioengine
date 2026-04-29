@@ -7,5 +7,6 @@ target_link_libraries(
   ${PROJECT_NAME} PRIVATE
   framework
   services
+  entities
   cli
 )
