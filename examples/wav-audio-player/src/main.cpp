@@ -88,24 +88,10 @@ int main(int argc, char *argv[])
 
   LOG_INFO("Initializing wav-audio-player...");
 
-  // Audio file input
   FilePtr audio_file = nullptr;
-  
-  // Audio device output
   DevicePtr output_device = nullptr;
 
-  if (input_file_path.has_value()) {
-    audio_file = session.get_audio_file(input_file_path.value());
-    if (audio_file == nullptr) {
-      LOG_ERROR("Audio file does not exist or is not a valid audio file: ", input_file_path.value());
-      return -1;
-    }
-    LOG_INFO("Selected audio file: ", input_file_path.value());
-  } else {
-    LOG_WARNING("No input file selected. Exiting.");
-    return 0;
-  }
-
+  // Handle SIGINT (Ctrl+C) for graceful shutdown
   std::signal(SIGINT, [](int) {
     LOG_INFO("SIGINT received, shutting down...");
     running = false;
@@ -115,6 +101,17 @@ int main(int argc, char *argv[])
   TrackPtr track = session.add_track();
   if (track == nullptr) {
     LOG_ERROR("Failed to create track.");
+    return -1;
+  }
+
+  // Read input file and set as audio input on track
+  audio_file = (input_file_path.has_value()) ? session.get_audio_file(input_file_path.value()) : nullptr;
+  if (audio_file) {
+    std::cout << "Selected audio file: " << audio_file->to_string() << "\n";
+    track->add_audio_input(audio_file);
+    LOG_INFO("Set audio file as input: ", audio_file->to_string());
+  } else {
+    LOG_ERROR("No valid audio file selected.");
     return -1;
   }
 

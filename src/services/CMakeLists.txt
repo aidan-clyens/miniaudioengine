@@ -28,6 +28,7 @@ target_include_directories(services
 target_link_libraries(services PUBLIC
   framework
   entities
+  adapters
 )
 
 set_target_properties(services PROPERTIES LINKER_LANGUAGE CXX)

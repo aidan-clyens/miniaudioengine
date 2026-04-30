@@ -17,6 +17,10 @@ class TrackService;
 class DeviceService;
 class FileService;
 
+namespace adapters { class AudioAdapter; }
+namespace adapters { class MidiAdapter; }
+namespace adapters { class FileAdapter; }
+
 using DevicePtr = std::shared_ptr<Device>;
 using FilePtr = std::shared_ptr<File>;
 using TrackPtr = std::shared_ptr<Track>;
@@ -24,6 +28,10 @@ using TrackPtr = std::shared_ptr<Track>;
 using DeviceList = std::vector<DevicePtr>;
 using FileList = std::vector<FilePtr>;
 using TrackList = std::vector<TrackPtr>;
+
+using DeviceServicePtr = std::unique_ptr<DeviceService>;
+using FileServicePtr = std::unique_ptr<FileService>;
+using TrackServicePtr = std::unique_ptr<TrackService>;
 
 /** @class AudioSession
  *  @brief An audio session that manages devices, files, and tracks. It is the entry point for interacting with the audio engine.
@@ -61,9 +69,15 @@ public:
   bool stop();
 
 private:
-  std::unique_ptr<DeviceService> p_device_service;
-  std::unique_ptr<FileService> p_file_service;
-  std::unique_ptr<TrackService> p_track_service;
+  // Services
+  DeviceServicePtr p_device_service;
+  FileServicePtr p_file_service;
+  TrackServicePtr p_track_service;
+
+  // Adapters
+  std::shared_ptr<adapters::AudioAdapter> p_audio_adapter;
+  std::shared_ptr<adapters::MidiAdapter> p_midi_adapter;
+  std::shared_ptr<adapters::FileAdapter> p_file_adapter;
 };
 
 } // namespace miniaudioengine

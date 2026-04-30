@@ -1,6 +1,21 @@
 #include "deviceservice.h"
 
+// entities
+#include "device.h"
+
+// adapters
+#include "audioadapter.h"
+#include "midiadapter.h"
+
+
 using namespace miniaudioengine;
+using namespace miniaudioengine::adapters;
+
+
+DeviceService::DeviceService(std::shared_ptr<AudioAdapter> audio_adapter, std::shared_ptr<MidiAdapter> midi_adapter)
+    : p_audio_adapter(audio_adapter), p_midi_adapter(midi_adapter) {}
+
+DeviceService::~DeviceService() = default;
 
 DevicePtr DeviceService::get_audio_device(const unsigned int id) const
 {
@@ -14,9 +29,7 @@ DevicePtr DeviceService::get_audio_device(const unsigned int id) const
 
 DeviceList DeviceService::get_audio_devices() const
 {
-  DeviceList devices;
-  // TODO - populate devices vector with actual audio devices from the system
-  return devices;
+  return p_audio_adapter->get_devices();
 }
 
 DeviceList DeviceService::get_midi_devices() const

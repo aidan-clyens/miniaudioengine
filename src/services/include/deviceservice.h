@@ -2,14 +2,19 @@
 #define __DEVICE_MANAGER_H__
 
 #include <vector>
+#include <memory>
 #include <string>
 #include <optional>
 #include <stdexcept>
 
-#include "device.h"
-
 namespace miniaudioengine
 {
+
+// Forward declarations
+namespace adapters { class AudioAdapter; }
+namespace adapters { class MidiAdapter; }
+
+class Device;
 
 using DevicePtr = std::shared_ptr<Device>;
 using DeviceList = std::vector<DevicePtr>;
@@ -21,14 +26,8 @@ using DeviceList = std::vector<DevicePtr>;
 class DeviceService
 {
 public:
-  DeviceService() = default;
-  ~DeviceService() = default;
-
-  static DeviceService& instance()
-  {
-    static DeviceService instance;
-    return instance;
-  }
+  DeviceService(std::shared_ptr<adapters::AudioAdapter> audio_adapter, std::shared_ptr<adapters::MidiAdapter> midi_adapter);
+  ~DeviceService();
 
   /** @brief Return a list of all available audio devices.
    *  @return A vector of Device objects representing the available audio devices.
@@ -75,6 +74,8 @@ public:
   DevicePtr get_default_midi_output_device();
 
 private:
+  std::shared_ptr<adapters::AudioAdapter> p_audio_adapter;
+  std::shared_ptr<adapters::MidiAdapter> p_midi_adapter;
 };
 
 } // namespace miniaudioengine
