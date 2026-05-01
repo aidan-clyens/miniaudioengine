@@ -127,23 +127,17 @@ int main(int argc, char *argv[])
     LOG_ERROR("No audio output device found.");
     return -1;
   }
-
-  // Open WAV file and add as audio input
-  FilePtr wav_file = session.get_audio_file(input_file_path.value());
-  if (wav_file == nullptr) {
-    LOG_ERROR("Failed to read WAV file: ", input_file_path.value());
-    return -1;
-  }
-  
-  std::cout << "Playing WAV file: " << wav_file->to_string() << "\n";
-  track->add_audio_input(wav_file);
-  LOG_INFO("Set WAV file as audio input: ", wav_file->to_string());
   
   if (!track->has_audio_input()) {
     LOG_ERROR("Failed to set audio input on track.");
     return -1;
   }
-  
+
+  if (!track->has_audio_output()) {
+    LOG_ERROR("Failed to set audio output on track.");
+    return -1;
+  }
+
   // TODO - Set track properties (volume, pan, etc.)
 
   // Set callback for end of playback

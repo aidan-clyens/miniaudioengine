@@ -65,6 +65,7 @@ public:
     m_output_gain(1.0f),
     m_output_enabled(true),
     m_audio_input(std::nullopt),
+    m_audio_output(std::nullopt),
     m_midi_input(std::nullopt),
     m_midi_output(std::nullopt)
   {}
@@ -147,6 +148,9 @@ public:
    */
   void add_midi_input(MidiIOVariant input);
 
+  /** @brief Add an audio output to the track.
+   *  @param device The audio output device or file retrieved from DeviceService or FileService.
+   */
   void add_audio_output(SourceVariant output);
 
   /** @brief Add a MIDI output to the track.
@@ -167,6 +171,11 @@ public:
    *  @return True if an audio input is configured, false otherwise.
    */
   bool has_audio_input() const;
+
+  /** @brief Check if the track has an audio output.
+   *  @return True if an audio output is configured, false otherwise.
+   */
+  bool has_audio_output() const;
 
   /** @brief Check if the track has a MIDI input.
    *   @return True if a MIDI input is configured, false otherwise.
@@ -274,6 +283,7 @@ protected:
   TrackEventCallback m_event_callback;
 
   SourceVariant m_audio_input;
+  SourceVariant m_audio_output;
   MidiIOVariant m_midi_input;
   MidiIOVariant m_midi_output; // Will be deprecated in favor of parent routing
 

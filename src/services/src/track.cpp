@@ -177,9 +177,35 @@ void Track::add_midi_input(MidiIOVariant input)
   }
 }
 
-void Track::add_audio_output(SourceVariant input)
+/** @brief Adds a MIDI output to the track.
+ *  @param output The MIDI output device or file.
+ */
+void Track::add_audio_output(SourceVariant output)
 {
-  // TODO - Implement
+  if (has_audio_output())
+  {
+    LOG_ERROR("Track: Cannot add audio output - already has one configured.");
+    throw std::runtime_error("This track already has an audio output.");
+  }
+
+  if (std::holds_alternative<DevicePtr>(output))
+  {
+    auto device = std::get<DevicePtr>(output);
+    if (!device->is_output())
+    {
+      throw std::runtime_error("Selected audio device " + device->get_name() + " has no output channels.");
+    }
+
+    LOG_INFO("Track: Added audio output device: ", device->to_string());
+    m_audio_output = output;
+  }
+
+  if (std::holds_alternative<FilePtr>(output))
+  {
+    auto file = std::get<FilePtr>(output);
+    LOG_INFO("Track: Added audio output file: ", file->to_string());
+    m_audio_output = output;
+  }
 }
 
 /** @brief Adds a MIDI output to the track.
@@ -234,6 +260,14 @@ void Track::remove_midi_output()
 bool Track::has_audio_input() const
 {
   return !std::holds_alternative<std::nullopt_t>(m_audio_input);
+}
+
+/** @brief Checks if the track has an audio output configured.
+ *  @return True if an audio output is configured, false otherwise.
+ */
+bool Track::has_audio_output() const
+{
+  return !std::holds_alternative<std::nullopt_t>(m_audio_output);
 }
 
 /** @brief Checks if the track has a MIDI input configured.

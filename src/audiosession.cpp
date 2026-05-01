@@ -76,30 +76,31 @@ FilePtr AudioSession::get_midi_file(const std::filesystem::path &file_path) cons
 
 TrackList AudioSession::get_tracks() const
 {
-  // TODO - Implement
-  return std::vector<TrackPtr>();
+  return p_track_service->get_tracks();
 }
 
 TrackPtr AudioSession::add_track() const
 {
-  // TODO - Implement
-  return nullptr;
+  return p_track_service->create_child_track();
 }
 
 bool AudioSession::play()
 {
   // TODO - Implement
+  throw new std::exception("Play functionality not implemented yet.");
   return false;
 }
 
 bool AudioSession::record()
 {
   // TODO - Implement
+  throw new std::exception("Record functionality not implemented yet.");
   return false;
 }
 
 bool AudioSession::stop()
 {
   // TODO - Implement
+  throw new std::exception("Stop functionality not implemented yet.");
   return false;
 }
