@@ -1,6 +1,8 @@
 #ifndef __FILE_HANDLE_H__
 #define __FILE_HANDLE_H__
 
+#include "io.h"
+
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -10,10 +12,10 @@ namespace miniaudioengine
 {
 
 /** @class File
- *  @brief Unified PImpl handle for audio and MIDI file sources.
+ *  @brief Handle for audio and MIDI file sources.
  *  Hides libsndfile and other library dependencies from public headers.
  */
-class File
+class File : public framework::IInputOutput
 {
 public:
   /** @enum eFileType
@@ -27,6 +29,7 @@ public:
 
   ~File();
 
+  File();
   File(const File&) = delete;
   File& operator=(const File&) = delete;
 

@@ -39,7 +39,6 @@ public:
     {
       child->p_parent = shared_from_this();
       m_children.push_back(child);
-      LOG_INFO("IAudioGraphNode: Added ", child->to_string());
     }
   }
 

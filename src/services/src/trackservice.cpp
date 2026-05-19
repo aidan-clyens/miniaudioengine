@@ -29,14 +29,50 @@ dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
   // TODO - Iterate through main track's children
   for (const auto &child : get_children())
   {
+    framework::IAudioGraphNodePtr next_node = mixer_node;
+
     // Add track output node
-    dataplane::OutputNodePtr output_node = audio_graph->add_output_node(mixer_node);
+    if (child->has_audio_output())
+    {
+      dataplane::OutputNodePtr output_node = audio_graph->add_output_node(next_node);
+      LOG_INFO("MainTrack: Compiling AudioGraph - Added ", output_node->to_string());
+      next_node = output_node;
+    }
+    else if (child->has_midi_output())
+    {
+      dataplane::OutputNodePtr output_node = audio_graph->add_output_node(next_node);
+      LOG_INFO("MainTrack: Compiling AudioGraph - Added ", output_node->to_string());
+      next_node = output_node;
+    }
+    else
+    {
+      LOG_INFO("MainTrack: Compiling AudioGraph - No Output");
+    }
 
     // TODO - Add track processor nodes
-    dataplane::ProcessorNodePtr processor_node = audio_graph->add_processor_node(output_node);
+    dataplane::ProcessorNodePtr processor_node = audio_graph->add_processor_node(next_node);
+    next_node = processor_node;
+    LOG_INFO("MainTrack: Compiling AudioGraph - Added ", processor_node->to_string());
 
     // TODO - Add track input node
-    dataplane::InputNodePtr input_node = audio_graph->add_input_node(processor_node);
+    if (child->has_audio_input())
+    {
+      auto input = child->get_audio_input();
+      dataplane::InputNodePtr input_node = audio_graph->add_input_node(next_node);
+      next_node = input_node;
+      LOG_INFO("MainTrack: Compiling AudioGraph - Added ", input_node->to_string());
+    }
+    else if (child->has_midi_input())
+    {
+      auto input = child->get_midi_input();
+      dataplane::InputNodePtr input_node = audio_graph->add_input_node(next_node);
+      next_node = input_node;
+      LOG_INFO("MainTrack: Compiling AudioGraph - Added ", input_node->to_string());
+    }
+    else
+    {
+      LOG_INFO("MainTrack: Compiling AudioGraph - No Input");
+    }
   }
 
   return audio_graph;

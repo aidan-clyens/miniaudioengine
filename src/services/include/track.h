@@ -23,9 +23,13 @@ namespace miniaudioengine
 class MainTrack;
 
 // Type definitions
+namespace framework
+{
+typedef std::shared_ptr<class IInputOutput> IInputOutputPtr;
+typedef std::shared_ptr<class IInputOutput> IOutputPtr;
+}
+
 typedef std::shared_ptr<class Track> TrackPtr;
-typedef std::variant<DevicePtr, FilePtr, std::nullopt_t> SourceVariant;
-typedef std::variant<DevicePtr, FilePtr, std::nullopt_t> MidiIOVariant;
 
 typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOnCallbackFunc;
 typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;
@@ -64,10 +68,10 @@ public:
     m_is_main_track(is_main_track),
     m_output_gain(1.0f),
     m_output_enabled(true),
-    m_audio_input(std::nullopt),
-    m_audio_output(std::nullopt),
-    m_midi_input(std::nullopt),
-    m_midi_output(std::nullopt)
+    p_audio_input(nullptr),
+    m_audio_output(nullptr),
+    p_midi_input(nullptr),
+    m_midi_output(nullptr)
   {}
 
   virtual ~Track() = default;
@@ -141,22 +145,22 @@ public:
   /** @brief Add an audio input to the track. 
    *  @param device The audio input device or file retrieved from DeviceService or FileService.
    */
-  void add_audio_input(SourceVariant input);
+  void add_audio_input(framework::IInputOutputPtr input);
 
   /** @brief Add a MIDI input to the track.
    *  @param device The MIDI input device or file retrieved from DeviceService or FileService.
    */
-  void add_midi_input(MidiIOVariant input);
+  void add_midi_input(framework::IOutputPtr input);
 
   /** @brief Add an audio output to the track.
    *  @param device The audio output device or file retrieved from DeviceService or FileService.
    */
-  void add_audio_output(SourceVariant output);
+  void add_audio_output(framework::IInputOutputPtr output);
 
   /** @brief Add a MIDI output to the track.
    *  @param device The MIDI output device or file retrieved from DeviceService or FileService.
    */
-  void add_midi_output(MidiIOVariant output);
+  void add_midi_output(framework::IOutputPtr output);
 
   /** @brief Remove the audio input from the track. */
   void remove_audio_input();
@@ -190,17 +194,17 @@ public:
   /** @brief Gets the audio input of the track.
    *  @return An audio input variant type (DevicePtr, FilePtr, std::nullopt_t).
    */
-  SourceVariant get_audio_input() const;
+  framework::IInputOutputPtr get_audio_input() const;
 
   /** @brief Gets the MIDI input of the track.
    *  @return A MIDI input variant type (DevicePtr, FilePtr, std::nullopt_t).
    */
-  MidiIOVariant get_midi_input() const;
+  framework::IOutputPtr get_midi_input() const;
 
   /** @brief Gets the MIDI output of the track.
    *  @return The MIDI output variant (DevicePtr, FilePtr, std::nullopt_t).
    */
-  MidiIOVariant get_midi_output() const;
+  framework::IOutputPtr get_midi_output() const;
 
   // Playback control
   /** @brief Start playback of the track. */
@@ -282,10 +286,10 @@ protected:
 
   TrackEventCallback m_event_callback;
 
-  SourceVariant m_audio_input;
-  SourceVariant m_audio_output;
-  MidiIOVariant m_midi_input;
-  MidiIOVariant m_midi_output; // Will be deprecated in favor of parent routing
+  framework::IInputOutputPtr p_audio_input;
+  framework::IInputOutputPtr m_audio_output;
+  framework::IOutputPtr p_midi_input;
+  framework::IOutputPtr m_midi_output; // Will be deprecated in favor of parent routing
 
   MidiNoteOnCallbackFunc m_note_on_callback;
   MidiNoteOffCallbackFunc m_note_off_callback;

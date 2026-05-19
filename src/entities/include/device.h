@@ -1,6 +1,8 @@
 #ifndef __DEVICE_HANDLE_H__
 #define __DEVICE_HANDLE_H__
 
+#include "io.h"
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -9,10 +11,10 @@ namespace miniaudioengine
 {
 
 /** @class Device
- *  @brief Unified PImpl handle for audio and MIDI devices.
+ *  @brief Handle for audio and MIDI devices.
  *  Hides hardware backend (RtAudio/RtMidi) from public headers.
  */
-class Device
+class Device : public framework::IInputOutput
 {
 public:
   /** @enum eDeviceType
@@ -26,7 +28,8 @@ public:
 
   ~Device();
 
-  Device(const Device&) = delete;
+  Device();
+  Device(const Device &) = delete;
   Device& operator=(const Device&) = delete;
 
   // -------------------------------------------------------------------------

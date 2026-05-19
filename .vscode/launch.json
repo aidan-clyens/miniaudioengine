@@ -9,8 +9,8 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}\\build\\examples\\wav-audio-player\\src\\Debug\\wav-audio-player.exe",
-            "args": ["-i", "${workspaceFolder}\\examples\\wav-audio-player\\samples\\test2.wav", "--verbose"],
-            "stopAtEntry": false,
+            "args": ["--set-audio-output", "130", "--input-file", ".\\samples\\test.wav", "--verbose"],
+            "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "integratedTerminal"
@@ -20,17 +20,6 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/tests/unit/Debug/miniaudioengine-unit-tests.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "miniaudioengine-profiling-tests (Windows)",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/tests/profiling/Debug/miniaudioengine-profiling-tests.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

@@ -1,4 +1,6 @@
-add_library(framework STATIC)
+add_library(framework STATIC
+  include/io.h
+  include/io.h)
 
 target_sources(framework
   PUBLIC
