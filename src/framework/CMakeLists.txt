@@ -11,6 +11,7 @@ target_sources(framework
       include/doublebuffer.h
       include/logger.h
       include/miditypes.h
+      include/audiographnode.h
 )
 
 target_sources(framework PRIVATE

@@ -1,7 +1,46 @@
 #include "trackservice.h"
+#include "audiograph.h"
+#include "mixernode.h"
+#include "outputnode.h"
+#include "processornode.h"
+#include "inputnode.h"
 #include "logger.h"
 
 using namespace miniaudioengine;
+
+bool MainTrack::start()
+{
+  LOG_INFO("MainTrack: Start");
+  // Compile audio dataplane graph
+  dataplane::AudioGraphPtr audio_graph = compile_audio_graph();
+  LOG_INFO("MainTrack: Compiled ", audio_graph->to_string());
+
+  return true;
+}
+
+dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
+{
+  LOG_INFO("MainTrack: Compiling AudioGraph for current track hierarchy...");
+  dataplane::AudioGraphPtr audio_graph = std::make_shared<dataplane::AudioGraph>();
+
+  // For the main track, add a mixer node
+  dataplane::MixerNodePtr mixer_node = audio_graph->add_mixer_node();
+
+  // TODO - Iterate through main track's children
+  for (const auto &child : get_children())
+  {
+    // Add track output node
+    dataplane::OutputNodePtr output_node = audio_graph->add_output_node(mixer_node);
+
+    // TODO - Add track processor nodes
+    dataplane::ProcessorNodePtr processor_node = audio_graph->add_processor_node(output_node);
+
+    // TODO - Add track input node
+    dataplane::InputNodePtr input_node = audio_graph->add_input_node(processor_node);
+  }
+
+  return audio_graph;
+}
 
 // ============================================================================
 // Constructor
@@ -18,21 +57,11 @@ TrackService::TrackService()
 // Hierarchy Operations
 // ============================================================================
 
-/** @brief Create a new detached track (not yet in hierarchy).
- *  @return Shared pointer to the new track.
- */
-TrackPtr TrackService::create_track()
-{
-  auto new_track = std::make_shared<Track>(false);
-  LOG_INFO("TrackService: Created detached track");
-  return new_track;
-}
-
 /** @brief Create a new track as child of specified parent.
  *  @param parent The parent track (defaults to MainTrack if nullptr).
  *  @return Shared pointer to the new track.
  */
-TrackPtr TrackService::create_child_track(TrackPtr parent)
+TrackPtr TrackService::add_track(TrackPtr parent)
 {
   if (!parent || !parent->is_main_track())
   {
@@ -136,55 +165,3 @@ void TrackService::clear_tracks()
   LOG_INFO("TrackService: All tracks cleared. Total tracks after clear: ", get_track_count());
 }
 
-// ============================================================================
-// Audio Output Device Management
-// ============================================================================
-
-/** @brief Set the audio output device for the main track.
- *  @param device The audio output device to use.
- */
-void TrackService::set_audio_output_device(DevicePtr device)
-{
-  LOG_INFO("TrackService: Set audio output device: ", device->get_name());
-  m_main_track->set_audio_output_device(device);
-}
-
-// ============================================================================
-// Legacy Compatibility Methods
-// ============================================================================
-
-/** @brief Add a Track to the TrackService (legacy compatibility).
- *  @return The index of the newly added track in MainTrack's children.
- */
-size_t TrackService::add_track()
-{
-  auto new_track = create_child_track(m_main_track);
-  size_t index = m_main_track->get_child_count() - 1;
-  LOG_INFO("TrackService: Adding a new track (legacy). Total tracks: ", get_track_count());
-  return index;
-}
-
-/** @brief Get a Track from the TrackService by index (legacy compatibility).
- *  @param index The index of the track in MainTrack's children.
- *  @return A shared pointer to the Track at the specified index.
- *  @throws std::out_of_range if the index is invalid.
- */
-TrackPtr TrackService::get_track(size_t index)
-{
-  auto children = m_main_track->get_children();
-  if (index >= children.size())
-  {
-    LOG_ERROR("TrackService: Attempted to get track with invalid index: ", index);
-    throw std::out_of_range("Track index out of range");
-  }
-
-  return children[index];
-}
-
-/** @brief Get all Tracks from the TrackService (legacy compatibility).
- *  @return A vector of shared pointers to all immediate children of MainTrack.
- */
-std::vector<TrackPtr> TrackService::get_tracks() const
-{
-  return m_main_track->get_children();
-}

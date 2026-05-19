@@ -11,6 +11,7 @@ target_sources(dataplane
         include/outputnode.h
         include/processornode.h
         include/mixernode.h
+        include/outputnode.h
 )
 
 target_sources(dataplane PRIVATE
@@ -19,12 +20,18 @@ target_sources(dataplane PRIVATE
     src/outputnode.cpp
     src/processornode.cpp
     src/mixernode.cpp
+    src/outputnode.cpp
 )
 
 target_include_directories(dataplane
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+)
+
+target_link_libraries(dataplane
+  PRIVATE
+    framework
 )
 
 set_target_properties(dataplane PROPERTIES LINKER_LANGUAGE CXX)

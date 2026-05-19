@@ -10,6 +10,10 @@
 namespace miniaudioengine
 {
 
+// Forward declarations
+namespace dataplane { class AudioGraph; }
+namespace dataplane { using AudioGraphPtr = std::shared_ptr<AudioGraph>; }
+
 /** @class MainTrack
  *  @brief The MainTrack is the root of the track hierarchy and manages the audio output device.
  */
@@ -19,7 +23,7 @@ public:
   MainTrack() : Track(true) {} // main_track = true
   ~MainTrack() override = default;
 
-  bool start() { return true; /* Placeholder implementation */ }
+  bool start();
   bool stop() { return true; /* Placeholder implementation */ }
   bool is_playing() const { return false; /* Placeholder implementation */ }
 
@@ -27,6 +31,12 @@ public:
   {
     p_audio_output_device = device;
   }
+
+private:
+  /** @brief Compile the audio graph for the current track hierarchy for audio processing.
+   *  @return AudioGraph representing the current track hierarchy.
+   */
+  dataplane::AudioGraphPtr compile_audio_graph() const;
 
 private:
   DevicePtr p_audio_output_device;
@@ -50,25 +60,16 @@ public:
     return instance;
   }
 
-  // MainTrack access
-  
   /** @brief Get the main track (root of hierarchy).
    *  @return Shared pointer to MainTrack.
    */
   TrackPtr get_main_track() const { return m_main_track; }
 
-  // Hierarchy operations (Control Plane)
-
-  /** @brief Create a new detached track (not yet in hierarchy).
-   *  @return Shared pointer to the new track.
-   */
-  TrackPtr create_track();
-
   /** @brief Create a new track as child of MainTrack.
    *  @param parent Ignored unless it is MainTrack (defaults to MainTrack if nullptr).
    *  @return Shared pointer to the new track.
    */
-  TrackPtr create_child_track(TrackPtr parent = nullptr);
+  TrackPtr add_track(TrackPtr parent = nullptr);
 
   /** @brief Remove a track from the hierarchy.
    *  @param track The track to remove.
@@ -91,35 +92,6 @@ public:
   /** @brief Clear all tracks except MainTrack.
    */
   void clear_tracks();
-
-  // Audio output device management
-
-  /** @brief Set the audio output device for the main track.
-   *  @param device The audio output device to use.
-   */
-  void set_audio_output_device(DevicePtr device);
-
-  // Legacy compatibility methods
-
-  /** @brief Add a track as child of MainTrack (legacy compatibility).
-   *  @return Index of the track in MainTrack's children (for backward compatibility).
-   *  @deprecated Use create_child_track() instead.
-   */
-  size_t add_track();
-
-  /** @brief Get a track by index from MainTrack's children (legacy compatibility).
-   *  @param index The index in MainTrack's children.
-   *  @return Shared pointer to the track.
-   *  @throws std::out_of_range if index is invalid.
-   *  @deprecated Use get_all_tracks() and navigate hierarchy instead.
-   */
-  TrackPtr get_track(size_t index);
-
-  /** @brief Get all immediate children of MainTrack (legacy compatibility).
-   *  @return Vector of track pointers.
-   *  @deprecated Use get_main_track()->get_children() instead.
-   */
-  std::vector<TrackPtr> get_tracks() const;
 
 private:
   MainTrackPtr m_main_track; // Root of track tree (owns hardware audio output)

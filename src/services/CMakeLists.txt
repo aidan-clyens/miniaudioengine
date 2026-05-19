@@ -29,6 +29,7 @@ target_link_libraries(services PUBLIC
   framework
   entities
   adapters
+  dataplane
 )
 
 set_target_properties(services PROPERTIES LINKER_LANGUAGE CXX)

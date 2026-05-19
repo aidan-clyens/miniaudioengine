@@ -33,6 +33,16 @@ using DeviceServicePtr = std::unique_ptr<DeviceService>;
 using FileServicePtr = std::unique_ptr<FileService>;
 using TrackServicePtr = std::unique_ptr<TrackService>;
 
+/** @enum eAudioSessionState
+ *  @brief Represents the state of an audio session.
+ */
+enum class eAudioSessionState
+{
+  Stopped,
+  Playing,
+  Recording
+};
+
 /** @class AudioSession
  *  @brief An audio session that manages devices, files, and tracks. It is the entry point for interacting with the audio engine.
  */
@@ -68,6 +78,9 @@ public:
   bool record();
   bool stop();
 
+  // State
+  eAudioSessionState get_state() const { return m_state; }
+
 private:
   // Services
   DeviceServicePtr p_device_service;
@@ -78,6 +91,9 @@ private:
   std::shared_ptr<adapters::AudioAdapter> p_audio_adapter;
   std::shared_ptr<adapters::MidiAdapter> p_midi_adapter;
   std::shared_ptr<adapters::FileAdapter> p_file_adapter;
+
+  // State
+  eAudioSessionState m_state = eAudioSessionState::Stopped;
 };
 
 } // namespace miniaudioengine
