@@ -19,7 +19,6 @@
 #endif
 
 using namespace miniaudioengine;
-using namespace miniaudioengine::framework;
 
 constexpr const char* APP_NAME = "wav-audio-player";
 constexpr const char* APP_DESCRIPTION = "A simple audio player using the miniaudioengine library that can play .wav files";
@@ -132,7 +131,7 @@ int parse_cli_arguments(int argc, char *argv[], AudioSession &session)
 
   // --verbose flag
   app.add_flag_callback(ARG_VERBOSE, []()
-                        { Logger::instance().enable_console_output(true); }, "Enable verbose logging");
+                        { framework::Logger::instance().enable_console_output(true); }, "Enable verbose logging");
 
   CLI11_PARSE(app, argc, argv);
   return 0;
@@ -143,9 +142,9 @@ int parse_cli_arguments(int argc, char *argv[], AudioSession &session)
 int main(int argc, char *argv[])
 {
   // Setup logging
-  Logger::instance().enable_console_output(false);
-  Logger::instance().set_log_file(APP_LOG_FILEPATH);
-  set_thread_name("Main");
+  framework::Logger::instance().enable_console_output(false);
+  framework::Logger::instance().set_log_file(APP_LOG_FILEPATH);
+  framework::set_thread_name("Main");
 
   // Create Audio Session
   AudioSession session;
