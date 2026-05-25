@@ -35,7 +35,7 @@ public:
 
   MixerNodePtr add_mixer_node(IAudioGraphNodePtr parent = nullptr);
   InputNodePtr add_input_node(IInputOutputPtr input, IAudioGraphNodePtr parent = nullptr);
-  OutputNodePtr add_output_node(IAudioGraphNodePtr parent = nullptr);
+  OutputNodePtr add_output_node(IInputOutputPtr output, IAudioGraphNodePtr parent = nullptr);
   ProcessorNodePtr add_processor_node(IAudioGraphNodePtr parent = nullptr);
 
   IAudioGraphNodePtr get_root_node() const;

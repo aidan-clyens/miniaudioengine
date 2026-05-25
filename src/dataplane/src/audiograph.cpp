@@ -20,9 +20,9 @@ InputNodePtr AudioGraph::add_input_node(IInputOutputPtr input, IAudioGraphNodePt
   return std::dynamic_pointer_cast<InputNode>(add_node(node, parent));
 }
 
-OutputNodePtr AudioGraph::add_output_node(IAudioGraphNodePtr parent)
+OutputNodePtr AudioGraph::add_output_node(IInputOutputPtr output, IAudioGraphNodePtr parent)
 {
-  auto node = std::make_shared<OutputNode>();
+  auto node = std::make_shared<OutputNode>(output);
   return std::dynamic_pointer_cast<OutputNode>(add_node(node, parent));
 }
 

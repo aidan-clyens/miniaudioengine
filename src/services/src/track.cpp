@@ -192,6 +192,13 @@ void Track::add_audio_output(IInputOutputPtr output)
     throw std::runtime_error("This track already has an Audio Output.");
   }
 
+  // If Track is no the MainTrack, add audio output there instead
+  if (!m_is_main_track)
+  {
+    get_main_track()->add_audio_output(output);
+    return;
+  }
+
   if (output->get_type() == framework::eInputOutputType_Device)
   {
     auto device = std::dynamic_pointer_cast<Device>(output);
@@ -221,6 +228,13 @@ void Track::add_midi_output(IOutputPtr output)
   {
     LOG_ERROR("Track: Cannot add MIDI output - already has one configured.");
     throw std::runtime_error("This track already has a MIDI output.");
+  }
+
+  // If Track is no the MainTrack, add MIDI output there instead
+  if (!m_is_main_track)
+  {
+    get_main_track()->add_midi_output(output);
+    return;
   }
 
   if (output->get_type() == framework::eInputOutputType_Device)
@@ -271,6 +285,11 @@ bool Track::has_audio_input() const
  */
 bool Track::has_audio_output() const
 {
+  if (!m_is_main_track)
+  {
+    auto main_track = get_main_track();
+    return main_track->has_audio_output();
+  }
   return p_audio_output != nullptr;
 }
 
@@ -287,6 +306,11 @@ bool Track::has_midi_input() const
  */
 bool Track::has_midi_output() const
 {
+  if (!m_is_main_track)
+  {
+    auto main_track = get_main_track();
+    return main_track->has_midi_output();
+  }
   return m_midi_output != nullptr;
 }
 

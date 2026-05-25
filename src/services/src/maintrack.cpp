@@ -17,36 +17,33 @@ bool MainTrack::play()
   unsigned int device_id = 0;
   unsigned int channels = 0;
 
-  // Get inputs by searching for leaf nodes
+  // Get inputs by searching for leaf nodes in AudioGraph
   std::vector<framework::IAudioGraphNodePtr> input_nodes = audio_graph->get_leaf_nodes();
   for (auto node : input_nodes)
   {
     dataplane::InputNodePtr input_node = std::dynamic_pointer_cast<dataplane::InputNode>(node);
     framework::IInputOutputPtr io = input_node->get_io();
 
-    switch (io->get_type())
+    if (io->get_type() == framework::eInputOutputType_Device)
     {
-      case framework::eInputOutputType_Device:
-        device_id = std::dynamic_pointer_cast<Device>(io)->get_id();
-        channels = std::dynamic_pointer_cast<Device>(io)->get_output_channels();
-        LOG_DEBUG("MainTrack: play - Using Input Device - ", io->to_string());
-        break;
-      case framework::eInputOutputType_File:
-        LOG_DEBUG("MainTrack: play - Using Input File - ", io->to_string());
-        break;
-      case framework::eInputOutputType_None:
-      default:
-        LOG_WARNING("MainTrack: play - Invalid Input - ", io->to_string());
-        break;
+      device_id = std::dynamic_pointer_cast<Device>(io)->get_id();
+      channels = std::dynamic_pointer_cast<Device>(io)->get_output_channels();
+      LOG_DEBUG("MainTrack: play - Using Input Device - ", io->to_string());
     }
   }
 
-  if (has_audio_output())
+  // Check output by checking root node or AudioGraph
   {
-    LOG_DEBUG("MainTrack: play - Using Audio Output - ", get_audio_output()->to_string());
-
-    device_id = p_audio_output->get_type() == framework::eInputOutputType_Device ? std::dynamic_pointer_cast<Device>(p_audio_output)->get_id() : 0;
-    channels = p_audio_output->get_type() == framework::eInputOutputType_Device ? std::dynamic_pointer_cast<Device>(p_audio_output)->get_output_channels() : 0;
+    framework::IAudioGraphNodePtr root_node = audio_graph->get_root_node();
+    dataplane::OutputNodePtr output_node = std::dynamic_pointer_cast<dataplane::OutputNode>(root_node);
+    framework::IInputOutputPtr io = output_node->get_io();
+  
+    if (io->get_type() == framework::eInputOutputType_Device)
+    {
+      device_id = std::dynamic_pointer_cast<Device>(p_audio_output)->get_id();
+      channels = std::dynamic_pointer_cast<Device>(p_audio_output)->get_output_channels();
+      LOG_DEBUG("MainTrack: play - Using Output Device - ", io->to_string());
+    }
   }
 
   // Set audio output I/O parameters
@@ -74,35 +71,35 @@ dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
   LOG_INFO("MainTrack: Compiling AudioGraph for current track hierarchy...");
   dataplane::AudioGraphPtr audio_graph = std::make_shared<dataplane::AudioGraph>();
 
-  // For the main track, add a mixer node
-  dataplane::MixerNodePtr mixer_node = audio_graph->add_mixer_node();
+  if (!has_audio_output() && !has_midi_output())
+  {
+    LOG_WARNING("MainTrack: Cannot compile AudioGraph. No Audio/MIDI Output is set.");
+    return nullptr;
+  }
 
-  // TODO - Iterate through main track's children
+  // For the main track, first add an output node
+  framework::IInputOutputPtr output = (has_audio_output() ? get_audio_output() : (has_midi_output() ? get_midi_output() : nullptr));
+  if (output == nullptr)
+  {
+    LOG_WARNING("MainTrack: Cannot assign null Output");
+    return nullptr;
+  }
+
+  dataplane::OutputNodePtr output_node = audio_graph->add_output_node(output);
+
+  // Then, add a mixer node
+  dataplane::MixerNodePtr mixer_node = audio_graph->add_mixer_node(output_node);
+
+  // Iterate through main track's children
   for (const auto &child : get_children())
   {
     framework::IAudioGraphNodePtr next_node = mixer_node;
 
-    // Add track output node
-    if (child->has_audio_output())
-    {
-      dataplane::OutputNodePtr output_node = audio_graph->add_output_node(next_node);
-      next_node = output_node;
-    }
-    else if (child->has_midi_output())
-    {
-      dataplane::OutputNodePtr output_node = audio_graph->add_output_node(next_node);
-      next_node = output_node;
-    }
-    else
-    {
-      LOG_INFO("MainTrack: Compiling AudioGraph - No Output");
-    }
-
-    // TODO - Add track processor nodes
+    // Add track processor nodes
     dataplane::ProcessorNodePtr processor_node = audio_graph->add_processor_node(next_node);
     next_node = processor_node;
 
-    // TODO - Add track input node
+    // Add track input node
     if (child->has_audio_input())
     {
       auto input = child->get_audio_input();
