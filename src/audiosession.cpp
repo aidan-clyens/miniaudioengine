@@ -17,9 +17,9 @@ AudioSession::AudioSession()
   p_midi_adapter = std::make_shared<MidiAdapter>();
   p_file_adapter = std::make_shared<FileAdapter>();
 
-  p_device_service = std::make_unique<DeviceService>(p_audio_adapter, p_midi_adapter);
   p_file_service = std::make_unique<FileService>();
-  p_track_service = std::make_unique<TrackService>();
+  p_device_service = std::make_unique<DeviceService>(p_audio_adapter, p_midi_adapter);
+  p_track_service = std::make_unique<TrackService>(p_audio_adapter, p_midi_adapter);
 }
 
 AudioSession::~AudioSession() = default;

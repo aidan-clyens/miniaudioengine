@@ -69,7 +69,7 @@ public:
     m_output_gain(1.0f),
     m_output_enabled(true),
     p_audio_input(nullptr),
-    m_audio_output(nullptr),
+    p_audio_output(nullptr),
     p_midi_input(nullptr),
     m_midi_output(nullptr)
   {}
@@ -191,18 +191,23 @@ public:
    */
   bool has_midi_output() const;
 
-  /** @brief Gets the audio input of the track.
-   *  @return An audio input variant type (DevicePtr, FilePtr, std::nullopt_t).
+  /** @brief Gets the audio input.
+   *  @return An audio input type (DevicePtr, FilePtr).
    */
   framework::IInputOutputPtr get_audio_input() const;
 
-  /** @brief Gets the MIDI input of the track.
-   *  @return A MIDI input variant type (DevicePtr, FilePtr, std::nullopt_t).
+  /** @brief Gets the audio output.
+   *  @return An audio output type (DevicePtr, FilePtr).
+   */
+  framework::IInputOutputPtr get_audio_output() const;
+
+  /** @brief Gets the MIDI input.
+   *  @return A MIDI input type (DevicePtr, FilePtr).
    */
   framework::IOutputPtr get_midi_input() const;
 
-  /** @brief Gets the MIDI output of the track.
-   *  @return The MIDI output variant (DevicePtr, FilePtr, std::nullopt_t).
+  /** @brief Gets the MIDI output.
+   *  @return The MIDI output (DevicePtr, FilePtr).
    */
   framework::IOutputPtr get_midi_output() const;
 
@@ -287,7 +292,7 @@ protected:
   TrackEventCallback m_event_callback;
 
   framework::IInputOutputPtr p_audio_input;
-  framework::IInputOutputPtr m_audio_output;
+  framework::IInputOutputPtr p_audio_output;
   framework::IOutputPtr p_midi_input;
   framework::IOutputPtr m_midi_output; // Will be deprecated in favor of parent routing
 

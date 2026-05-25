@@ -1,7 +1,34 @@
 #include "audioadapter.h"
+#include "audiograph.h"
 
 using namespace miniaudioengine;
 using namespace miniaudioengine::adapters;
+using namespace miniaudioengine::dataplane;
+
+int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
+                                         double stream_time, AudioStreamStatus status, void *user_data) noexcept
+{
+  // Verify user data is a pointer to a AudioGraph object
+  if (!user_data || !static_cast<AudioGraph*>(user_data))
+  {
+    LOG_ERROR("AudioCallbackHandler: Audio callback does not have pointer to AudioGraph");
+    return 1;
+  }
+
+  // If input buffer is present, read audio input
+  if (input_buffer != nullptr)
+  {
+    LOG_INFO("AudioCallbackHandler: Reading input...");
+  }
+  
+  // If output buffer is present, write to audio output
+  if (output_buffer != nullptr)
+  {
+    LOG_INFO("AudioCallbackHandler: Writing to output...");
+  }
+
+  return 1;
+}
 
 unsigned int AudioAdapter::get_device_count()
 {
@@ -37,6 +64,12 @@ bool AudioAdapter::open_stream(AudioStreamParameters &params,
                  unsigned int buffer_frames,
                  void *callback_context)
 {
+  if (callback_context == nullptr)
+  {
+    LOG_ERROR("AudioAdapter: Required callback context is empty");
+    return false;
+  }
+
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
   RtAudioErrorType rc;
   rc = m_rtaudio.openStream(&params,

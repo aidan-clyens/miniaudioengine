@@ -1,4 +1,5 @@
-add_library(services STATIC)
+add_library(services STATIC
+  include/maintrack.h)
 
 target_sources(services
   PUBLIC
@@ -17,6 +18,7 @@ target_sources(services PRIVATE
     src/fileservice.cpp
     src/trackservice.cpp
     src/track.cpp
+    src/maintrack.cpp
 )
 
 target_include_directories(services

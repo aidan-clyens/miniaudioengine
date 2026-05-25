@@ -26,6 +26,7 @@ target_include_directories(adapters
 target_link_libraries(adapters PRIVATE
   framework
   entities
+  dataplane
 )
 
 target_link_libraries(adapters PUBLIC

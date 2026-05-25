@@ -4,6 +4,7 @@
 #include "device.h"
 #include "logger.h"
 
+#include <memory>
 #include <rtaudio/RtAudio.h>
 
 namespace miniaudioengine::adapters
@@ -16,9 +17,7 @@ class AudioCallbackHandler
 {
 public:
   static int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
-                            double stream_time, AudioStreamStatus status, void *user_data) noexcept {
-                              return 1;
-                            }
+                            double stream_time, AudioStreamStatus status, void *user_data) noexcept;
 };
 
 /** @class AudioAdapter
@@ -63,6 +62,8 @@ private:
         info.sampleRates);
   }
 };
+
+using AudioAdapterPtr = std::shared_ptr<AudioAdapter>;
 
 } // namespace miniaudioengine::adapters
 

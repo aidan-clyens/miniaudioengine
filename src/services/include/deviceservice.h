@@ -11,8 +11,11 @@ namespace miniaudioengine
 {
 
 // Forward declarations
-namespace adapters { class AudioAdapter; }
-namespace adapters { class MidiAdapter; }
+namespace adapters
+{
+using AudioAdapterPtr = std::shared_ptr<class AudioAdapter>;
+using MidiAdapterPtr = std::shared_ptr<class MidiAdapter>;
+}
 
 class Device;
 
@@ -26,7 +29,7 @@ using DeviceList = std::vector<DevicePtr>;
 class DeviceService
 {
 public:
-  DeviceService(std::shared_ptr<adapters::AudioAdapter> audio_adapter, std::shared_ptr<adapters::MidiAdapter> midi_adapter);
+  DeviceService(adapters::AudioAdapterPtr audio_adapter, adapters::MidiAdapterPtr midi_adapter);
   ~DeviceService();
 
   /** @brief Return a list of all available audio devices.
@@ -74,8 +77,8 @@ public:
   DevicePtr get_default_midi_output_device();
 
 private:
-  std::shared_ptr<adapters::AudioAdapter> p_audio_adapter;
-  std::shared_ptr<adapters::MidiAdapter> p_midi_adapter;
+  adapters::AudioAdapterPtr p_audio_adapter;
+  adapters::MidiAdapterPtr p_midi_adapter;
 };
 
 } // namespace miniaudioengine

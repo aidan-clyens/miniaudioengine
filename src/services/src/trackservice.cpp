@@ -1,88 +1,14 @@
 #include "trackservice.h"
-#include "audiograph.h"
-#include "mixernode.h"
-#include "outputnode.h"
-#include "processornode.h"
-#include "inputnode.h"
 #include "logger.h"
 
 using namespace miniaudioengine;
-
-bool MainTrack::start()
-{
-  LOG_INFO("MainTrack: Start");
-  // Compile audio dataplane graph
-  dataplane::AudioGraphPtr audio_graph = compile_audio_graph();
-  LOG_INFO("MainTrack: Compiled ", audio_graph->to_string());
-
-  return true;
-}
-
-dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
-{
-  LOG_INFO("MainTrack: Compiling AudioGraph for current track hierarchy...");
-  dataplane::AudioGraphPtr audio_graph = std::make_shared<dataplane::AudioGraph>();
-
-  // For the main track, add a mixer node
-  dataplane::MixerNodePtr mixer_node = audio_graph->add_mixer_node();
-
-  // TODO - Iterate through main track's children
-  for (const auto &child : get_children())
-  {
-    framework::IAudioGraphNodePtr next_node = mixer_node;
-
-    // Add track output node
-    if (child->has_audio_output())
-    {
-      dataplane::OutputNodePtr output_node = audio_graph->add_output_node(next_node);
-      LOG_INFO("MainTrack: Compiling AudioGraph - Added ", output_node->to_string());
-      next_node = output_node;
-    }
-    else if (child->has_midi_output())
-    {
-      dataplane::OutputNodePtr output_node = audio_graph->add_output_node(next_node);
-      LOG_INFO("MainTrack: Compiling AudioGraph - Added ", output_node->to_string());
-      next_node = output_node;
-    }
-    else
-    {
-      LOG_INFO("MainTrack: Compiling AudioGraph - No Output");
-    }
-
-    // TODO - Add track processor nodes
-    dataplane::ProcessorNodePtr processor_node = audio_graph->add_processor_node(next_node);
-    next_node = processor_node;
-    LOG_INFO("MainTrack: Compiling AudioGraph - Added ", processor_node->to_string());
-
-    // TODO - Add track input node
-    if (child->has_audio_input())
-    {
-      auto input = child->get_audio_input();
-      dataplane::InputNodePtr input_node = audio_graph->add_input_node(next_node);
-      next_node = input_node;
-      LOG_INFO("MainTrack: Compiling AudioGraph - Added ", input_node->to_string());
-    }
-    else if (child->has_midi_input())
-    {
-      auto input = child->get_midi_input();
-      dataplane::InputNodePtr input_node = audio_graph->add_input_node(next_node);
-      next_node = input_node;
-      LOG_INFO("MainTrack: Compiling AudioGraph - Added ", input_node->to_string());
-    }
-    else
-    {
-      LOG_INFO("MainTrack: Compiling AudioGraph - No Input");
-    }
-  }
-
-  return audio_graph;
-}
 
 // ============================================================================
 // Constructor
 // ============================================================================
 
-TrackService::TrackService()
+TrackService::TrackService(adapters::AudioAdapterPtr audio_adapter, adapters::MidiAdapterPtr midi_adapter)
+    : p_audio_adapter(audio_adapter), p_midi_adapter(midi_adapter)
 {
   // Create MainTrack (root of hierarchy) with hardware output
   m_main_track = std::make_shared<MainTrack>(); // is_main_track = true

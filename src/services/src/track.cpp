@@ -134,7 +134,7 @@ void Track::add_audio_input(IInputOutputPtr input)
 {
   if (has_audio_input())
   {
-    throw std::runtime_error("This track already has an audio input.");
+    throw std::runtime_error("This Track already has an Audio Input.");
   }
 
   if (input->get_type() == framework::eInputOutputType_Device)
@@ -145,14 +145,14 @@ void Track::add_audio_input(IInputOutputPtr input)
       throw std::runtime_error("Selected audio device " + device->get_name() + " has no input channels.");
     }
 
-    LOG_INFO("Track: Added audio input device: ", device->to_string());
+    LOG_INFO("Track: Added Audio Input - ", device->to_string());
     p_audio_input = input;
   }
 
   if (input->get_type() == framework::eInputOutputType_File)
   {
     FilePtr file = std::dynamic_pointer_cast<File>(input);
-    LOG_INFO("Track: Added audio input file: ", file->to_string());
+    LOG_INFO("Track: Added Audio Input - ", file->to_string());
     p_audio_input = input;
   }
 }
@@ -164,8 +164,8 @@ void Track::add_midi_input(IOutputPtr input)
 {
   if (has_midi_input())
   {
-    LOG_ERROR("Track: Cannot add MIDI input - already has one configured.");
-    throw std::runtime_error("This track already has a MIDI input.");
+    LOG_ERROR("Track: Cannot add MIDI Input - already has one configured.");
+    throw std::runtime_error("This track already has a MIDI Input.");
   }
 
   if (input->get_type() == framework::eInputOutputType_Device)
@@ -176,7 +176,7 @@ void Track::add_midi_input(IOutputPtr input)
       throw std::runtime_error("Selected MIDI device " + device->get_name() + " has no input channels.");
     }
 
-    LOG_INFO("Track: Added MIDI input device: ", device->to_string());
+    LOG_INFO("Track: Added MIDI Input Device: ", device->to_string());
     p_midi_input = input;
   }
 }
@@ -188,8 +188,8 @@ void Track::add_audio_output(IInputOutputPtr output)
 {
   if (has_audio_output())
   {
-    LOG_ERROR("Track: Cannot add audio output - already has one configured.");
-    throw std::runtime_error("This track already has an audio output.");
+    LOG_ERROR("Track: Cannot add Audio output - already has one configured.");
+    throw std::runtime_error("This track already has an Audio Output.");
   }
 
   if (output->get_type() == framework::eInputOutputType_Device)
@@ -197,18 +197,18 @@ void Track::add_audio_output(IInputOutputPtr output)
     auto device = std::dynamic_pointer_cast<Device>(output);
     if (!device->is_output())
     {
-      throw std::runtime_error("Selected audio device " + device->get_name() + " has no output channels.");
+      throw std::runtime_error("Selected Audio Device " + device->get_name() + " has no output channels.");
     }
 
-    LOG_INFO("Track: Added audio output device: ", device->to_string());
-    m_audio_output = output;
+    LOG_INFO("Track: Added Audio Output - ", device->to_string());
+    p_audio_output = output;
   }
 
   if (output->get_type() == framework::eInputOutputType_File)
   {
     auto file = std::dynamic_pointer_cast<File>(output);
-    LOG_INFO("Track: Added audio output file: ", file->to_string());
-    m_audio_output = output;
+    LOG_INFO("Track: Added Audio Output - ", file->to_string());
+    p_audio_output = output;
   }
 }
 
@@ -271,7 +271,7 @@ bool Track::has_audio_input() const
  */
 bool Track::has_audio_output() const
 {
-  return m_audio_output != nullptr;
+  return p_audio_output != nullptr;
 }
 
 /** @brief Checks if the track has a MIDI input configured.
@@ -291,15 +291,23 @@ bool Track::has_midi_output() const
 }
 
 /** @brief Gets the audio input of the track.
- *  @return The audio input variant (device, file, or nullopt). 
+ *  @return The audio input (DevicePtr, FilePtr). 
  */
 IInputOutputPtr Track::get_audio_input() const
 {
   return p_audio_input;
 }
 
+/** @brief Gets the audio output of the track.
+ *  @return The audio output (DevicePtr, FilePtr).
+ */
+IInputOutputPtr Track::get_audio_output() const
+{
+  return p_audio_output;
+}
+
 /** @brief Gets the MIDI input of the track.
- *  @return The MIDI input variant (device, file, or nullopt).
+ *  @return The MIDI input variant (DevicePtr, FilePtr).
  */
 IOutputPtr Track::get_midi_input() const
 {
@@ -307,7 +315,7 @@ IOutputPtr Track::get_midi_input() const
 }
 
 /** @brief Gets the MIDI output of the track.
- *  @return The MIDI output variant (device, file, or nullopt).
+ *  @return The MIDI output variant (DevicePtr, FilePtr).
  */
 IOutputPtr Track::get_midi_output() const
 {
@@ -351,9 +359,9 @@ bool Track::play()
     LOG_INFO("Track: Opening MIDI input port ", midi_device->to_string());
   }
 
-  if (!main_track->start())
+  if (!main_track->play())
   {
-    LOG_ERROR("Track: Failed to start audio stream.");
+    LOG_ERROR("Track: Failed to start MainTrack.");
     return false;
   }
 

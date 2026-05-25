@@ -172,7 +172,6 @@ int main(int argc, char *argv[])
   if (audio_file) {
     track->add_audio_input(audio_file);
     std::cout << "Selected Audio Input: " << audio_file->to_string() << "\n";
-    LOG_INFO("Set audio file as input: ", audio_file->to_string());
   } else {
     LOG_ERROR("No valid audio file selected.");
     return -1;
@@ -182,7 +181,6 @@ int main(int argc, char *argv[])
   if (audio_output_device) {
     track->add_audio_output(audio_output_device);
     std::cout << "Selected Audio Output: " << audio_output_device->to_string() << "\n";
-    LOG_INFO("Set audio output device: ", audio_output_device->to_string());
   } else {
     LOG_ERROR("No audio output device found.");
     return -1;
@@ -201,16 +199,15 @@ int main(int argc, char *argv[])
   // TODO - Set track properties (volume, pan, etc.)
 
   // Set callback for end of playback
-  track->set_event_callback([](eTrackEvent event) {
-    if (event == eTrackEvent::PlaybackFinished) {
-      LOG_INFO("Track playback finished.");
-      running = false;
-    }
-  });
+  // track->set_event_callback([](eTrackEvent event) {
+  //   if (event == eTrackEvent::PlaybackFinished) {
+  //     LOG_INFO("Track playback finished.");
+  //     running = false;
+  //   }
+  // });
 
   // Start playback
-  LOG_INFO("Starting playback...");
-  // track->play(); // Non-blocking call
+  // track->play();
   session.play();
   
   if (session.get_state() != eAudioSessionState::Playing) {
@@ -221,11 +218,11 @@ int main(int argc, char *argv[])
   std::cout << "Playing... Press Ctrl+C to stop.\n";
 
   // Main application loop
-  while (running) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-  }
+  while (session.get_state() == eAudioSessionState::Playing)
+    {
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 
-  LOG_INFO("Stopping playback...");
   track->stop(); // Blocking call
 
   return 0;

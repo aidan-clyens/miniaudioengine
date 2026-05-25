@@ -61,6 +61,7 @@ protected:
   void children_to_string(std::string &str) const
   {
     size_t count = 0;
+    str += "[";
     for (const framework::IAudioGraphNodePtr child : get_children())
     {
       if (count++)
@@ -70,6 +71,7 @@ protected:
 
       str += child->to_string();
     }
+    str += "]";
   }
 
 private:

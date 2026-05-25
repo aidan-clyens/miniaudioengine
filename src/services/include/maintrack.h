@@ -1,0 +1,50 @@
+#ifndef __MAIN_TRACK_H__
+#define __MAIN_TRACK_H__
+
+#include "track.h"
+
+#include <memory>
+
+namespace miniaudioengine
+{
+
+// Forward declarations
+namespace dataplane { using AudioGraphPtr = std::shared_ptr<class AudioGraph>; }
+namespace adapters { using AudioAdapterPtr = std::shared_ptr<class AudioAdapter>; }
+
+using DevicePtr = std::shared_ptr<class Device>;
+
+/** @class MainTrack
+ *  @brief The MainTrack is the root of the track hierarchy and manages the audio output device.
+ */
+class MainTrack : public Track
+{
+public:
+  MainTrack() : Track(true) {} // main_track = true
+  ~MainTrack() override = default;
+
+  bool play();
+  bool stop() { return true; /* Placeholder implementation */ }
+  bool is_playing() const { return false; /* Placeholder implementation */ }
+
+  void set_audio_output_device(DevicePtr device)
+  {
+    p_audio_output_device = device;
+  }
+
+private:
+  /** @brief Compile the audio graph for the current track hierarchy for audio processing.
+   *  @return AudioGraph representing the current track hierarchy.
+   */
+  dataplane::AudioGraphPtr compile_audio_graph() const;
+
+private:
+  DevicePtr p_audio_output_device = nullptr;
+
+  adapters::AudioAdapterPtr p_audio_adapter = nullptr;
+};
+
+
+} // namespace miniaudioengine
+
+#endif // __MAIN_TRACK_H__

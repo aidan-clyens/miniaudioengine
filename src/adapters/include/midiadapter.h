@@ -1,9 +1,10 @@
 #ifndef __MIDI_ADAPTER_H__
 #define __MIDI_ADAPTER_H__
 
-#include <rtmidi/RtMidi.h>
 #include <string>
 #include <vector>
+#include <memory>
+#include <rtmidi/RtMidi.h>
 
 #include "logger.h"
 
@@ -59,6 +60,8 @@ public:
 private:
   RtMidiIn m_rtmidi_in;
 };
+
+using MidiAdapterPtr = std::shared_ptr<MidiAdapter>;
 
 } // namespace miniaudioengine::adapters
 

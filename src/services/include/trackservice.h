@@ -2,7 +2,7 @@
 #define __TRACK_MANAGER_H_
 
 #include "track.h"
-#include "device.h"
+#include "maintrack.h"
 
 #include <memory>
 #include <vector>
@@ -11,36 +11,11 @@ namespace miniaudioengine
 {
 
 // Forward declarations
-namespace dataplane { class AudioGraph; }
-namespace dataplane { using AudioGraphPtr = std::shared_ptr<AudioGraph>; }
-
-/** @class MainTrack
- *  @brief The MainTrack is the root of the track hierarchy and manages the audio output device.
- */
-class MainTrack : public Track
+namespace adapters
 {
-public:
-  MainTrack() : Track(true) {} // main_track = true
-  ~MainTrack() override = default;
-
-  bool start();
-  bool stop() { return true; /* Placeholder implementation */ }
-  bool is_playing() const { return false; /* Placeholder implementation */ }
-
-  void set_audio_output_device(DevicePtr device)
-  {
-    p_audio_output_device = device;
-  }
-
-private:
-  /** @brief Compile the audio graph for the current track hierarchy for audio processing.
-   *  @return AudioGraph representing the current track hierarchy.
-   */
-  dataplane::AudioGraphPtr compile_audio_graph() const;
-
-private:
-  DevicePtr p_audio_output_device;
-};
+using AudioAdapterPtr = std::shared_ptr<class AudioAdapter>;
+using MidiAdapterPtr = std::shared_ptr<class MidiAdapter>;
+}
 
 /** @class TrackService
  *  @brief The TrackService manages a single-layer hierarchy with MainTrack as root.
@@ -48,17 +23,12 @@ private:
  */
 class TrackService
 {
+
 using MainTrackPtr = std::shared_ptr<MainTrack>;
 
 public:
-  TrackService();
+  TrackService(adapters::AudioAdapterPtr audio_adapter, adapters::MidiAdapterPtr midi_adapter);
   ~TrackService() = default;
-
-  static TrackService& instance()
-  {
-    static TrackService instance;
-    return instance;
-  }
 
   /** @brief Get the main track (root of hierarchy).
    *  @return Shared pointer to MainTrack.
@@ -96,6 +66,9 @@ public:
 private:
   MainTrackPtr m_main_track; // Root of track tree (owns hardware audio output)
   mutable std::mutex m_manager_mutex;
+
+  adapters::AudioAdapterPtr p_audio_adapter;
+  adapters::MidiAdapterPtr p_midi_adapter;
 };
 
 }  // namespace miniaudioengine
