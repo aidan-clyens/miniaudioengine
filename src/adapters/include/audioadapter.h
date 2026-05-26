@@ -2,6 +2,7 @@
 #define __AUDIO_ADAPTER_H__
 
 #include "device.h"
+#include "audiograph.h"
 #include "logger.h"
 
 #include <memory>
@@ -26,7 +27,7 @@ public:
 class AudioAdapter
 {
 public:
-  AudioAdapter() = default;
+  AudioAdapter();
   AudioAdapter(const AudioAdapter&) = default;
   AudioAdapter& operator=(const AudioAdapter&) = default;
   virtual ~AudioAdapter() = default;
@@ -34,10 +35,7 @@ public:
   unsigned int get_device_count();
   std::vector<DevicePtr> get_devices();
 
-  bool open_stream(AudioStreamParameters &params,
-                  unsigned int sample_rate,
-                  unsigned int buffer_frames,
-                  void *callback_context);
+  bool open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_graph);
 
   bool close_stream();
   bool stop_stream();
@@ -46,7 +44,7 @@ public:
   bool is_stream_running();
 
 private:
-  RtAudio m_rtaudio;
+  std::unique_ptr<RtAudio> p_rtaudio;
 
   static DevicePtr make_device_handle(const RtAudio::DeviceInfo &info, unsigned int id)
   {

@@ -52,6 +52,8 @@ private:
   IAudioGraphNodePtr p_root_node;
 };
 
+using AudioGraphPtr = std::shared_ptr<AudioGraph>;
+
 } // namespace miniaudioengine::dataplane
 
 #endif // __AUDIO_GRAPH_H__

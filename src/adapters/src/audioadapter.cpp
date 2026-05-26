@@ -5,6 +5,10 @@ using namespace miniaudioengine;
 using namespace miniaudioengine::adapters;
 using namespace miniaudioengine::dataplane;
 
+
+unsigned int BUFFER_SIZE = 1024;
+
+
 int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                                          double stream_time, AudioStreamStatus status, void *user_data) noexcept
 {
@@ -30,28 +34,33 @@ int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer
   return 1;
 }
 
+AudioAdapter::AudioAdapter()
+{
+  p_rtaudio = std::make_unique<RtAudio>();
+}
+
 unsigned int AudioAdapter::get_device_count()
 {
-  return m_rtaudio.getDeviceCount();
+  return p_rtaudio->getDeviceCount();
 }
 
 std::vector<DevicePtr> AudioAdapter::get_devices()
 {
   std::vector<DevicePtr> devices;
-  unsigned int device_count = m_rtaudio.getDeviceCount();
+  unsigned int device_count = p_rtaudio->getDeviceCount();
   devices.reserve(device_count);
 
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
-  std::vector<unsigned int> device_ids = m_rtaudio.getDeviceIds();
+  std::vector<unsigned int> device_ids = p_rtaudio->getDeviceIds();
   for (const unsigned int id : device_ids)
   {
-    RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(id);
+    RtAudio::DeviceInfo info = p_rtaudio->getDeviceInfo(id);
     devices.push_back(make_device_handle(info, id));
   }
 #else
   for (unsigned int i = 0; i < device_count; ++i)
   {
-    RtAudio::DeviceInfo info = m_rtaudio.getDeviceInfo(i);
+    RtAudio::DeviceInfo info = p_rtaudio->getDeviceInfo(i);
     devices.push_back(make_device_handle(info, i));
   }
 #endif
@@ -59,62 +68,86 @@ std::vector<DevicePtr> AudioAdapter::get_devices()
   return devices;
 }
 
-bool AudioAdapter::open_stream(AudioStreamParameters &params,
-                 unsigned int sample_rate,
-                 unsigned int buffer_frames,
-                 void *callback_context)
+bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_graph)
 {
-  if (callback_context == nullptr)
+  if (audio_graph == nullptr)
   {
-    LOG_ERROR("AudioAdapter: Required callback context is empty");
+    LOG_ERROR("AudioAdapter: open_stream - Required AudioGraph callback context is null");
     return false;
   }
 
+  unsigned int device_id = device->get_id();
+  unsigned int channels = device->get_output_channels();
+  unsigned int sample_rate = device->get_preferred_sample_rate();
+
+  // Set audio output I/O parameters
+  adapters::AudioStreamParameters params = {
+    device_id,
+    channels,
+    0
+  };
+
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
+  LOG_DEBUG("AudioAdapter: open_stream - Opening RtAudio audio stream with Device ID=", device_id, ", Channels=", channels, ", Sample Rate=", sample_rate, ", Buffer Size=", BUFFER_SIZE);
+  LOG_DEBUG("AudioAdapter: open_stream - Using ", audio_graph->to_string());
+
+  unsigned int buffer_size = BUFFER_SIZE;
+
+  // Memory read violation: Caused by p_rtaudio
+  // Verify RtAudio is accessible
+  if (!p_rtaudio)
+  {
+    LOG_ERROR("AudioAdapter: open_stream - RtAudio memory access failure!");
+    throw new std::exception("AudioAdapter: RtAudio memory access failure!");
+  }
+
+  LOG_DEBUG("AudioAdapter: open_stream - p_rtaudio=", p_rtaudio->getCurrentApi());
+
   RtAudioErrorType rc;
-  rc = m_rtaudio.openStream(&params,
+  rc = p_rtaudio->openStream(&params,
                             nullptr,
                             RTAUDIO_FLOAT32,
                             sample_rate,
-                            &buffer_frames,
+                            &buffer_size,
                             &AudioCallbackHandler::audio_callback,
-                            callback_context);
+                            audio_graph.get());
 
   if (rc != RTAUDIO_NO_ERROR)
   {
-    LOG_ERROR("AudioAdapter: Failed to open RtAudio stream.");
+    LOG_ERROR("AudioAdapter: open_stream - Failed to open RtAudio stream.");
     return false;
   }
 #else
   try
   {
-    m_rtaudio.openStream(&params,
+    p_rtaudio->openStream(&params,
                          nullptr,
                          RTAUDIO_FLOAT32,
                          sample_rate,
                          &buffer_frames,
                          &AudioCallbackHandler::audio_callback,
                          callback_context);
-    m_rtaudio.startStream();
+    p_rtaudio->startStream();
   }
   catch (const RtAudioError &e)
   {
-    LOG_ERROR("AudioAdapter: Failed to open/start RtAudio stream: ", e.getMessage());
+    LOG_ERROR("AudioAdapter: open_stream - Failed to open/start RtAudio stream: ", e.getMessage());
     return false;
   }
 #endif
+  LOG_DEBUG("AudioAdapter: open_stream - Opened audio stream with ", device->to_string());
   return true;
 }
 
 bool AudioAdapter::close_stream()
 {
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
-  m_rtaudio.closeStream();
+  p_rtaudio->closeStream();
   return true;
 #else
   try
   {
-    m_rtaudio.closeStream();
+    p_rtaudio->closeStream();
   }
   catch (const RtAudioError &e)
   {
@@ -128,7 +161,7 @@ bool AudioAdapter::close_stream()
 bool AudioAdapter::stop_stream()
 {
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
-  RtAudioErrorType rc = m_rtaudio.stopStream();
+  RtAudioErrorType rc = p_rtaudio->stopStream();
   if (rc != RTAUDIO_NO_ERROR)
   {
     LOG_ERROR("AudioAdapter: Failed to stop RtAudio stream.");
@@ -137,7 +170,7 @@ bool AudioAdapter::stop_stream()
 #else
   try
   {
-    m_rtaudio.stopStream();
+    p_rtaudio->stopStream();
   }
   catch (const RtAudioError &e)
   {
@@ -150,10 +183,10 @@ bool AudioAdapter::stop_stream()
 
 bool AudioAdapter::is_stream_open()
 {
-  return m_rtaudio.isStreamOpen();
+  return p_rtaudio->isStreamOpen();
 }
 
 bool AudioAdapter::is_stream_running()
 {
-  return m_rtaudio.isStreamRunning();
+  return p_rtaudio->isStreamRunning();
 }

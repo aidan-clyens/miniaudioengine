@@ -11,7 +11,7 @@ TrackService::TrackService(adapters::AudioAdapterPtr audio_adapter, adapters::Mi
     : p_audio_adapter(audio_adapter), p_midi_adapter(midi_adapter)
 {
   // Create MainTrack (root of hierarchy) with hardware output
-  m_main_track = std::make_shared<MainTrack>(); // is_main_track = true
+  m_main_track = std::make_shared<MainTrack>(audio_adapter); // is_main_track = true
   LOG_INFO("TrackService: Created MainTrack (root of hierarchy)");
 }
 

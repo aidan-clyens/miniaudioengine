@@ -5,6 +5,7 @@
 #include "outputnode.h"
 #include "processornode.h"
 #include "inputnode.h"
+#include "device.h"
 
 using namespace miniaudioengine;
 
@@ -16,6 +17,9 @@ bool MainTrack::play()
 
   unsigned int device_id = 0;
   unsigned int channels = 0;
+  unsigned int sample_rate = 0;
+
+  DevicePtr device = nullptr;
 
   // Get inputs by searching for leaf nodes in AudioGraph
   std::vector<framework::IAudioGraphNodePtr> input_nodes = audio_graph->get_leaf_nodes();
@@ -26,9 +30,9 @@ bool MainTrack::play()
 
     if (io->get_type() == framework::eInputOutputType_Device)
     {
-      device_id = std::dynamic_pointer_cast<Device>(io)->get_id();
-      channels = std::dynamic_pointer_cast<Device>(io)->get_output_channels();
+      device = std::dynamic_pointer_cast<Device>(io);
       LOG_DEBUG("MainTrack: play - Using Input Device - ", io->to_string());
+      break;
     }
   }
 
@@ -40,30 +44,20 @@ bool MainTrack::play()
   
     if (io->get_type() == framework::eInputOutputType_Device)
     {
-      device_id = std::dynamic_pointer_cast<Device>(p_audio_output)->get_id();
-      channels = std::dynamic_pointer_cast<Device>(p_audio_output)->get_output_channels();
+      device = std::dynamic_pointer_cast<Device>(io);
       LOG_DEBUG("MainTrack: play - Using Output Device - ", io->to_string());
     }
   }
 
-  // Set audio output I/O parameters
-  adapters::AudioStreamParameters params = {
-    device_id,
-    channels,
-    0
-  };
+  if (device == nullptr)
+  {
+    LOG_WARNING("MainTrack: play - Cannot open audio stream because there are no input/output devices.");
+    return false;
+  }
 
-  unsigned int sample_rate = p_audio_output ? (p_audio_output->get_type() == framework::eInputOutputType_Device ? std::dynamic_pointer_cast<Device>(p_audio_output)->get_preferred_sample_rate() : 0) : 0;
+  LOG_INFO("MainTrack: play - Opening audio stream with Device: ", device->to_string());
 
-  LOG_INFO("MainTrack: play - Opening audio stream with Device: ", device_id, ", ", channels, " Channels, Sample Rate: ", sample_rate, " Hz");
-
-  // TODO - Convert open_stream() to use IInputOutputPtr as an input argument instead
-  return p_audio_adapter->open_stream(
-    params,
-    sample_rate,
-    1024,
-    audio_graph.get()
-  );
+  return p_audio_adapter->open_stream(device, audio_graph);
 }
 
 dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const

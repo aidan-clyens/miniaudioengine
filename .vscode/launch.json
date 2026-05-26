@@ -16,6 +16,20 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "wav-audio-player (Windows) --list-audio-devices",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}\\build\\examples\\wav-audio-player\\src\\Debug\\wav-audio-player.exe",
+            "args": [
+                "--list-audio-devices",
+                "--verbose"
+            ],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "miniaudioengine-unit-tests (Windows)",
             "type": "cppvsdbg",
             "request": "launch",

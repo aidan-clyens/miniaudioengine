@@ -20,7 +20,9 @@ using DevicePtr = std::shared_ptr<class Device>;
 class MainTrack : public Track
 {
 public:
-  MainTrack() : Track(true) {} // main_track = true
+  MainTrack(adapters::AudioAdapterPtr audio_adapter) : Track(true), // main_track = true
+                                                       p_audio_adapter(audio_adapter)
+  {}
   ~MainTrack() override = default;
 
   bool play();
