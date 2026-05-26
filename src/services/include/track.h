@@ -213,15 +213,15 @@ public:
 
   // Playback control
   /** @brief Start playback of the track. */
-  bool play();
+  virtual bool play();
 
   /** @brief Stop playback of the track. */
-  bool stop();
+  virtual bool stop();
 
   /** @brief Check if the track is currently playing.
    *  @return True if the track is playing, false otherwise.
    */
-  bool is_playing() const;
+  virtual bool is_playing();
 
   /** @brief Get track statistics.
    *  @return TrackStatistics structure containing audio and MIDI statistics.

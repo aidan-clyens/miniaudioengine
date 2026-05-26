@@ -100,5 +100,7 @@ bool AudioSession::record()
 
 bool AudioSession::stop()
 {
-  return p_track_service->get_main_track()->stop();
+  bool ret = p_track_service->get_main_track()->stop();
+  m_state = ret ? eAudioSessionState::Stopped : eAudioSessionState::Playing;
+  return ret;
 }

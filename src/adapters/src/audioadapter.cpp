@@ -15,20 +15,23 @@ int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer
   // Verify user data is a pointer to a AudioGraph object
   if (!user_data || !static_cast<AudioGraph*>(user_data))
   {
-    LOG_ERROR("AudioCallbackHandler: Audio callback does not have pointer to AudioGraph");
+    LOG_ERROR("AudioCallbackHandler: Audio callback does not have pointer to AudioGraph.");
     return 1;
   }
+
+  AudioGraph *graph = static_cast<AudioGraph*>(user_data);
 
   // If input buffer is present, read audio input
   if (input_buffer != nullptr)
   {
-    LOG_INFO("AudioCallbackHandler: Reading input...");
+    LOG_DEBUG("AudioCallbackHandler: Reading input...");
   }
   
   // If output buffer is present, write to audio output
   if (output_buffer != nullptr)
   {
-    LOG_INFO("AudioCallbackHandler: Writing to output...");
+    LOG_DEBUG("AudioCallbackHandler: Writing ", n_frames, " to output buffer. Status=", status, ". Stream Time=", stream_time);
+    LOG_DEBUG("AudioCallbackHandler: ", graph->to_string());
   }
 
   return 1;
@@ -115,6 +118,13 @@ bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_
   if (rc != RTAUDIO_NO_ERROR)
   {
     LOG_ERROR("AudioAdapter: open_stream - Failed to open RtAudio stream.");
+    return false;
+  }
+
+  rc = p_rtaudio->startStream();
+  if (rc != RTAUDIO_NO_ERROR)
+  {
+    LOG_ERROR("AudioAdapter: open_stream - Failed to start RtAudio stream.");
     return false;
   }
 #else

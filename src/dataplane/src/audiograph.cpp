@@ -75,6 +75,7 @@ std::string AudioGraph::to_string() const
 {
   std::string str = "AudioGraph(";
 
+  // TODO - Memory read violation here from AudioCallbackHandler
   if (p_root_node)
   {
     str += p_root_node->to_string();

@@ -157,7 +157,6 @@ int main(int argc, char *argv[])
 
   // Handle SIGINT (Ctrl+C) for graceful shutdown
   std::signal(SIGINT, [](int) {
-    LOG_INFO("SIGINT received, shutting down...");
     running = false;
   });
 
@@ -196,34 +195,34 @@ int main(int argc, char *argv[])
     return -1;
   }
 
-  // TODO - Set track properties (volume, pan, etc.)
-
-  // Set callback for end of playback
-  // track->set_event_callback([](eTrackEvent event) {
-  //   if (event == eTrackEvent::PlaybackFinished) {
-  //     LOG_INFO("Track playback finished.");
-  //     running = false;
-  //   }
-  // });
-
   // Start playback
-  // track->play();
   session.play();
-  
-  if (session.get_state() != eAudioSessionState::Playing) {
-    LOG_ERROR("Failed to start playback.");
+  if (session.get_state() != eAudioSessionState::Playing)
+  {
+    std::cerr << "Could not play " << audio_file->get_filename() << "!" << std::endl;
     return -1;
   }
-  
+
   std::cout << "Playing... Press Ctrl+C to stop.\n";
 
   // Main application loop
   while (session.get_state() == eAudioSessionState::Playing)
+  {
+    if (!running)
     {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::cout << "Stopping..." << std::endl;
+      break;
     }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  }
 
-  track->stop(); // Blocking call
+  // Stop playback
+  session.stop();
+  if (session.get_state() != eAudioSessionState::Stopped)
+  {
+    LOG_ERROR("Failed to stop playback.");
+    return -1;
+  }
 
   return 0;
 }

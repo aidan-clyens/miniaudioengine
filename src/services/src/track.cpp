@@ -486,7 +486,7 @@ std::shared_ptr<MainTrack> Track::get_main_track() const
 /** @brief Check if the track is currently playing.
  *  @return True if the track is playing, false otherwise.
  */
-bool Track::is_playing() const
+bool Track::is_playing()
 {
   auto main_track = get_main_track();
   if (!main_track)

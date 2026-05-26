@@ -25,9 +25,9 @@ public:
   {}
   ~MainTrack() override = default;
 
-  bool play();
-  bool stop() { return true; /* Placeholder implementation */ }
-  bool is_playing() const { return false; /* Placeholder implementation */ }
+  bool play() override;
+  bool stop() override;
+  bool is_playing() override;
 
   void set_audio_output_device(DevicePtr device)
   {

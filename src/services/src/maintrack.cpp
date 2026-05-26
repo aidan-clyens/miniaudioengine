@@ -57,7 +57,44 @@ bool MainTrack::play()
 
   LOG_INFO("MainTrack: play - Opening audio stream with Device: ", device->to_string());
 
-  return p_audio_adapter->open_stream(device, audio_graph);
+  bool ret = p_audio_adapter->open_stream(device, audio_graph);
+  if (!ret)
+  {
+    LOG_ERROR("MainTrack: play - Failed to open audio stream!");
+    return false;
+  }
+
+  if (!is_playing())
+  {
+    LOG_ERROR("MainTrack: play - Audio stream not playing after starting!");
+    return false;
+  }
+
+  return true;
+}
+
+bool MainTrack::stop()
+{
+  if (!is_playing())
+  {
+    LOG_WARNING("MainTrack: stop - Audio stream is not playing!");
+    return true;
+  }
+
+  bool ret = p_audio_adapter->stop_stream();
+  if (!ret)
+  {
+    LOG_WARNING("MainTrack: stop - Failed to stop audio stream!");
+    return false;
+  }
+
+  LOG_INFO("MainTrack: stop - Stopping...");
+  return true;
+}
+
+bool MainTrack::is_playing()
+{
+  return p_audio_adapter->is_stream_open() && p_audio_adapter->is_stream_running();
 }
 
 dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
