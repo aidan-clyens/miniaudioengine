@@ -62,7 +62,7 @@ protected:
   {
     size_t count = 0;
     str += "[";
-    for (const framework::IAudioGraphNodePtr child : get_children())
+    for (framework::IAudioGraphNodePtr child : get_children())
     {
       if (count++)
       {

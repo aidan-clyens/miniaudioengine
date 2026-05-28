@@ -90,21 +90,11 @@ bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_
     0
   };
 
+  unsigned int buffer_size = BUFFER_SIZE;
+
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
   LOG_DEBUG("AudioAdapter: open_stream - Opening RtAudio audio stream with Device ID=", device_id, ", Channels=", channels, ", Sample Rate=", sample_rate, ", Buffer Size=", BUFFER_SIZE);
   LOG_DEBUG("AudioAdapter: open_stream - Using ", audio_graph->to_string());
-
-  unsigned int buffer_size = BUFFER_SIZE;
-
-  // Memory read violation: Caused by p_rtaudio
-  // Verify RtAudio is accessible
-  if (!p_rtaudio)
-  {
-    LOG_ERROR("AudioAdapter: open_stream - RtAudio memory access failure!");
-    throw new std::exception("AudioAdapter: RtAudio memory access failure!");
-  }
-
-  LOG_DEBUG("AudioAdapter: open_stream - p_rtaudio=", p_rtaudio->getCurrentApi());
 
   RtAudioErrorType rc;
   rc = p_rtaudio->openStream(&params,
@@ -131,12 +121,12 @@ bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_
   try
   {
     p_rtaudio->openStream(&params,
-                         nullptr,
-                         RTAUDIO_FLOAT32,
-                         sample_rate,
-                         &buffer_frames,
-                         &AudioCallbackHandler::audio_callback,
-                         callback_context);
+                          nullptr,
+                          RTAUDIO_FLOAT32,
+                          sample_rate,
+                          &buffer_size,
+                          &AudioCallbackHandler::audio_callback,
+                          audio_graph.get());
     p_rtaudio->startStream();
   }
   catch (const RtAudioError &e)

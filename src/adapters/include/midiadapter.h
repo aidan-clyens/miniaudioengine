@@ -34,7 +34,12 @@ public:
    *  @param message A vector containing the MIDI message bytes.
    *  @param user_data A pointer to the MidiEngine object.
    */
-  static void midi_callback(double deltatime, std::vector<unsigned char> *message, void *user_data) {}
+  static void midi_callback(double deltatime, std::vector<unsigned char> *message, void *user_data)
+  {
+    (void)deltatime;
+    (void)user_data;
+    (void)message;
+  }
 };
 
 class MidiAdapter

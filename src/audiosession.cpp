@@ -95,7 +95,7 @@ bool AudioSession::record()
 {
   // TODO - Implement
   LOG_ERROR("Record functionality not implemented yet.");
-  throw new std::exception("Record functionality not implemented yet.");
+  return false;
 }
 
 bool AudioSession::stop()
