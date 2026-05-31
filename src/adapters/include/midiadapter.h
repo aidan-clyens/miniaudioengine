@@ -45,14 +45,14 @@ public:
 class MidiAdapter
 {
 public:
-  MidiAdapter() = default;
+  MidiAdapter();
   MidiAdapter(const MidiAdapter&) = default;
   MidiAdapter& operator=(const MidiAdapter&) = default;
   virtual ~MidiAdapter() = default;
 
   unsigned int get_port_count()
   {
-    return m_rtmidi_in.getPortCount();
+    return p_rtmidi_in->getPortCount();
   }
 
   std::vector<MidiPort> get_ports();
@@ -63,7 +63,7 @@ public:
   bool is_port_open();
 
 private:
-  RtMidiIn m_rtmidi_in;
+  std::unique_ptr<RtMidiIn> p_rtmidi_in;
 };
 
 using MidiAdapterPtr = std::shared_ptr<MidiAdapter>;

@@ -32,6 +32,11 @@
             "dependsOn": "miniaudioengine: cmake configure",
         },
         {
+            "label": "miniaudioengine: wav-audio-player",
+            "command": "${workspaceFolder}/build/examples/wav-audio-player/src/wav-audio-player",
+            "args": ["--set-audio-output", "130", "--input-file", "./samples/test.wav", "--verbose"],
+        },
+        {
             "label": "aws: start build",
             "type": "shell",
             "command": "aws codebuild start-build --project-name miniaudioengine",

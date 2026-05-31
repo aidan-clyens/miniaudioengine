@@ -59,12 +59,17 @@ bool set_input_file(AudioSession &session, const std::string &file_path)
  */
 bool set_output_device(AudioSession &session, unsigned int device_id)
 {
-  DevicePtr audio_device = session.get_audio_device(device_id);
-  if (audio_device->get_id() != device_id) {
+  try
+  {
+    DevicePtr audio_device = session.get_audio_device(device_id);
+    audio_output_device = audio_device;
+  }
+  catch (std::exception &e)
+  {
     std::cerr << "Error: No audio device found with ID " << device_id << ".\n";
     return false;
   }
-  audio_output_device = audio_device;
+
   return true;
 }
 

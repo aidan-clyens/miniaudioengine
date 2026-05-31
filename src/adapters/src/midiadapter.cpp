@@ -2,12 +2,32 @@
 
 using namespace miniaudioengine::adapters;
 
+MidiAdapter::MidiAdapter()
+{
+  std::vector<RtMidi::Api> apis;
+  RtMidi::getCompiledApi(apis);
+  for (const auto api : apis)
+  {
+    LOG_INFO("MidiAdapter: Compiled API - ", RtMidi::getApiDisplayName(api));
+  }
+
+  try
+  {
+    p_rtmidi_in = std::make_unique<RtMidiIn>();
+  }
+  catch (RtMidiError &error)
+  {
+    LOG_ERROR("MidiAdapter: Failed to initialize RtMidiIn!");
+    throw std::runtime_error("MidiAdapter: Failed to initialize RtMidiIn!");
+  }
+}
+
 std::vector<MidiPort> MidiAdapter::get_ports()
 {
   std::vector<MidiPort> ports;
 
   // Get the number of available MIDI input ports
-  unsigned int port_count = m_rtmidi_in.getPortCount();
+  unsigned int port_count = p_rtmidi_in->getPortCount();
   LOG_DEBUG("MidiAdapter: Number of MIDI input ports: ", port_count);
 
   // List all available MIDI input ports
@@ -15,7 +35,7 @@ std::vector<MidiPort> MidiAdapter::get_ports()
   {
     try
     {
-      std::string port_name = m_rtmidi_in.getPortName(i);
+      std::string port_name = p_rtmidi_in->getPortName(i);
       ports.push_back({i, port_name});
     }
     catch (const RtMidiError &error)
@@ -29,13 +49,13 @@ std::vector<MidiPort> MidiAdapter::get_ports()
 
 bool MidiAdapter::open_input_port(unsigned int port_number, void *callback_context)
 {
-  m_rtmidi_in.setCallback(&MidiCallbackHandler::midi_callback, callback_context);
-  m_rtmidi_in.ignoreTypes(false, true, true);
+  p_rtmidi_in->setCallback(&MidiCallbackHandler::midi_callback, callback_context);
+  p_rtmidi_in->ignoreTypes(false, true, true);
 
   // Set up the MIDI input port
   try
   {
-    m_rtmidi_in.openPort(port_number);
+    p_rtmidi_in->openPort(port_number);
   }
   catch (const RtMidiError &error)
   {
@@ -43,7 +63,7 @@ bool MidiAdapter::open_input_port(unsigned int port_number, void *callback_conte
     return false;
   }
 
-  LOG_DEBUG("MidiAdapter: Opened MIDI input port (ID=", port_number, ", Name=", m_rtmidi_in.getPortName(port_number), ")");
+  LOG_DEBUG("MidiAdapter: Opened MIDI input port (ID=", port_number, ", Name=", p_rtmidi_in->getPortName(port_number), ")");
   return true;
 }
 
@@ -51,7 +71,7 @@ bool MidiAdapter::close_input_port()
 {
   try
   {
-    m_rtmidi_in.closePort();
+    p_rtmidi_in->closePort();
     LOG_DEBUG("MidiAdapter: Closed MIDI input port.");
   }
   catch (const RtMidiError &error)
@@ -64,5 +84,5 @@ bool MidiAdapter::close_input_port()
 
 bool MidiAdapter::is_port_open()
 {
-  return m_rtmidi_in.isPortOpen();
+  return p_rtmidi_in->isPortOpen();
 }

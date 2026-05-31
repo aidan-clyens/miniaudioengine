@@ -39,7 +39,24 @@ int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer
 
 AudioAdapter::AudioAdapter()
 {
-  p_rtaudio = std::make_unique<RtAudio>();
+  // List available RtAudio APIs
+  std::vector<RtAudio::Api> apis;
+  RtAudio::getCompiledApi(apis);
+  for (const auto api : apis)
+  {
+    LOG_DEBUG("AudioAdapter: Available RtAudio API - ", RtAudio::getApiDisplayName(api));
+  }
+
+  try
+  {
+    p_rtaudio = std::make_unique<RtAudio>();
+    p_rtaudio->showWarnings(true);
+  }
+  catch(const std::exception& e)
+  {
+    LOG_ERROR("AudioAdapter: Failed to inialize RtAudio!");
+    throw std::runtime_error("AudioAdapter: Failed to inialize RtAudio!");
+  }
 }
 
 unsigned int AudioAdapter::get_device_count()
