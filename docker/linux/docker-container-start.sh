@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-readonly IMAGE="ghcr.io/aidan-clyens/miniaudioengine-dev:latest@sha256:6c31c9e7caca93e93f54213f3ab22474f82a0b8f42350e4f5c55b8ac0de74b4e"
+readonly IMAGE="ghcr.io/aidan-clyens/miniaudioengine-dev:latest"
+readonly PLATFORM="linux/amd64"
 readonly CONTAINER_NAME="miniaudioengine"
 readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
@@ -19,7 +20,7 @@ if docker container inspect "${CONTAINER_NAME}" >/dev/null 2>&1; then
 	exit 0
 fi
 
-docker create -it --init --platform=linux/arm64 \
+docker create -it --init --platform="${PLATFORM}" \
 	--name "${CONTAINER_NAME}" \
 	-v "${REPO_ROOT}:${CONTAINER_HOME}/miniaudioengine" \
 	-v "${HOME}/.ssh:/root/.ssh" \

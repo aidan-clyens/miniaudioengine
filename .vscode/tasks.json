@@ -32,22 +32,6 @@
             "dependsOn": "miniaudioengine: cmake configure",
         },
         {
-            "label": "aws: start instance",
-            "type": "shell",
-            "command": "aws ec2 start-instances --instance-ids i-00b5319ac43a780e6",
-            "windows": {
-                "command": "aws ec2 start-instances --instance-ids i-00b5319ac43a780e6"
-            }
-        },
-        {
-            "label": "aws: stop instance",
-            "type": "shell",
-            "command": "aws ec2 stop-instances --instance-ids i-00b5319ac43a780e6",
-            "windows": {
-                "command": "aws ec2 stop-instances --instance-ids i-00b5319ac43a780e6"
-            }
-        },
-        {
             "label": "aws: start build",
             "type": "shell",
             "command": "aws codebuild start-build --project-name miniaudioengine",
@@ -69,6 +53,37 @@
             "type": "shell",
             "command": "aws codebuild start-build --project-name miniaudioengine",
             "group": "build"
+        },
+        {
+            "label": "valgrind: memcheck",
+            "command": "valgrind",
+            "linux": {
+                "args": [
+                    "--leak-check=full",
+                    "--show-leak-kinds=all",
+                    "${workspaceFolder}/build/examples/${input:program_name}/src/${input:program_name}"
+                ]
+            }
+        },
+        {
+            "label": "valgrind: callgrind",
+            "command": "valgrind",
+            "linux": {
+                "args": [
+                    "--tool=callgrind",
+                    "${workspaceFolder}/build/examples/${input:program_name}/src/${input:program_name}"
+                ]
+            }
+        }
+    ],
+    "inputs": [
+        {
+            "id": "program_name",
+            "type": "pickString",
+            "description": "Example program name.",
+            "options": [
+                "wav-audio-player"
+            ]
         }
     ]
 }

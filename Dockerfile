@@ -31,6 +31,9 @@ RUN apt-get install -y --no-install-recommends \
     vim \
     wget \
     curl \
+    autotools-dev \
+    automake \
+    libc6-dbg \
     ca-certificates \
     openssh-client \
     alsa-utils \
@@ -44,13 +47,6 @@ RUN apt-get install -y --no-install-recommends \
     python3-pip \
     python3-venv && \
     rm -rf /var/lib/apt/lists/*
-
-# Configure Python environment
-COPY requirements.txt /opt/requirements.txt
-
-RUN python3 -m venv /opt/venv && \
-    pip install --upgrade pip && \
-    pip install -r /opt/requirements.txt
 
 # Configure ALSA to use the null device for audio simulation
 RUN printf 'pcm.!default {\n    type null\n}\n' > /root/.asoundrc
