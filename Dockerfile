@@ -25,6 +25,7 @@ RUN set -eux; \
 
 RUN apt-get install -y --no-install-recommends \
     build-essential \
+    net-tools \
     cmake \
     gdb \
     git \
@@ -37,6 +38,8 @@ RUN apt-get install -y --no-install-recommends \
     ca-certificates \
     openssh-client \
     alsa-utils \
+    pulseaudio \
+    pulseaudio-utils \
     librtmidi-dev \
     librtaudio-dev \
     portaudio19-dev \

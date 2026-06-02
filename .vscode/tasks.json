@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "miniaudioengine: cmake configure",
+            "label": "cmake: configure",
             "type": "shell",
             "command": "cmake",
             "args": [
@@ -17,7 +17,7 @@
             "group": "build",
         },
         {
-            "label": "miniaudioengine: cmake build",
+            "label": "cmake: build",
             "type": "shell",
             "command": "cmake",
             "args": [
@@ -35,6 +35,12 @@
             "label": "miniaudioengine: wav-audio-player",
             "command": "${workspaceFolder}/build/examples/wav-audio-player/src/wav-audio-player",
             "args": ["--set-audio-output", "130", "--input-file", "./samples/test.wav", "--verbose"],
+        },
+        {
+            "label": "docker: start-container",
+            "linux": {
+                "command": "${workspaceFolder}/docker/linux/docker-container-start.sh"
+            }
         },
         {
             "label": "aws: start build",

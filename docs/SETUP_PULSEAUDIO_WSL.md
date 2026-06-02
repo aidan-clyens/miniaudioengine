@@ -64,3 +64,24 @@
     ```
     paplay test.wav
     ```
+
+### PulseAudio with Docker
+
+1. PulseAudio socket is found on WSL in `/mnt/wslg/`.
+
+2. Run Docker container with the PulseAudio mount attached:
+    ```
+    docker create -it --init --platform="${PLATFORM}" \
+        --name "${CONTAINER_NAME}" \
+        -e "PULSE_SERVER=/mnt/wslg/PulseServer" \
+        -v /mnt/wslg/:/mnt/wslg/ \
+        -w "${CONTAINER_HOME}/miniaudioengine" \
+        "${IMAGE}" \
+        tail -f /dev/null
+    ```
+3. Or, run the `docker/linux/docker-container-start.sh` script.
+
+4. In the Docker container, test audio output:
+    ```
+    paplay test.wav
+    ```

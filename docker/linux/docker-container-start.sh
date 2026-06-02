@@ -22,9 +22,11 @@ fi
 
 docker create -it --init --platform="${PLATFORM}" \
 	--name "${CONTAINER_NAME}" \
+	-e "PULSE_SERVER=/mnt/wslg/PulseServer" \
 	-v "${REPO_ROOT}:${CONTAINER_HOME}/miniaudioengine" \
 	-v "${HOME}/.ssh:/root/.ssh" \
 	-v "/tmp/.X11-unix:/tmp/.X11-unix" \
+	-v /mnt/wslg/:/mnt/wslg/ \
 	-w "${CONTAINER_HOME}/miniaudioengine" \
 	"${IMAGE}" \
 	tail -f /dev/null
@@ -32,3 +34,4 @@ docker create -it --init --platform="${PLATFORM}" \
 docker start "${CONTAINER_NAME}"
 
 echo "Created container '${CONTAINER_NAME}' from ${IMAGE}."
+
