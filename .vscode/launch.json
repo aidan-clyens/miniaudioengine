@@ -5,14 +5,26 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "device-info",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/examples/device-info/src/device-info",
+            "linux": {
+                "program": "${workspaceFolder}/build/examples/device-info/src/device-info",
+                "args": [
+                    "--verbose"
+                ],
+                "miDebuggerPath": "/usr/bin/gdb",
+                "MIMode": "gdb",
+            },
+            "cwd": "${workspaceFolder}",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
             "name": "wav-audio-player",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/examples/wav-audio-player/src/wav-audio-player",
-            "windows": {
-                "program": "${workspaceFolder}\\build\\examples\\wav-audio-player\\src\\Debug\\wav-audio-player.exe",
-                "args": ["--set-audio-output", "130", "--input-file", ".\\samples\\test.wav", "--verbose"],
-            },
             "linux":{
                 "program": "${workspaceFolder}/build/examples/wav-audio-player/src/wav-audio-player",
                 "args": ["--set-audio-output", "130", "--input-file", "./samples/test.wav", "--verbose"],

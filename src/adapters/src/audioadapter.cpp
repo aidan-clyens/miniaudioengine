@@ -42,9 +42,10 @@ AudioAdapter::AudioAdapter()
   // List available RtAudio APIs
   std::vector<RtAudio::Api> apis;
   RtAudio::getCompiledApi(apis);
+  LOG_DEBUG("AudioAdapter: Compiled RtAudio APIs = ", apis.size());
   for (const auto api : apis)
   {
-    LOG_DEBUG("AudioAdapter: Available RtAudio API - ", RtAudio::getApiDisplayName(api));
+    LOG_DEBUG("AudioAdapter: RtAudio API - ", RtAudio::getApiDisplayName(api));
   }
 
   try

@@ -6,6 +6,7 @@ MidiAdapter::MidiAdapter()
 {
   std::vector<RtMidi::Api> apis;
   RtMidi::getCompiledApi(apis);
+  LOG_DEBUG("AudioAdapter: Compiled RtAudio APIs = ", apis.size());
   for (const auto api : apis)
   {
     LOG_DEBUG("MidiAdapter: Compiled API - ", RtMidi::getApiDisplayName(api));

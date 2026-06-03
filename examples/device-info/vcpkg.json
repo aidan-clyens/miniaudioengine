@@ -1,0 +1,10 @@
+{
+    "name": "device-info",
+    "version": "1.0.0",
+    "description": "Device Info - Info about the device audio/MIDI API.",
+    "dependencies": [
+        "rtaudio",
+        "rtmidi",
+        "libsndfile"
+    ]
+}

@@ -20,6 +20,8 @@ AudioSession::AudioSession()
   p_file_service = std::make_unique<FileService>();
   p_device_service = std::make_unique<DeviceService>(p_audio_adapter, p_midi_adapter);
   p_track_service = std::make_unique<TrackService>(p_audio_adapter, p_midi_adapter);
+
+  LOG_INFO("AudioSession: Initialized!");
 }
 
 AudioSession::~AudioSession() = default;
