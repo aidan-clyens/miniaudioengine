@@ -3,3 +3,4 @@ build_*
 venv
 .cache
 tmpclaude-*
+*.log
