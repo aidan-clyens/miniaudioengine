@@ -23,15 +23,18 @@
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
-            "name": "wav-audio-player (Windows) --list-audio-devices",
+            "name": "wav-audio-player (Windows)",
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${workspaceFolder}\\build\\examples\\wav-audio-player\\src\\Debug\\wav-audio-player.exe",
             "args": [
-                "--list-audio-devices",
+                "--set-audio-output",
+                "130",
+                "--input-file",
+                ".\\samples\\test.wav",
                 "--verbose"
             ],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "console": "integratedTerminal"

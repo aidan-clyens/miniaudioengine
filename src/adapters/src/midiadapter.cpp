@@ -8,7 +8,7 @@ MidiAdapter::MidiAdapter()
   RtMidi::getCompiledApi(apis);
   for (const auto api : apis)
   {
-    LOG_INFO("MidiAdapter: Compiled API - ", RtMidi::getApiDisplayName(api));
+    LOG_DEBUG("MidiAdapter: Compiled API - ", RtMidi::getApiDisplayName(api));
   }
 
   try

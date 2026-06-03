@@ -56,13 +56,12 @@ See [docs/DESIGN_DOC.md](docs/DESIGN_DOC.md) for full rationale and sequence dia
 - Strict layered system — dependencies flow **upward only** (lower layers must never depend on upper layers):
 
   ```
-  Layer 4: services / cli  (TrackService, DeviceService, FileService, CLI)
-  Layer 3: engine          (AudioController, AudioDataPlane, MidiController, MidiDataPlane)
-  Layer 2: processing      (IAudioProcessor, Sample, SamplePlayer — partial/experimental)
+  Layer 4: session         (AudioSession)
+  Layer 3: services        (TrackService, DeviceService, FileService)
+  Layer 2: engine          (AudioController, AudioDataPlane, MidiController, MidiDataPlane)
   Layer 1: adapters        (AudioAdapter, FileAdapter, MidiAdapter — PImpl wrappers for RtAudio/RtMidi/libsndfile)
   ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
-  framework (shared — accessible by all layers):
-       LockfreeRingBuffer, DoubleBuffer, Logger, interfaces, Device, File
+  Layer 0: framework       (Logger, interfaces, Device, File)
   ```
 
 - **Track hierarchy**: `MainTrack` is always the root; regular `Track` objects are its direct children (single-level). Audio output mixes upward from children to parent.
@@ -70,13 +69,13 @@ See [docs/DESIGN_DOC.md](docs/DESIGN_DOC.md) for full rationale and sequence dia
   ```
   TrackService (singleton manager)
   └── MainTrack (root — owns AudioController, MidiController)
-      ├── Track (owns AudioDataPlane + MidiDataPlane; source = Device or File via std::variant)
+      ├── Track (owns AudioDataPlane + MidiDataPlane; source = Device or File)
       └── Track
   ```
 
-- Service layer is synchronous singletons (main thread, locks allowed):
+- Service layer is synchronous (main thread, locks allowed):
 	- `src/services/` — `TrackService`, `DeviceService`, `FileService`
-	- `src/cli/` — CLI entry point
+	- `src/audiosession` — `AudioSession` entry point
 - Engine layer executes in RtAudio/RtMidi callbacks in `src/engine/` — use `LockfreeRingBuffer<T, Size>` from `src/framework/` for cross-thread messaging.
 - Adapter layer in `src/adapters/` wraps all external library calls; never access RtAudio/RtMidi/libsndfile directly above this layer.
 - Processing plane is minimal: `IAudioProcessor`, `Sample`, `SamplePlayer` (per-processor threading via `framework::IProcessor`; no orchestration layer yet).
