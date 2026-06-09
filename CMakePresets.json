@@ -1,134 +1,162 @@
 {
-  "version": 3,
-  "configurePresets": [
-    {
-      "name": "windows-base",
-      "hidden": true,
-      "generator": "Visual Studio 17 2022",
-      "architecture": "x64",
-      "binaryDir": "${sourceDir}/build",
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
-        "BUILD_TESTS": "ON",
-        "BUILD_EXAMPLES": "ON"
-      }
-    },
-    {
-      "name": "ubuntu-base",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/build",
-      "cacheVariables": {
-        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/ubuntu.cmake",
-        "BUILD_TESTS": "ON",
-        "BUILD_EXAMPLES": "ON"
-      }
-    },
-    {
-      "name": "windows-debug",
-      "displayName": "Windows x64 Debug",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "BUILD_TESTS": "ON"
-      }
-    },
-    {
-      "name": "windows-debug-library-only",
-      "displayName": "Windows x64 Debug (Library Only)",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "BUILD_TESTS": "OFF",
-        "BUILD_EXAMPLES": "OFF"
-      }
-    },
-    {
-      "name": "windows-release",
-      "displayName": "Windows x64 Release",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "BUILD_TESTS": "OFF"
-      }
-    },
-    {
-      "name": "windows-relwithdebinfo",
-      "displayName": "Windows x64 RelWithDebInfo",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "BUILD_TESTS": "OFF"
-      }
-    },
-    {
-      "name": "windows-minsizerel",
-      "displayName": "Windows x64 MinSizeRel",
-      "inherits": "windows-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "MinSizeRel",
-        "BUILD_TESTS": "OFF"
-      }
-    },
-    {
-      "name": "ubuntu-debug",
-      "displayName": "Ubuntu x64 Debug",
-      "inherits": "ubuntu-base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "BUILD_TESTS": "ON"
-      }
-    }
-  ],
-  "buildPresets": [
-    {
-      "name": "windows-debug",
-      "displayName": "Windows Debug Build",
-      "configurePreset": "windows-debug",
-      "configuration": "Debug"
-    },
-    {
-      "name": "windows-debug-library-only",
-      "displayName": "Windows Debug Build (Library Only)",
-      "configurePreset": "windows-debug-library-only",
-      "configuration": "Debug"
-    },
-    {
-      "name": "windows-release",
-      "displayName": "Windows Release Build",
-      "configurePreset": "windows-release",
-      "configuration": "Release"
-    },
-    {
-      "name": "windows-relwithdebinfo",
-      "displayName": "Windows RelWithDebInfo Build",
-      "configurePreset": "windows-relwithdebinfo",
-      "configuration": "RelWithDebInfo"
-    },
-    {
-      "name": "windows-minsizerel",
-      "displayName": "Windows MinSizeRel Build",
-      "configurePreset": "windows-minsizerel",
-      "configuration": "MinSizeRel"
-    },
-    {
-      "name": "ubuntu-debug",
-      "displayName": "Ubuntu Debug Build",
-      "configurePreset": "ubuntu-debug",
-      "configuration": "Debug"
-    }
-  ],
-  "testPresets": [
-    {
-      "name": "Windows x86 Debug",
-      "description": "",
-      "displayName": "Windows x86 Debug Tests",
-      "configurePreset": "windows-debug"
-    },
-    {
-      "name": "Ubuntu x86 Debug",
-      "description": "",
-      "displayName": "Ubuntu x86 Debug Tests",
-      "configurePreset": "ubuntu-debug"
-    }
-  ]
+    "version": 6,
+    "configurePresets": [
+        {
+            "name": "windows-base",
+            "hidden": true,
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "C:/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "BUILD_TESTS": "ON",
+                "BUILD_EXAMPLES": "ON"
+            }
+        },
+        {
+            "name": "ubuntu-base",
+            "hidden": true,
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/cmake/toolchains/ubuntu.cmake",
+                "BUILD_TESTS": "ON",
+                "BUILD_EXAMPLES": "ON"
+            }
+        },
+        {
+            "name": "windows-debug",
+            "displayName": "Windows x64 Debug",
+            "inherits": "windows-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "windows-debug-library-only",
+            "displayName": "Windows x64 Debug (Library Only)",
+            "inherits": "windows-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTS": "OFF",
+                "BUILD_EXAMPLES": "OFF"
+            }
+        },
+        {
+            "name": "windows-release",
+            "displayName": "Windows x64 Release",
+            "inherits": "windows-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "OFF"
+            }
+        },
+        {
+            "name": "windows-relwithdebinfo",
+            "displayName": "Windows x64 RelWithDebInfo",
+            "inherits": "windows-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+                "BUILD_TESTS": "OFF"
+            }
+        },
+        {
+            "name": "windows-minsizerel",
+            "displayName": "Windows x64 MinSizeRel",
+            "inherits": "windows-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "MinSizeRel",
+                "BUILD_TESTS": "OFF"
+            }
+        },
+        {
+            "name": "ubuntu-debug",
+            "displayName": "Ubuntu Debug",
+            "inherits": "ubuntu-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTS": "ON"
+            }
+        },
+        {
+            "name": "ubuntu-release",
+            "displayName": "Ubuntu Release",
+            "description": "",
+            "inherits": "ubuntu-base",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "BUILD_TESTS": "OFF",
+                "BUILD_EXAMPLES": "OFF"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "windows-debug",
+            "displayName": "Windows Debug Build",
+            "configurePreset": "windows-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "windows-debug-library-only",
+            "displayName": "Windows Debug Build (Library Only)",
+            "configurePreset": "windows-debug-library-only",
+            "configuration": "Debug"
+        },
+        {
+            "name": "windows-release",
+            "displayName": "Windows Release Build",
+            "configurePreset": "windows-release",
+            "configuration": "Release"
+        },
+        {
+            "name": "windows-relwithdebinfo",
+            "displayName": "Windows RelWithDebInfo Build",
+            "configurePreset": "windows-relwithdebinfo",
+            "configuration": "RelWithDebInfo"
+        },
+        {
+            "name": "windows-minsizerel",
+            "displayName": "Windows MinSizeRel Build",
+            "configurePreset": "windows-minsizerel",
+            "configuration": "MinSizeRel"
+        },
+        {
+            "name": "ubuntu-debug",
+            "displayName": "Ubuntu Debug Build",
+            "configurePreset": "ubuntu-debug",
+            "configuration": "Debug"
+        },
+        {
+            "name": "ubuntu-release",
+            "displayName": "Ubuntu Release Build",
+            "configurePreset": "ubuntu-release",
+            "configuration": "Release"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "windows-debug",
+            "description": "",
+            "displayName": "Windows x86 Debug Tests",
+            "configurePreset": "windows-debug"
+        },
+        {
+            "name": "ubuntu-debug",
+            "description": "",
+            "displayName": "Ubuntu Debug Tests",
+            "configurePreset": "ubuntu-debug"
+        }
+    ],
+    "packagePresets": [
+        {
+            "name": "ubuntu-release",
+            "displayName": "Ubuntu Release Package",
+            "configurePreset": "ubuntu-release",
+            "packageName": "miniaudioengine",
+            "vendorName": "Aidan Clyens",
+            "generators": ["RPM"],
+            "packageVersion": "1.0.0"
+        }
+    ]
 }

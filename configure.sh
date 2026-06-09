@@ -23,6 +23,7 @@ apt-get install -y --no-install-recommends \
   vim \
   wget \
   curl \
+  rpm \
   autotools-dev \
   automake \
   libc6-dbg \

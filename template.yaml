@@ -133,6 +133,8 @@ Resources:
       Artifacts:
         Type: S3
         Location: !Ref ArtifactsBucket
+        Packaging: ZIP
+        Name: !Sub "${ProjectName}-artifacts.zip"
 
       LogsConfig:
         CloudWatchLogs:

@@ -11,16 +11,20 @@ phases:
   pre_build:
     on-failure: ABORT
     commands:
-      - echo "Configuring CMake..."
-      - cmake -S . -B build
-          -DCMAKE_BUILD_TYPE=Release
-          -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - echo "Configuring CMake (Ubuntu Release)..."
+      - cmake --preset ubuntu-release
 
   build:
     on-failure: ABORT
     commands:
-      - echo "Building..."
+      - echo "Building (Ubuntu Release)..."
       - cmake --build build --parallel $(nproc)
+
+  post_build:
+    on-failure: ABORT
+    commands:
+      - echo "Build completed successfully. Packaging artifacts..."
+      - cpack --preset ubuntu-release
 
 reports:
   unit-test-report:
@@ -31,4 +35,5 @@ reports:
 artifacts:
   files:
     - build/src/**/*
+    - build/*.rpm
   discard-paths: no
