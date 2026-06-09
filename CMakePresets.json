@@ -153,11 +153,10 @@
             "name": "ubuntu-release",
             "displayName": "Ubuntu Release Package",
             "configurePreset": "ubuntu-release",
+            "packageDirectory": "${sourceDir}/build",
             "packageName": "miniaudioengine",
             "vendorName": "Aidan Clyens",
-            "generators": ["RPM"],
-            "packageVersion": "1.0.0",
-            "packageDirectory": "build"
+            "generators": ["RPM"]
         }
     ]
 }
