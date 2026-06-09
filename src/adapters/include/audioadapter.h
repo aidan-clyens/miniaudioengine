@@ -13,6 +13,7 @@ namespace miniaudioengine::adapters
 
 typedef RtAudioStreamStatus AudioStreamStatus;
 typedef RtAudio::StreamParameters AudioStreamParameters;
+typedef RtAudio::DeviceInfo AudioDeviceInfo;
 
 class AudioCallbackHandler
 {
@@ -46,7 +47,7 @@ public:
 private:
   std::unique_ptr<RtAudio> p_rtaudio;
 
-  static DevicePtr make_device_handle(const RtAudio::DeviceInfo &info, unsigned int id)
+  static DevicePtr make_device_handle(const AudioDeviceInfo &info, unsigned int id)
   {
     return DeviceHandleFactory::make_audio(
         id,

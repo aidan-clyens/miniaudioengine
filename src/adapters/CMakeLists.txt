@@ -30,9 +30,20 @@ target_link_libraries(adapters PRIVATE
 )
 
 target_link_libraries(adapters PUBLIC
-  rtaudio
-  rtmidi
   sndfile
 )
+
+target_compile_definitions(adapters PUBLIC
+  $<$<BOOL:${USE_RTAUDIO}>:USE_RTAUDIO>
+  $<$<BOOL:${USE_RTMIDI}>:USE_RTMIDI>
+)
+
+if(USE_RTAUDIO)
+    target_link_libraries(adapters PUBLIC rtaudio)
+endif()
+
+if(USE_RTMIDI)
+    target_link_libraries(adapters PUBLIC rtmidi)
+endif()
 
 set_target_properties(adapters PROPERTIES LINKER_LANGUAGE CXX)
