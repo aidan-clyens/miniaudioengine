@@ -128,11 +128,17 @@ Resources:
         Image: !Ref BuildImage
         ImagePullCredentialsType: SERVICE_ROLE
         PrivilegedMode: false
-        EnvironmentVariables: []
+        EnvironmentVariables:
+          - Name: CONFIGURE_PRESET
+            Value: ubuntu-release
+          - Name: PACKAGE_PRESET
+            Value: ubuntu-release
 
       Artifacts:
         Type: S3
         Location: !Ref ArtifactsBucket
+        NamespaceType: BUILD_ID
+        Path: !Sub "${ProjectName}/rpm"
         Packaging: ZIP
         Name: !Sub "${ProjectName}-artifacts.zip"
 

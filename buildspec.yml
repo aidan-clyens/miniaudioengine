@@ -1,5 +1,10 @@
 version: 0.2
 
+env:
+  variables:
+    CONFIGURE_PRESET: ubuntu-release
+    PACKAGE_PRESET: ubuntu-release
+
 phases:
   install:
     on-failure: ABORT
@@ -11,20 +16,22 @@ phases:
   pre_build:
     on-failure: ABORT
     commands:
-      - echo "Configuring CMake (Ubuntu Release)..."
-      - cmake --preset ubuntu-release
+      - echo "Configuring CMake (${CONFIGURE_PRESET})..."
+      - cmake --preset ${CONFIGURE_PRESET}
 
   build:
     on-failure: ABORT
     commands:
-      - echo "Building (Ubuntu Release)..."
+      - echo "Building (${CONFIGURE_PRESET})..."
       - cmake --build build --parallel $(nproc)
 
   post_build:
     on-failure: ABORT
     commands:
-      - echo "Build completed successfully. Packaging artifacts..."
-      - cpack --preset ubuntu-release
+      - echo "Build completed successfully. Packaging RPM artifacts..."
+      - cpack --preset ${PACKAGE_PRESET} --verbose
+      - echo "Generated RPM packages:"
+      - ls -1 build/*.rpm
 
 reports:
   unit-test-report:
@@ -34,6 +41,6 @@ reports:
 
 artifacts:
   files:
-    - build/src/**/*
     - build/*.rpm
+    - build/CPackConfig.cmake
   discard-paths: no

@@ -156,7 +156,8 @@
             "packageName": "miniaudioengine",
             "vendorName": "Aidan Clyens",
             "generators": ["RPM"],
-            "packageVersion": "1.0.0"
+            "packageVersion": "1.0.0",
+            "packageDirectory": "build"
         }
     ]
 }
