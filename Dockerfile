@@ -33,6 +33,7 @@ RUN apt-get install -y --no-install-recommends \
     wget \
     curl \
     rpm \
+    file \
     autotools-dev \
     automake \
     libc6-dbg \
