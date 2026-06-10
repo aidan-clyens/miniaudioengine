@@ -28,10 +28,10 @@ phases:
   post_build:
     on-failure: ABORT
     commands:
-      - echo "Build completed successfully. Packaging RPM artifacts..."
+      - echo "Build completed successfully. Packaging artifacts..."
       - cpack --preset ${PACKAGE_PRESET} --verbose
-      - echo "Generated RPM packages:"
-      - ls -1 build/*.rpm
+      - echo "Generated packages:"
+      - ls -1 build/debian/*deb
 
 reports:
   unit-test-report:
@@ -41,6 +41,6 @@ reports:
 
 artifacts:
   files:
-    - build/*.rpm
+    - build/debian/*deb
     - build/CPackConfig.cmake
   discard-paths: no

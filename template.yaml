@@ -138,9 +138,7 @@ Resources:
         Type: S3
         Location: !Ref ArtifactsBucket
         NamespaceType: BUILD_ID
-        Path: !Sub "${ProjectName}/rpm"
-        Packaging: ZIP
-        Name: !Sub "${ProjectName}-artifacts.zip"
+        Path: !Sub "${ProjectName}/debian"
 
       LogsConfig:
         CloudWatchLogs:

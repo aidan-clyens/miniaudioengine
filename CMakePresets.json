@@ -25,7 +25,7 @@
         },
         {
             "name": "windows-debug",
-            "displayName": "Windows x64 Debug",
+            "displayName": "Windows Debug",
             "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -34,7 +34,7 @@
         },
         {
             "name": "windows-debug-library-only",
-            "displayName": "Windows x64 Debug (Library Only)",
+            "displayName": "Windows Debug (Library Only)",
             "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
@@ -44,7 +44,7 @@
         },
         {
             "name": "windows-release",
-            "displayName": "Windows x64 Release",
+            "displayName": "Windows Release",
             "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
@@ -53,7 +53,7 @@
         },
         {
             "name": "windows-relwithdebinfo",
-            "displayName": "Windows x64 RelWithDebInfo",
+            "displayName": "Windows RelWithDebInfo",
             "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "RelWithDebInfo",
@@ -62,7 +62,7 @@
         },
         {
             "name": "windows-minsizerel",
-            "displayName": "Windows x64 MinSizeRel",
+            "displayName": "Windows MinSizeRel",
             "inherits": "windows-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "MinSizeRel",
@@ -85,8 +85,7 @@
             "inherits": "ubuntu-base",
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Release",
-                "BUILD_TESTS": "OFF",
-                "BUILD_EXAMPLES": "OFF"
+                "BUILD_TESTS": "OFF"
             }
         }
     ],
@@ -153,10 +152,10 @@
             "name": "ubuntu-release",
             "displayName": "Ubuntu Release Package",
             "configurePreset": "ubuntu-release",
-            "packageDirectory": "${sourceDir}/build",
+            "packageDirectory": "debian",
             "packageName": "miniaudioengine",
             "vendorName": "Aidan Clyens",
-            "generators": ["RPM"]
+            "generators": ["DEB"]
         }
     ]
 }
