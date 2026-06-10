@@ -14,7 +14,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 if(WIN32)
     message(STATUS "Building for Windows")
     add_compile_definitions(PLATFORM_WINDOWS)
-    # Enable automatic DLL copying
     cmake_policy(SET CMP0087 NEW)
 elseif(UNIX AND NOT APPLE)
     message(STATUS "Building for Linux")
@@ -22,7 +21,7 @@ elseif(UNIX AND NOT APPLE)
 endif()
 
 # Find required packages
-find_package(PkgConfig)
+find_package(PkgConfig REQUIRED)
 
 option(USE_RTAUDIO "Use RtAudio for audio I/O" ON)
 option(USE_RTMIDI "Use RtMidi for MIDI I/O" ON)
@@ -68,10 +67,12 @@ else()
 endif()
 
 # Google Test - Unit testing framework
-if(WIN32)
-    find_package(GTest CONFIG REQUIRED)
-else()
-    find_package(GTest REQUIRED)
+if(BUILD_TESTS)
+    if(WIN32)
+        find_package(GTest CONFIG REQUIRED)
+    else()
+        find_package(GTest REQUIRED)
+    endif()
 endif()
 
 add_subdirectory(src)
@@ -91,6 +92,7 @@ include(CMakePackageConfigHelpers)
 # Install library targets and header files
 install(
     TARGETS
+        audiosession
         entities
         adapters
         dataplane
@@ -136,7 +138,7 @@ install(FILES
 # CPack packaging configuration
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VENDOR "Aidan Clyens")
-set(CPACK_PACKAGE_CONTACT "Aidan Clyens")
+set(CPACK_PACKAGE_CONTACT "Aidan Clyens <aidanclyens@gmail.com>")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Minimal Audio Engine C++ SDK")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
@@ -145,15 +147,15 @@ set(CPACK_PACKAGE_VERSION_PATCH "${PROJECT_VERSION_PATCH}")
 set(CPACK_PACKAGE_RELOCATABLE ON)
 set(CPACK_PACKAGING_INSTALL_PREFIX "/usr")
 
+# Debian/Ubuntu packaging configuration
 if(UNIX AND NOT APPLE)
-    set(CPACK_GENERATOR "DEB")
+    set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
     set(CPACK_DEBIAN_PACKAGE_NAME ${PROJECT_NAME})
     set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
-    set(CPACK_DEBIAN_PACKAGE_VERSION ${VERSION})
+    set(CPACK_DEBIAN_PACKAGE_VERSION ${PROJECT_VERSION})
     set(CPACK_DEBIAN_PACKAGE_RELEASE "1")
     set(CPACK_DEBIAN_PACKAGE_LICENSE "MIT")
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/aidan-clyens/miniaudioengine")
-    # set(CPACK_PACKAGE_FILE_NAME "${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CMAKE_SYSTEM_PROCESSOR}")
 endif()
 
 include(CPack)
