@@ -1,5 +1,5 @@
 # Use the latest stable Ubuntu image
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ARG ENABLE_RC=false
 
@@ -52,9 +52,6 @@ RUN apt-get install -y --no-install-recommends \
     python3-pip \
     python3-venv && \
     rm -rf /var/lib/apt/lists/*
-
-# Configure ALSA to use the null device for audio simulation
-RUN printf 'pcm.!default {\n    type null\n}\n' > /root/.asoundrc
 
 # Default command
 COPY docker/entrypoint.sh /entrypoint.sh
