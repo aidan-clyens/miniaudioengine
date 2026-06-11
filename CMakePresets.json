@@ -153,9 +153,18 @@
             "displayName": "Ubuntu Release Package",
             "configurePreset": "ubuntu-release",
             "packageDirectory": "debian",
-            "packageName": "miniaudioengine",
+            "packageName": "libminiaudioengine",
             "vendorName": "Aidan Clyens",
             "generators": ["DEB"]
+        },
+        {
+            "name": "windows-release",
+            "displayName": "Windows Release Package",
+            "configurePreset": "windows-release",
+            "packageDirectory": "windows-package",
+            "packageName": "libminiaudioengine",
+            "vendorName": "Aidan Clyens",
+            "generators": ["NSIS"]
         }
     ]
 }
