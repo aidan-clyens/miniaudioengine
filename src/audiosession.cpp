@@ -8,13 +8,64 @@
 #include "midiadapter.h"
 #include "fileadapter.h"
 
+#include <unistd.h>
+#include <fcntl.h>
+
 using namespace miniaudioengine;
 using namespace miniaudioengine::adapters;
+
+/** @brief Temporarily suppress stderr output during MIDI initialization.
+ *  Redirects stderr to /dev/null to prevent ALSA library errors from printing
+ *  when MIDI hardware is unavailable (e.g., in Docker containers).
+ */
+class StderrRedirector
+{
+public:
+  StderrRedirector()
+    : m_original_stderr_fd(dup(STDERR_FILENO))
+  {
+    // Redirect stderr to /dev/null
+    int dev_null = open("/dev/null", O_WRONLY);
+    if (dev_null >= 0)
+    {
+      dup2(dev_null, STDERR_FILENO);
+      close(dev_null);
+    }
+  }
+
+  ~StderrRedirector()
+  {
+    // Restore original stderr
+    if (m_original_stderr_fd >= 0)
+    {
+      dup2(m_original_stderr_fd, STDERR_FILENO);
+      close(m_original_stderr_fd);
+    }
+  }
+
+private:
+  int m_original_stderr_fd;
+};
 
 AudioSession::AudioSession()
 {
   p_audio_adapter = std::make_shared<AudioAdapter>();
-  p_midi_adapter = std::make_shared<MidiAdapter>();
+  
+  // Attempt MIDI adapter initialization, but don't fail if MIDI is unavailable
+  // Suppress stderr to prevent ALSA library errors from printing
+  {
+    StderrRedirector suppress_alsa_errors;
+    try
+    {
+      p_midi_adapter = std::make_shared<MidiAdapter>();
+    }
+    catch (const std::runtime_error& error)
+    {
+      LOG_WARNING("AudioSession: MIDI initialization failed - ", error.what(), ". Audio-only mode enabled.");
+      p_midi_adapter = nullptr;
+    }
+  }
+  
   p_file_adapter = std::make_shared<FileAdapter>();
 
   p_file_service = std::make_unique<FileService>();
