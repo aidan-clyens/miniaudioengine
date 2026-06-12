@@ -8,7 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PATH="/opt/venv/bin:$PATH"
 
 COPY configure.sh ./configure.sh
-RUN /configure.sh
+RUN bash ./configure.sh
 
 # Default command
 COPY docker/entrypoint.sh /entrypoint.sh
