@@ -6,13 +6,15 @@
 #include <memory>
 #include <rtmidi/RtMidi.h>
 
+#include "device.h"
 #include "logger.h"
 
 namespace miniaudioengine::adapters
 {
-  
+
 /** @struct MidiPort
   * @brief Represents a MIDI port with its number and name.
+  * @deprecated Replaced by DevicePtr
   */
 struct MidiPort
 {
@@ -50,12 +52,8 @@ public:
   MidiAdapter& operator=(const MidiAdapter&) = default;
   virtual ~MidiAdapter() = default;
 
-  unsigned int get_port_count()
-  {
-    return p_rtmidi_in->getPortCount();
-  }
-
-  std::vector<MidiPort> get_ports();
+  unsigned int get_device_count();
+  std::vector<DevicePtr> get_devices();
 
   bool open_input_port(unsigned int port_number, void *callback_context);
   bool close_input_port();
@@ -64,6 +62,16 @@ public:
 
 private:
   std::unique_ptr<RtMidiIn> p_rtmidi_in;
+
+  static DevicePtr make_device_handle(const unsigned int id, const std::string &name)
+  {
+    return DeviceHandleFactory::make_midi(
+      id,
+      name,
+      true,   // TODO - How to get input/output info?
+      false   // TODO - How to get input/output info?
+    );
+  }
 };
 
 using MidiAdapterPtr = std::shared_ptr<MidiAdapter>;

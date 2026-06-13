@@ -1,5 +1,6 @@
 #include "midiadapter.h"
 
+using namespace miniaudioengine;
 using namespace miniaudioengine::adapters;
 
 MidiAdapter::MidiAdapter()
@@ -23,9 +24,14 @@ MidiAdapter::MidiAdapter()
   }
 }
 
-std::vector<MidiPort> MidiAdapter::get_ports()
+unsigned int MidiAdapter::get_device_count()
 {
-  std::vector<MidiPort> ports;
+  return p_rtmidi_in->getPortCount();
+}
+
+std::vector<DevicePtr> MidiAdapter::get_devices()
+{
+  std::vector<DevicePtr> devices;
 
   // Get the number of available MIDI input ports
   unsigned int port_count = p_rtmidi_in->getPortCount();
@@ -37,7 +43,7 @@ std::vector<MidiPort> MidiAdapter::get_ports()
     try
     {
       std::string port_name = p_rtmidi_in->getPortName(i);
-      ports.push_back({i, port_name});
+      devices.push_back(make_device_handle(i, port_name));
     }
     catch (const RtMidiError &error)
     {
@@ -45,7 +51,7 @@ std::vector<MidiPort> MidiAdapter::get_ports()
     }
   }
 
-  return ports;
+  return devices;
 }
 
 bool MidiAdapter::open_input_port(unsigned int port_number, void *callback_context)

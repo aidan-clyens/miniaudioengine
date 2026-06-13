@@ -34,9 +34,7 @@ DeviceList DeviceService::get_audio_devices() const
 
 DeviceList DeviceService::get_midi_devices() const
 {
-  DeviceList devices;
-  // TODO - populate devices vector with actual MIDI devices from the system
-  return devices;
+  return p_midi_adapter->get_devices();
 }
 
 DevicePtr DeviceService::get_midi_device(const unsigned int id) const
