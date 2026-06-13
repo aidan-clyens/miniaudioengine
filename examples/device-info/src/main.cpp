@@ -38,6 +38,19 @@ void list_audio_devices(const AudioSession &session)
   }
 }
 
+/** @brief List available MIDI devices.
+ *  @param session Reference to the AudioSession
+ */
+void list_midi_devices(const AudioSession &session)
+{
+  DeviceList midi_devices = session.get_midi_devices();
+  std::cout << "Available MIDI Devices:\n";
+  for (const auto &device : midi_devices)
+  {
+    std::cout << device->to_string() << "\n";
+  }
+}
+
 /** @brief Parses command line arguments and configures the audio session.
  *  @param argc Argument count from main()
  *  @param argv Argument vector from main()
@@ -78,6 +91,7 @@ int main(int argc, char *argv[])
   }
 
   list_audio_devices(session);
+  list_midi_devices(session);
 
   return 0;
 }
