@@ -20,19 +20,15 @@ using DevicePtr = std::shared_ptr<class Device>;
 class MainTrack : public Track
 {
 public:
-  MainTrack(adapters::AudioAdapterPtr audio_adapter) : Track(true), // main_track = true
-                                                       p_audio_adapter(audio_adapter)
+  MainTrack(adapters::AudioAdapterPtr audio_adapter, adapters::MidiAdapterPtr midi_adapter) : Track(true), // main_track = true
+                                                                                              p_audio_adapter(audio_adapter),
+                                                                                              p_midi_adapter(midi_adapter)
   {}
   ~MainTrack() override = default;
 
   bool play() override;
   bool stop() override;
   bool is_playing() override;
-
-  void set_audio_output_device(DevicePtr device)
-  {
-    p_audio_output_device = device;
-  }
 
 private:
   /** @brief Compile the audio graph for the current track hierarchy for audio processing.
@@ -41,9 +37,8 @@ private:
   dataplane::AudioGraphPtr compile_audio_graph() const;
 
 private:
-  DevicePtr p_audio_output_device = nullptr;
-
   adapters::AudioAdapterPtr p_audio_adapter = nullptr;
+  adapters::MidiAdapterPtr p_midi_adapter = nullptr;
 };
 
 
