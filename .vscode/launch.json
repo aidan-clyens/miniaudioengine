@@ -52,6 +52,21 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "midi-input (Windows)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}\\build\\examples\\midi-input\\src\\Debug\\midi-input.exe",
+            "args": [
+                "--midi-input",
+                "0",
+                "--verbose"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "miniaudioengine-unit-tests (Windows)",
             "type": "cppvsdbg",
             "request": "launch",

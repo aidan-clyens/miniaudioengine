@@ -1,0 +1,10 @@
+{
+    "name": "midi-input",
+    "version": "1.0.0",
+    "description": "MIDI Input - Monitor input from a MIDI device.",
+    "dependencies": [
+        "rtaudio",
+        "rtmidi",
+        "libsndfile"
+    ]
+}
