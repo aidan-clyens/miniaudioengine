@@ -13,13 +13,13 @@ int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer
                                          double stream_time, AudioStreamStatus status, void *user_data) noexcept
 {
   // Verify user data is a pointer to a AudioGraph object
-  if (!user_data || !static_cast<AudioGraph*>(user_data))
+  if (!user_data || !(AudioGraph*)(user_data))
   {
     LOG_ERROR("AudioCallbackHandler: Audio callback does not have pointer to AudioGraph.");
     return 1;
   }
 
-  AudioGraph *graph = static_cast<AudioGraph*>(user_data);
+  AudioGraph *graph = (AudioGraph*)(user_data);
 
   // If input buffer is present, read audio input
   if (input_buffer != nullptr)
@@ -121,7 +121,7 @@ bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_
                             sample_rate,
                             &buffer_size,
                             &AudioCallbackHandler::audio_callback,
-                            audio_graph.get());
+                            &audio_graph);
 
   if (rc != RTAUDIO_NO_ERROR)
   {

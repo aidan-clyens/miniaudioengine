@@ -26,12 +26,15 @@ using ProcessorNodePtr = std::shared_ptr<ProcessorNode>;
 
 /** @class AudioGraph
  *  @brief Represents the audio processing graph.
+ *  @note TODO - Implement AudioGraph using an adjacency list to avoid
+ *               the use of recursion.
  */
 class AudioGraph
 {
 public:
   AudioGraph() = default;
   ~AudioGraph() = default;
+  AudioGraph(const AudioGraph &other);
 
   MixerNodePtr add_mixer_node(IAudioGraphNodePtr parent = nullptr);
   InputNodePtr add_input_node(IInputOutputPtr input, IAudioGraphNodePtr parent = nullptr);

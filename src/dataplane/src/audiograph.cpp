@@ -8,6 +8,11 @@
 namespace miniaudioengine::dataplane
 {
 
+AudioGraph::AudioGraph(const AudioGraph &other)
+{
+  p_root_node = other.get_root_node();
+}
+
 MixerNodePtr AudioGraph::add_mixer_node(IAudioGraphNodePtr parent)
 {
   auto node = std::make_shared<MixerNode>();
