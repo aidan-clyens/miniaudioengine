@@ -8,11 +8,6 @@
 namespace miniaudioengine::dataplane
 {
 
-AudioGraph::AudioGraph(const AudioGraph &other)
-{
-  p_root_node = other.get_root_node();
-}
-
 MixerNodePtr AudioGraph::add_mixer_node(IAudioGraphNodePtr parent)
 {
   auto node = std::make_shared<MixerNode>();
@@ -37,24 +32,6 @@ ProcessorNodePtr AudioGraph::add_processor_node(IAudioGraphNodePtr parent)
   return std::dynamic_pointer_cast<ProcessorNode>(add_node(node, parent));
 }
 
-IAudioGraphNodePtr AudioGraph::get_root_node() const
-{
-  return p_root_node;
-}
-
-std::vector<IAudioGraphNodePtr> AudioGraph::get_leaf_nodes() const
-{
-  if (p_root_node == nullptr)
-  {
-    LOG_WARNING("AudioGraph: No root node");
-    return std::vector<IAudioGraphNodePtr>();
-  }
-
-  std::vector<IAudioGraphNodePtr> leaf_nodes;    
-  get_leaf_nodes_impl(p_root_node, leaf_nodes);
-  return leaf_nodes;
-}
-
 IAudioGraphNodePtr AudioGraph::add_node(IAudioGraphNodePtr node, IAudioGraphNodePtr parent)
 {
   if (!node)
@@ -63,15 +40,14 @@ IAudioGraphNodePtr AudioGraph::add_node(IAudioGraphNodePtr node, IAudioGraphNode
     return nullptr;
   }
 
+  size_t node_index = IGraph::add_node(node);
+  node->set_index(node_index);
+
   if (parent)
   {
-    parent->add_child(node);
+    IGraph::add_edge(parent->get_index(), node->get_index());
   }
-  else
-  {
-    // If a parent node is not passed, this node must be the root
-    p_root_node = node;
-  }
+
   LOG_INFO("AudioGraph: Added ", node->to_string());
   return node;
 }
@@ -79,38 +55,8 @@ IAudioGraphNodePtr AudioGraph::add_node(IAudioGraphNodePtr node, IAudioGraphNode
 std::string AudioGraph::to_string() const
 {
   std::string str = "AudioGraph(";
-
-  // TODO - Memory read violation here from AudioCallbackHandler
-  if (p_root_node)
-  {
-    str += p_root_node->to_string();
-  }
-
   str += ")";
   return str;
-}
-
-void AudioGraph::get_leaf_nodes_impl(IAudioGraphNodePtr parent, std::vector<IAudioGraphNodePtr> &leaf_nodes) const
-{
-  if (parent == nullptr)
-  {
-    LOG_WARNING("AudioGraph: get_leaf_nodes_impl - Parent node is null");
-    return;
-  }
-
-  // If parent has no children, add to leaf nodes list and return
-  if (parent->get_children().size() == 0)
-  {
-    LOG_DEBUG("AudioGraph: get_leaf_nodes_impl - Found leaf node ", parent->to_string());
-    leaf_nodes.push_back(parent);
-    return;
-  }
-
-  // Else, iterate through children
-  for (auto child : parent->get_children())
-  {
-    get_leaf_nodes_impl(child, leaf_nodes);
-  }
 }
 
 } // namespace miniaudioengine::dataplane

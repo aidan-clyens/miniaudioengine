@@ -3,6 +3,7 @@
 
 #include "audiographnode.h"
 #include "io.h"
+#include "graph.h"
 
 #include <memory>
 #include <string>
@@ -29,30 +30,21 @@ using ProcessorNodePtr = std::shared_ptr<ProcessorNode>;
  *  @note TODO - Implement AudioGraph using an adjacency list to avoid
  *               the use of recursion.
  */
-class AudioGraph
+class AudioGraph : public framework::IGraph<IAudioGraphNodePtr>
 {
 public:
   AudioGraph() = default;
   ~AudioGraph() = default;
-  AudioGraph(const AudioGraph &other);
 
   MixerNodePtr add_mixer_node(IAudioGraphNodePtr parent = nullptr);
   InputNodePtr add_input_node(IInputOutputPtr input, IAudioGraphNodePtr parent = nullptr);
   OutputNodePtr add_output_node(IInputOutputPtr output, IAudioGraphNodePtr parent = nullptr);
   ProcessorNodePtr add_processor_node(IAudioGraphNodePtr parent = nullptr);
 
-  IAudioGraphNodePtr get_root_node() const;
-  std::vector<IAudioGraphNodePtr> get_leaf_nodes() const;
-
   std::string to_string() const;
 
 private:
   IAudioGraphNodePtr add_node(IAudioGraphNodePtr node, IAudioGraphNodePtr parent = nullptr);
-
-  void get_leaf_nodes_impl(IAudioGraphNodePtr parent, std::vector<IAudioGraphNodePtr> &leaf_nodes) const;
-
-private:
-  IAudioGraphNodePtr p_root_node;
 };
 
 using AudioGraphPtr = std::shared_ptr<AudioGraph>;

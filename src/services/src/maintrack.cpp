@@ -15,53 +15,73 @@ bool MainTrack::play()
   dataplane::AudioGraphPtr audio_graph = compile_audio_graph();
   LOG_INFO("MainTrack: play - Compiled ", audio_graph->to_string());
 
-  unsigned int device_id = 0;
-  unsigned int channels = 0;
-  unsigned int sample_rate = 0;
-
-  DevicePtr device = nullptr;
-
   // Get inputs by searching for leaf nodes in AudioGraph
   std::vector<framework::IAudioGraphNodePtr> input_nodes = audio_graph->get_leaf_nodes();
   for (auto node : input_nodes)
   {
     dataplane::InputNodePtr input_node = std::dynamic_pointer_cast<dataplane::InputNode>(node);
+    if (!input_node) continue;
+
     framework::IInputOutputPtr io = input_node->get_io();
 
     if (io->get_type() == framework::eInputOutputType_Device)
     {
-      device = std::dynamic_pointer_cast<Device>(io);
+      DevicePtr device = std::dynamic_pointer_cast<Device>(io);
+      Device::eDeviceType type = device->get_device_type();
       LOG_DEBUG("MainTrack: play - Using Input Device - ", io->to_string());
-      break;
+
+      if (type == Device::eDeviceType::Audio)
+      {
+        LOG_WARNING("MainTrack: play - Read from audio input device not implemented.");
+      }
+      else if (type == Device::eDeviceType::Midi)
+      {
+        LOG_WARNING("MainTrack: play - Read from MIDI input device not implemented.");
+      }
+    }
+    else if (io->get_type() == framework::eInputOutputType_File)
+    {
+      // TODO - Read from input file
+      LOG_WARNING("MainTrack: play - Read from input file not implemented.");
     }
   }
 
   // Check output by checking root node or AudioGraph
+  framework::IAudioGraphNodePtr root_node = audio_graph->get_root_node();
+  dataplane::OutputNodePtr output_node = std::dynamic_pointer_cast<dataplane::OutputNode>(root_node);
+
+  if (output_node)
   {
-    framework::IAudioGraphNodePtr root_node = audio_graph->get_root_node();
-    dataplane::OutputNodePtr output_node = std::dynamic_pointer_cast<dataplane::OutputNode>(root_node);
     framework::IInputOutputPtr io = output_node->get_io();
   
     if (io->get_type() == framework::eInputOutputType_Device)
     {
-      device = std::dynamic_pointer_cast<Device>(io);
+      DevicePtr device = std::dynamic_pointer_cast<Device>(io);
+      Device::eDeviceType type = device->get_device_type();
       LOG_DEBUG("MainTrack: play - Using Output Device - ", io->to_string());
+
+      if (type == Device::eDeviceType::Audio)
+      {
+        LOG_INFO("MainTrack: play - Opening audio stream with Device: ", device->to_string());
+
+        bool ret = p_audio_adapter->open_stream(device, audio_graph);
+        if (!ret)
+        {
+          LOG_ERROR("MainTrack: play - Failed to open audio stream!");
+          return false;
+        }
+      }
+      else if (type == Device::eDeviceType::Midi)
+      {
+        // TODO - Output to MIDI device
+        LOG_WARNING("MainTrack: play - Open MIDI Device not implemented.");
+      }
     }
-  }
-
-  if (device == nullptr)
-  {
-    LOG_WARNING("MainTrack: play - Cannot open audio stream because there are no input/output devices.");
-    return false;
-  }
-
-  LOG_INFO("MainTrack: play - Opening audio stream with Device: ", device->to_string());
-
-  bool ret = p_audio_adapter->open_stream(device, audio_graph);
-  if (!ret)
-  {
-    LOG_ERROR("MainTrack: play - Failed to open audio stream!");
-    return false;
+    else if (io->get_type() == framework::eInputOutputType_File)
+    {
+      // TODO - Write to output file
+      LOG_WARNING("MainTracK: play - Open File not implemented.");
+    }
   }
 
   if (!is_playing())
@@ -102,21 +122,25 @@ dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
   LOG_INFO("MainTrack: Compiling AudioGraph for current track hierarchy...");
   dataplane::AudioGraphPtr audio_graph = std::make_shared<dataplane::AudioGraph>();
 
-  if (!has_audio_output() && !has_midi_output())
-  {
-    LOG_WARNING("MainTrack: Cannot compile AudioGraph. No Audio/MIDI Output is set.");
-    return nullptr;
-  }
+  // if (!has_audio_output() && !has_midi_output())
+  // {
+  //   LOG_WARNING("MainTrack: Cannot compile AudioGraph. No Audio/MIDI Output is set.");
+  //   return nullptr;
+  // }
 
   // For the main track, first add an output node
-  framework::IInputOutputPtr output = (has_audio_output() ? get_audio_output() : (has_midi_output() ? get_midi_output() : nullptr));
-  if (output == nullptr)
+  dataplane::OutputNodePtr output_node = nullptr;
+  if (has_audio_output() || has_midi_output())
   {
-    LOG_WARNING("MainTrack: Cannot assign null Output");
-    return nullptr;
+    framework::IInputOutputPtr output = (has_audio_output() ? get_audio_output() : (has_midi_output() ? get_midi_output() : nullptr));
+    if (output == nullptr)
+    {
+      LOG_WARNING("MainTrack: Cannot assign null Output");
+      return nullptr;
+    }
+  
+    output_node = audio_graph->add_output_node(output);
   }
-
-  dataplane::OutputNodePtr output_node = audio_graph->add_output_node(output);
 
   // Then, add a mixer node
   dataplane::MixerNodePtr mixer_node = audio_graph->add_mixer_node(output_node);

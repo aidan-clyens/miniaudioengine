@@ -13,7 +13,7 @@ public:
   OutputNode(framework::IInputOutputPtr io) : p_io(io) {}
   ~OutputNode() = default;
 
-  framework::IInputOutputPtr get_io() const { return p_io; }
+  framework::IInputOutputPtr get_io() { return p_io; }
 
   std::string to_string() const override;
 

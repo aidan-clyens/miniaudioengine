@@ -20,63 +20,13 @@ class IAudioGraphNode : public std::enable_shared_from_this<IAudioGraphNode>
 public:
   virtual ~IAudioGraphNode() = default;
 
-  /** @brief Get parent node (nullptr if root)
-   *  @return Shared pointer to parent node.
-   */
-  IAudioGraphNodePtr get_parent() const { return p_parent; }
-  
-  /** @brief Get child nodes.
-   *  @return Vector of shared pointers to child nodes.
-   */
-  std::vector<IAudioGraphNodePtr> get_children() const { return m_children; }
-
-  /** @brief Add a child node.
-   *  @param child Shared pointer to the node to add.
-   */
-  void add_child(IAudioGraphNodePtr child)
-  {
-    if (child)
-    {
-      child->p_parent = shared_from_this();
-      m_children.push_back(child);
-    }
-  }
-
-  /** @brief Remove a child node.
-   *  @param child Shared pointer to the child node to remove.
-   */
-  void remove_child(IAudioGraphNodePtr child)
-  {
-    if (child)
-    {
-      child->p_parent.reset();
-      m_children.erase(std::remove(m_children.begin(), m_children.end(), child), m_children.end());
-    }
-  }
+  void set_index(const size_t index) { m_index = index; }
+  size_t get_index() const { return m_index; }
 
   virtual std::string to_string() const = 0;
 
-protected:
-
-  void children_to_string(std::string &str) const
-  {
-    size_t count = 0;
-    str += "[";
-    for (framework::IAudioGraphNodePtr child : get_children())
-    {
-      if (count++)
-      {
-        str += ", ";
-      }
-
-      str += child->to_string();
-    }
-    str += "]";
-  }
-
 private:
-  IAudioGraphNodePtr p_parent;
-  std::vector<IAudioGraphNodePtr> m_children;
+  size_t m_index;
 };
 
 } // namespace miniaudioengine::framework
