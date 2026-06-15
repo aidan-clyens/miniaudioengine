@@ -1,7 +1,6 @@
 #include "track.h"
 #include "trackservice.h"
 #include "io.h"
-#include "io.h"
 #include "device.h"
 #include "file.h"
 #include "miditypes.h"
@@ -160,7 +159,7 @@ void Track::add_audio_input(IInputOutputPtr input)
 /** @brief Adds a MIDI input to the track.
  *  @param input The MIDI input device or file.
  */
-void Track::add_midi_input(IOutputPtr input)
+void Track::add_midi_input(IInputOutputPtr input)
 {
   if (has_midi_input())
   {
@@ -222,7 +221,7 @@ void Track::add_audio_output(IInputOutputPtr output)
 /** @brief Adds a MIDI output to the track.
  *  @param device The MIDI output device or file.
  */
-void Track::add_midi_output(IOutputPtr output)
+void Track::add_midi_output(IInputOutputPtr output)
 {
   if (has_midi_output())
   {
@@ -333,7 +332,7 @@ IInputOutputPtr Track::get_audio_output() const
 /** @brief Gets the MIDI input of the track.
  *  @return The MIDI input variant (DevicePtr, FilePtr).
  */
-IOutputPtr Track::get_midi_input() const
+IInputOutputPtr Track::get_midi_input() const
 {
   return p_midi_input;
 }
@@ -341,9 +340,19 @@ IOutputPtr Track::get_midi_input() const
 /** @brief Gets the MIDI output of the track.
  *  @return The MIDI output variant (DevicePtr, FilePtr).
  */
-IOutputPtr Track::get_midi_output() const
+IInputOutputPtr Track::get_midi_output() const
 {
   return m_midi_output;
+}
+
+void Track::add_effects_processor(const IEffectsProcessorPtr processor)
+{
+  m_effects_processors.push_back(processor);
+}
+
+std::vector<framework::IEffectsProcessorPtr> Track::get_effects_processors() const
+{
+  return m_effects_processors;
 }
 
 /** @brief Starts playback of the track.
@@ -500,8 +509,8 @@ bool Track::is_playing()
 std::string Track::to_string() const
 {
   IInputOutputPtr audio_input = get_audio_input();
-  IOutputPtr midi_input = get_midi_input();
-  IOutputPtr midi_output = get_midi_output();
+  IInputOutputPtr midi_input = get_midi_input();
+  IInputOutputPtr midi_output = get_midi_output();
 
   std::string audio_input_str = audio_input ?
     (audio_input->get_type() == framework::eInputOutputType_Device  ?

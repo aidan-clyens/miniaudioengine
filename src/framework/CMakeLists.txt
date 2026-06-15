@@ -1,5 +1,4 @@
-add_library(framework STATIC include/io.h
-  include/graph.h)
+add_library(framework STATIC)
 
 target_sources(framework
   PUBLIC
@@ -13,6 +12,9 @@ target_sources(framework
       include/logger.h
       include/miditypes.h
       include/audiographnode.h
+      include/io.h
+      include/graph.h
+      include/processor.h
 )
 
 target_sources(framework PRIVATE

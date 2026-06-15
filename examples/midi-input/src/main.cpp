@@ -54,7 +54,6 @@ bool set_midi_input_device(AudioSession &session, unsigned int device_id)
     DevicePtr midi_device = session.get_midi_device(device_id);
     TrackPtr track = session.add_track();
     track->add_midi_input(midi_device);
-    // track->add_audio_output(session.get_default_audio_output_device());
   }
   catch (std::exception &e)
   {

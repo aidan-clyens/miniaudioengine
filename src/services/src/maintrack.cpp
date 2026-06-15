@@ -160,10 +160,6 @@ dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
   {
     framework::IAudioGraphNodePtr next_node = mixer_node;
 
-    // Add track processor nodes
-    dataplane::ProcessorNodePtr processor_node = audio_graph->add_processor_node(next_node);
-    next_node = processor_node;
-
     // Add track input node
     if (child->has_audio_input())
     {
@@ -181,6 +177,14 @@ dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
     {
       LOG_INFO("MainTrack: Compiling AudioGraph - No Input");
     }
+
+    // Add track processor nodes
+    // auto processors = child->get_effects_processors();
+    // if (processors.size() > 0)
+    // {
+    //   dataplane::ProcessorNodePtr processor_node = audio_graph->add_processor_node(next_node);
+    //   next_node = processor_node;
+    // }
   }
 
   return audio_graph;

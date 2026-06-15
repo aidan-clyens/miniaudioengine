@@ -26,7 +26,7 @@ class MainTrack;
 namespace framework
 {
 typedef std::shared_ptr<class IInputOutput> IInputOutputPtr;
-typedef std::shared_ptr<class IInputOutput> IOutputPtr;
+typedef std::shared_ptr<class IEffectsProcessor> IEffectsProcessorPtr;
 }
 
 typedef std::shared_ptr<class Track> TrackPtr;
@@ -150,7 +150,7 @@ public:
   /** @brief Add a MIDI input to the track.
    *  @param device The MIDI input device or file retrieved from DeviceService or FileService.
    */
-  void add_midi_input(framework::IOutputPtr input);
+  void add_midi_input(framework::IInputOutputPtr input);
 
   /** @brief Add an audio output to the track.
    *  @param device The audio output device or file retrieved from DeviceService or FileService.
@@ -160,7 +160,7 @@ public:
   /** @brief Add a MIDI output to the track.
    *  @param device The MIDI output device or file retrieved from DeviceService or FileService.
    */
-  void add_midi_output(framework::IOutputPtr output);
+  void add_midi_output(framework::IInputOutputPtr output);
 
   /** @brief Remove the audio input from the track. */
   void remove_audio_input();
@@ -204,12 +204,16 @@ public:
   /** @brief Gets the MIDI input.
    *  @return A MIDI input type (DevicePtr, FilePtr).
    */
-  framework::IOutputPtr get_midi_input() const;
+  framework::IInputOutputPtr get_midi_input() const;
 
   /** @brief Gets the MIDI output.
    *  @return The MIDI output (DevicePtr, FilePtr).
    */
-  framework::IOutputPtr get_midi_output() const;
+  framework::IInputOutputPtr get_midi_output() const;
+
+  void add_effects_processor(const framework::IEffectsProcessorPtr processor);
+
+  std::vector<framework::IEffectsProcessorPtr> get_effects_processors() const;
 
   // Playback control
   /** @brief Start playback of the track. */
@@ -293,8 +297,10 @@ protected:
 
   framework::IInputOutputPtr p_audio_input;
   framework::IInputOutputPtr p_audio_output;
-  framework::IOutputPtr p_midi_input;
-  framework::IOutputPtr m_midi_output; // Will be deprecated in favor of parent routing
+  framework::IInputOutputPtr p_midi_input;
+  framework::IInputOutputPtr m_midi_output; // Will be deprecated in favor of parent routing
+
+  std::vector<framework::IEffectsProcessorPtr> m_effects_processors;
 
   MidiNoteOnCallbackFunc m_note_on_callback;
   MidiNoteOffCallbackFunc m_note_off_callback;
