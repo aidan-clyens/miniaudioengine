@@ -1,5 +1,6 @@
 #include "maintrack.h"
 #include "audioadapter.h"
+#include "midiadapter.h"
 #include "audiograph.h"
 #include "mixernode.h"
 #include "outputnode.h"
@@ -36,7 +37,8 @@ bool MainTrack::play()
       }
       else if (type == Device::eDeviceType::Midi)
       {
-        LOG_WARNING("MainTrack: play - Read from MIDI input device not implemented.");
+        // LOG_WARNING("MainTrack: play - Read from MIDI input device not implemented.");
+        p_midi_adapter->open_input_port(device->get_id(), nullptr);
       }
     }
     else if (io->get_type() == framework::eInputOutputType_File)
@@ -108,13 +110,21 @@ bool MainTrack::stop()
     return false;
   }
 
+  ret = p_midi_adapter->close_input_port();
+  if (!ret)
+  {
+    LOG_WARNING("MainTrack: stop - Failed to close MIDI port!");
+    return false;
+  }
+
   LOG_INFO("MainTrack: stop - Stopping...");
   return true;
 }
 
 bool MainTrack::is_playing()
 {
-  return p_audio_adapter->is_stream_open() && p_audio_adapter->is_stream_running();
+  return (p_audio_adapter->is_stream_open() && p_audio_adapter->is_stream_running())
+  || p_midi_adapter->is_port_open();
 }
 
 dataplane::AudioGraphPtr MainTrack::compile_audio_graph() const
