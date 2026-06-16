@@ -1,4 +1,5 @@
 #include "device.h"
+#include "logger.h"
 
 #include <string>
 #include <vector>
@@ -66,6 +67,26 @@ bool Device::is_output() const
   if (p_impl->device_type == eDeviceType::Audio)
     return p_impl->output_channels > 0 || p_impl->duplex_channels > 0;
   return p_impl->is_default_output;
+}
+
+void Device::open(const framework::eInputOutputDirection direction)
+{
+  std::string dir = (direction == framework::eInputOutputDirection_Input) ? "input"
+    : (direction == framework::eInputOutputDirection_Output ? "output" : "N/A");
+
+  switch (get_device_type())
+  {
+    case eDeviceType::Audio:
+      LOG_INFO("Device: open - Opening Audio Stream (", dir, ") - ", get_name());
+      // TODO - AudioAdapter::open_stream()
+      break;
+    case eDeviceType::Midi:
+      LOG_INFO("Device: open - Opening MIDI Port (", dir, ") - ", get_name());
+      // TODO - MidiAdapter::open_port()
+      break;
+    default:
+      break;
+  }
 }
 
 std::string Device::to_string() const

@@ -88,7 +88,8 @@ TrackPtr AudioSession::add_track() const
 
 bool AudioSession::play()
 {
-  bool ret = p_track_service->get_main_track()->play();
+  // bool ret = p_track_service->get_main_track()->play();
+  bool ret = p_track_service->play();
   m_state = ret ? eAudioSessionState::Playing : eAudioSessionState::Stopped;
   return ret;
 }
@@ -102,7 +103,8 @@ bool AudioSession::record()
 
 bool AudioSession::stop()
 {
-  bool ret = p_track_service->get_main_track()->stop();
+  // bool ret = p_track_service->get_main_track()->stop();
+  bool ret = p_track_service->stop();
   m_state = ret ? eAudioSessionState::Stopped : eAudioSessionState::Playing;
   return ret;
 }

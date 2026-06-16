@@ -12,6 +12,7 @@
 #include "track.h"
 #include "file.h"
 #include "logger.h"
+#include "processor.h"
 
 // TODO - Get version from CMake
 #ifndef VERSION_NUMBER
@@ -27,6 +28,28 @@ constexpr const char* APP_LOG_FILEPATH = "midi-input.log";
 constexpr const char *ARG_LIST_MIDI_DEVICES = "--list-midi-devices";
 constexpr const char *ARG_MIDI_INPUT_ID = "--midi-input";
 constexpr const char* ARG_VERBOSE = "--verbose";
+
+/** @class MidiInputReader
+ *  @brief Read MIDI messages from input device.
+ */
+class MidiInputReader : public framework::IProcessor
+{
+public:
+  void midi_input_callback(double deltatime, std::vector<unsigned char> *message, void *user_data)
+  {
+    (void)deltatime;
+    (void)user_data;
+
+    LOG_DEBUG("MidiInputReader - message=", message->size(), " bytes.");
+  }
+
+  std::string to_string() const
+  {
+    std::string str = "MidiInputReader(";
+    str += ")";
+    return str;
+  }
+};
 
 /** @brief List available MIDI devices.
  *  @param session Reference to the AudioSession
@@ -53,7 +76,9 @@ bool set_midi_input_device(AudioSession &session, unsigned int device_id)
   {
     DevicePtr midi_device = session.get_midi_device(device_id);
     TrackPtr track = session.add_track();
+
     track->add_midi_input(midi_device);
+    track->add_effects_processor(std::make_shared<MidiInputReader>());
   }
   catch (std::exception &e)
   {

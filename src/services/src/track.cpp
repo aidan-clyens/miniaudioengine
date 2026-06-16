@@ -345,12 +345,12 @@ IInputOutputPtr Track::get_midi_output() const
   return m_midi_output;
 }
 
-void Track::add_effects_processor(const IEffectsProcessorPtr processor)
+void Track::add_effects_processor(const IProcessorPtr processor)
 {
   m_effects_processors.push_back(processor);
 }
 
-std::vector<framework::IEffectsProcessorPtr> Track::get_effects_processors() const
+std::vector<framework::IProcessorPtr> Track::get_effects_processors() const
 {
   return m_effects_processors;
 }

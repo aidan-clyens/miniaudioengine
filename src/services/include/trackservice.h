@@ -63,6 +63,9 @@ public:
    */
   void clear_tracks();
 
+  bool play();
+  bool stop();
+
 private:
   MainTrackPtr m_main_track; // Root of track tree (owns hardware audio output)
   mutable std::mutex m_manager_mutex;

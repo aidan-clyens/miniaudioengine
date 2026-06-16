@@ -26,7 +26,7 @@ class MainTrack;
 namespace framework
 {
 typedef std::shared_ptr<class IInputOutput> IInputOutputPtr;
-typedef std::shared_ptr<class IEffectsProcessor> IEffectsProcessorPtr;
+typedef std::shared_ptr<class IProcessor> IProcessorPtr;
 }
 
 typedef std::shared_ptr<class Track> TrackPtr;
@@ -211,9 +211,9 @@ public:
    */
   framework::IInputOutputPtr get_midi_output() const;
 
-  void add_effects_processor(const framework::IEffectsProcessorPtr processor);
+  void add_effects_processor(const framework::IProcessorPtr processor);
 
-  std::vector<framework::IEffectsProcessorPtr> get_effects_processors() const;
+  std::vector<framework::IProcessorPtr> get_effects_processors() const;
 
   // Playback control
   /** @brief Start playback of the track. */
@@ -300,7 +300,7 @@ protected:
   framework::IInputOutputPtr p_midi_input;
   framework::IInputOutputPtr m_midi_output; // Will be deprecated in favor of parent routing
 
-  std::vector<framework::IEffectsProcessorPtr> m_effects_processors;
+  std::vector<framework::IProcessorPtr> m_effects_processors;
 
   MidiNoteOnCallbackFunc m_note_on_callback;
   MidiNoteOffCallbackFunc m_note_off_callback;

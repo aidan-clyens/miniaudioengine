@@ -81,6 +81,8 @@ public:
   /** @brief Returns the preferred sample rate. Returns 0 for MIDI devices. */
   unsigned int get_preferred_sample_rate() const;
 
+  void open(const framework::eInputOutputDirection direction);
+
 private:
   struct Impl;
   explicit Device(std::unique_ptr<Impl> impl);
