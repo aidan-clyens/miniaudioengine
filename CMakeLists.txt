@@ -98,7 +98,6 @@ install(
         dataplane
         services
         framework
-        cli
     EXPORT miniaudioengine-targets
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
