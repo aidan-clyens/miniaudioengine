@@ -58,30 +58,7 @@ bool TrackService::play()
 
   for (const auto &track : m_tracks)
   {
-    if (track->has_audio_input())
-    {
-      LOG_INFO("TrackService: play - Opening audio input ", track->get_audio_input()->to_string());
-    }
-    
-    if (track->has_audio_output())
-    {
-      LOG_INFO("TrackService: play - Opening audio output ", track->get_audio_output()->to_string());
-    }
-
-    if (track->has_midi_input())
-    {
-      LOG_INFO("TrackService: play - Opening MIDI input ", track->get_midi_input()->to_string());
-      if (track->get_midi_input()->get_type() == framework::eInputOutputType_Device)
-      {
-        DevicePtr device = std::dynamic_pointer_cast<Device>(track->get_midi_input());
-        device->open(framework::eInputOutputDirection_Input);
-      }
-    }
-
-    if(track->has_midi_output())
-    {
-      LOG_INFO("TrackService: play - Opening MIDI output ", track->get_midi_output()->to_string());
-    }
+    track->play();
   }
   return true;
 }

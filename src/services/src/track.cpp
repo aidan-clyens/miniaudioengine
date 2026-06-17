@@ -334,20 +334,43 @@ bool Track::play()
     return false;
   }
 
-  // TODO - Get audio input and configure dataplane
-  // If audio input is a WAV file, start producer thread BEFORE starting audio stream
-  if (p_audio_input && p_audio_input->get_type() == framework::eInputOutputType_File)
+  // Audio Input
+  if (has_audio_input())
   {
-    FilePtr wav_file = std::dynamic_pointer_cast<File>(p_audio_input);
-    LOG_INFO("Track: Preloading WAV file data into AudioDataPlane ", wav_file->to_string());
+    LOG_INFO("Track: play - Opening audio input ", get_audio_input()->to_string());
+    // TODO - Audio Input
   }
 
-  // TODO - Get MIDI input and configure dataplane
-  // If MIDI input is a MIDI device, ensure the port is open
-  if (p_midi_input && p_midi_input->get_type() == framework::eInputOutputType_Device)
+  // Audio Output
+  if (has_audio_output())
   {
-    DevicePtr midi_device = std::dynamic_pointer_cast<Device>(p_midi_input);
-    LOG_INFO("Track: Opening MIDI input port ", midi_device->to_string());
+    LOG_INFO("Track: play - Opening audio output ", get_audio_output()->to_string());
+    // TODO - Audio Output
+  }
+
+  // MIDI Input
+  if (has_midi_input())
+  {
+    LOG_INFO("Track: play - Opening MIDI input ", get_midi_input()->to_string());
+
+    switch (get_midi_input()->get_type())
+    {
+      case framework::eInputOutputType_Device:
+      {
+        DevicePtr device = std::dynamic_pointer_cast<Device>(get_midi_input());
+        device->open(framework::eInputOutputDirection_Input);
+        break;
+      }
+      default:
+        LOG_WARNING("Track: play - Unsupported MIDI input type.");
+    }
+  }
+
+  // MIDI Output
+  if (has_midi_output())
+  {
+    LOG_INFO("Track: play - Opening MIDI output ", get_midi_output()->to_string());
+    // TODO - MIDI Output
   }
 
   LOG_INFO("Track: Started playing.");
