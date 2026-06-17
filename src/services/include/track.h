@@ -15,6 +15,8 @@
 #include "device.h"
 #include "file.h"
 #include "miditypes.h"
+#include "audioadapter.h"
+#include "midiadapter.h"
 
 namespace miniaudioengine
 {
@@ -57,21 +59,17 @@ struct TrackStatistics
 };
 
 /** @class Track
- *  @brief The Track can handle audio or MIDI input with single-layer routing.
- *  MainTrack is the sole parent; regular Tracks may not have children.
- *  Each track has a virtual output that routes to MainTrack.
+ *  @brief The Track can handle audio or MIDI input and output.
  */
 class Track : public std::enable_shared_from_this<Track>
 {
 public:
-  explicit Track(bool is_main_track = false):
-    m_is_main_track(is_main_track),
-    m_output_gain(1.0f),
-    m_output_enabled(true),
-    p_audio_input(nullptr),
-    p_audio_output(nullptr),
-    p_midi_input(nullptr),
-    m_midi_output(nullptr)
+  explicit Track() : p_audio_input(nullptr),
+                     p_audio_output(nullptr),
+                     p_midi_input(nullptr),
+                     p_midi_output(nullptr),
+                     p_audio_adapter(std::make_shared<adapters::AudioAdapter>()),
+                     p_midi_adapter(std::make_shared<adapters::MidiAdapter>())
   {}
 
   virtual ~Track() = default;
@@ -103,11 +101,6 @@ public:
    */
   std::vector<TrackPtr> get_children() const { return m_children; }
 
-  /** @brief Check if this is the main track (root of hierarchy).
-   *  @return True if this is the MainTrack.
-   */
-  bool is_main_track() const { return m_is_main_track; }
-
   /** @brief Check if this track has a parent.
    *  @return True if track has a parent.
    */
@@ -117,28 +110,6 @@ public:
    *  @return Number of children.
    */
   size_t get_child_count() const { return m_children.size(); }
-
-  // Virtual output controls (Control Plane)
-
-  /** @brief Set the output gain for mixing into parent.
-   *  @param gain Output gain (0.0 to 1.0+).
-   */
-  void set_output_gain(float gain) { m_output_gain = gain; }
-
-  /** @brief Get the output gain.
-   *  @return Current output gain.
-   */
-  float get_output_gain() const { return m_output_gain; }
-
-  /** @brief Enable or disable output routing to parent.
-   *  @param enable True to enable output.
-   */
-  void enable_output(bool enable) { m_output_enabled.store(enable, std::memory_order_release); }
-
-  /** @brief Check if output is enabled.
-   *  @return True if output is enabled.
-   */
-  bool is_output_enabled() const { return m_output_enabled.load(std::memory_order_acquire); }
 
   // Audio/MIDI IO
 
@@ -167,6 +138,9 @@ public:
 
   /** @brief Remove the MIDI input from the track. */
   void remove_midi_input();
+
+  /** @brief Remove the audio output from the track. */
+  void remove_audio_output();
 
   /** @brief Remove the MIDI output from the track. */
   void remove_midi_output();
@@ -276,35 +250,28 @@ public:
   std::string to_string() const;
 
 protected:
-  /** @brief Get the root MainTrack (traverses up hierarchy).
-   *  @return Shared pointer to MainTrack, or nullptr if no root found.
-   */
-  std::shared_ptr<class MainTrack> get_main_track() const;
-
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
 
   // Hierarchy
   std::weak_ptr<Track> m_parent;
   std::vector<TrackPtr> m_children;
   std::mutex m_hierarchy_mutex;
-  bool m_is_main_track;
-
-  // Virtual output settings
-  float m_output_gain;
-  std::atomic<bool> m_output_enabled;
 
   TrackEventCallback m_event_callback;
 
   framework::IInputOutputPtr p_audio_input;
   framework::IInputOutputPtr p_audio_output;
   framework::IInputOutputPtr p_midi_input;
-  framework::IInputOutputPtr m_midi_output; // Will be deprecated in favor of parent routing
+  framework::IInputOutputPtr p_midi_output;
 
   std::vector<framework::IProcessorPtr> m_effects_processors;
 
   MidiNoteOnCallbackFunc m_note_on_callback;
   MidiNoteOffCallbackFunc m_note_off_callback;
   MidiControlCallbackFunc m_control_change_callback;
+
+  adapters::AudioAdapterPtr p_audio_adapter = nullptr;
+  adapters::MidiAdapterPtr p_midi_adapter = nullptr;
 };
 
 }  // namespace miniaudioengine
