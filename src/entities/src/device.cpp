@@ -69,24 +69,9 @@ bool Device::is_output() const
   return p_impl->is_default_output;
 }
 
-void Device::open(const framework::eInputOutputDirection direction)
+unsigned int Device::get_port_number() const
 {
-  std::string dir = (direction == framework::eInputOutputDirection_Input) ? "input"
-    : (direction == framework::eInputOutputDirection_Output ? "output" : "N/A");
-
-  switch (get_device_type())
-  {
-    case eDeviceType::Audio:
-      LOG_INFO("Device: open - Opening Audio Stream (", dir, ") - ", get_name());
-      // TODO - AudioAdapter::open_stream()
-      break;
-    case eDeviceType::Midi:
-      LOG_INFO("Device: open - Opening MIDI Port (", dir, ") - ", get_name());
-      // TODO - MidiAdapter::open_port()
-      break;
-    default:
-      break;
-  }
+  return p_impl->id;
 }
 
 std::string Device::to_string() const

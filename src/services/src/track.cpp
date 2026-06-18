@@ -19,92 +19,6 @@ using namespace miniaudioengine::framework;
 using namespace miniaudioengine;
 
 // ============================================================================
-// Hierarchy Management
-// ============================================================================
-
-/** @brief Add a child track to this track.
- *  @param child The child track to add.
- *  @throws std::runtime_error if the child already has a parent or if adding would create a cycle.
- */
-void Track::add_child_track(TrackPtr child)
-{
-  if (!child)
-  {
-    LOG_ERROR("Track: Cannot add null child track.");
-    throw std::runtime_error("Cannot add null child track.");
-  }
-
-  if (child->has_parent())
-  {
-    LOG_ERROR("Track: Cannot add child track - it already has a parent.");
-    throw std::runtime_error("Child track already has a parent. Remove from parent first.");
-  }
-
-  // Prevent adding self as child
-  if (child.get() == this)
-  {
-    LOG_ERROR("Track: Cannot add track as its own child.");
-    throw std::runtime_error("Cannot add track as its own child.");
-  }
-
-  {
-    std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
-    m_children.push_back(child);
-    child->m_parent = shared_from_this();
-  }
-
-  LOG_INFO("Track: Added child track. Total children: ", m_children.size());
-}
-
-/** @brief Remove a child track from this track.
- *  @param child The child track to remove.
- */
-void Track::remove_child_track(TrackPtr child)
-{
-  if (!child)
-  {
-    LOG_ERROR("Track: Cannot remove null child track.");
-    throw std::runtime_error("Cannot remove null child track.");
-  }
-
-  std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
-  auto it = std::find(m_children.begin(), m_children.end(), child);
-  if (it != m_children.end())
-  {
-    child->m_parent.reset();
-    m_children.erase(it);
-    LOG_INFO("Track: Removed child track. Total children: ", m_children.size());
-  }
-}
-
-/** @brief Remove this track from its parent.
- */
-void Track::remove_from_parent()
-{
-  TrackPtr parent = get_parent();
-  if (parent)
-  {
-    parent->remove_child_track(shared_from_this());
-  }
-}
-
-/** @brief Get the parent track.
- *  @return Shared pointer to parent track, or nullptr if no parent.
- */
-TrackPtr Track::get_parent() const
-{
-  return m_parent.lock();
-}
-
-/** @brief Check if this track has a parent.
- *  @return True if track has a parent.
- */
-bool Track::has_parent() const
-{
-  return !m_parent.expired();
-}
-
-// ============================================================================
 // Audio/MIDI Input/Output
 // ============================================================================
 
@@ -358,7 +272,14 @@ bool Track::play()
       case framework::eInputOutputType_Device:
       {
         DevicePtr device = std::dynamic_pointer_cast<Device>(get_midi_input());
-        device->open(framework::eInputOutputDirection_Input);
+        if (p_midi_adapter->is_port_open())
+        {
+          LOG_WARNING("Track: play - MIDI device is already open, ", device->to_string());
+          break;
+        }
+
+        p_midi_adapter->open_input_port(device, nullptr);
+
         break;
       }
       default:

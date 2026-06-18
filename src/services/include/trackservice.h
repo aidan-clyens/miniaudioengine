@@ -10,8 +10,7 @@ namespace miniaudioengine
 {
 
 /** @class TrackService
- *  @brief The TrackService manages a single-layer hierarchy with MainTrack as root.
- *  All regular Tracks are direct children of MainTrack and may not have children.
+ *  @brief The TrackService manages a single-layer of parallel track objects.
  */
 class TrackService
 {
@@ -20,19 +19,16 @@ public:
   TrackService() = default;
   ~TrackService() = default;
 
-  /** @brief Create a new track as child of MainTrack.
-   *  @param parent Ignored unless it is MainTrack (defaults to MainTrack if nullptr).
+  /** @brief Create a new track.
    *  @return Shared pointer to the new track.
    */
-  TrackPtr add_track(TrackPtr parent = nullptr);
+  TrackPtr add_track();
 
-  /** @brief Remove a track from the hierarchy.
+  /** @brief Remove a track.
    *  @param track The track to remove.
-   *  @throws std::runtime_error if attempting to remove MainTrack.
+   *  @return boolean - True if removed. False if failed.
    */
-  void remove_track(TrackPtr track);
-
-  // Tree traversal
+  bool remove_track(TrackPtr track);
 
   /** @brief Get all tracks in the hierarchy (MainTrack + direct children).
    *  @return Vector of all track pointers including MainTrack.

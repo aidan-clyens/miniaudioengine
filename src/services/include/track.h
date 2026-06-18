@@ -74,43 +74,6 @@ public:
 
   virtual ~Track() = default;
 
-  // Hierarchy management (Control Plane)
-
-  /** @brief Add a child track to this track (MainTrack only).
-   *  @param child The child track to add.
-   *  @throws std::runtime_error if called on a non-MainTrack or if the child already has a parent.
-   */
-  void add_child_track(TrackPtr child);
-
-  /** @brief Remove a child track from this track (MainTrack only).
-   *  @param child The child track to remove.
-   */
-  void remove_child_track(TrackPtr child);
-
-  /** @brief Remove this track from its parent.
-   */
-  void remove_from_parent();
-
-  /** @brief Get the parent track.
-   *  @return Shared pointer to parent track, or nullptr if no parent.
-   */
-  TrackPtr get_parent() const;
-
-  /** @brief Get all child tracks.
-   *  @return Vector of child track pointers.
-   */
-  std::vector<TrackPtr> get_children() const { return m_children; }
-
-  /** @brief Check if this track has a parent.
-   *  @return True if track has a parent.
-   */
-  bool has_parent() const;
-
-  /** @brief Get the number of child tracks.
-   *  @return Number of children.
-   */
-  size_t get_child_count() const { return m_children.size(); }
-
   // Audio/MIDI IO
 
   /** @brief Add an audio input to the track. 
@@ -251,11 +214,6 @@ public:
 
 protected:
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
-
-  // Hierarchy
-  std::weak_ptr<Track> m_parent;
-  std::vector<TrackPtr> m_children;
-  std::mutex m_hierarchy_mutex;
 
   TrackEventCallback m_event_callback;
 
