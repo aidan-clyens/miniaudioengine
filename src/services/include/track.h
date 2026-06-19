@@ -212,7 +212,9 @@ public:
    */
   std::string to_string() const;
 
-protected:
+private:
+  bool open_midi_input();
+
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
 
   TrackEventCallback m_event_callback;

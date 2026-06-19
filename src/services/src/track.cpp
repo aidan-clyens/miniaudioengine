@@ -266,25 +266,7 @@ bool Track::play()
   if (has_midi_input())
   {
     LOG_INFO("Track: play - Opening MIDI input ", get_midi_input()->to_string());
-
-    switch (get_midi_input()->get_type())
-    {
-      case framework::eInputOutputType_Device:
-      {
-        DevicePtr device = std::dynamic_pointer_cast<Device>(get_midi_input());
-        if (p_midi_adapter->is_port_open())
-        {
-          LOG_WARNING("Track: play - MIDI device is already open, ", device->to_string());
-          break;
-        }
-
-        p_midi_adapter->open_input_port(device, nullptr);
-
-        break;
-      }
-      default:
-        LOG_WARNING("Track: play - Unsupported MIDI input type.");
-    }
+    open_midi_input();
   }
 
   // MIDI Output
@@ -358,6 +340,39 @@ void Track::handle_midi_message(const midi::MidiMessage& message)
 bool Track::is_playing()
 {
   return false; // TODO - Implement Track running state
+}
+
+bool Track::open_midi_input()
+{
+  switch (get_midi_input()->get_type())
+  {
+  case framework::eInputOutputType_Device:
+  {
+    DevicePtr device = std::dynamic_pointer_cast<Device>(get_midi_input());
+    if (p_midi_adapter->is_port_open())
+    {
+      LOG_WARNING("Track: play - MIDI port is already open ", device->to_string());
+      if (!p_midi_adapter->close_input_port())
+      {
+        LOG_ERROR("Track: play - Failed to close MIDI port ", device->to_string());
+        return false;
+      }
+    }
+
+    // TODO - Move MidiAdapter & AudioAdapter to Device class?
+    if (!p_midi_adapter->open_input_port(device, nullptr))
+    {
+      LOG_ERROR("Track: play - Failed to open MIDI port ", device->to_string());
+      return false;
+    }
+
+    break;
+  }
+  default:
+    LOG_WARNING("Track: play - Unsupported MIDI input type.");
+  }
+
+  return true;
 }
 
 std::string Track::to_string() const
