@@ -252,28 +252,28 @@ bool Track::play()
   if (has_audio_input())
   {
     LOG_INFO("Track: play - Opening audio input ", get_audio_input()->to_string());
-    // TODO - Audio Input
+    open_audio_stream(get_audio_input());
   }
 
   // Audio Output
   if (has_audio_output())
   {
     LOG_INFO("Track: play - Opening audio output ", get_audio_output()->to_string());
-    open_audio_output();
+    open_audio_stream(get_audio_output());
   }
 
   // MIDI Input
   if (has_midi_input())
   {
     LOG_INFO("Track: play - Opening MIDI input ", get_midi_input()->to_string());
-    open_midi_input();
+    open_midi_port(get_midi_input());
   }
 
   // MIDI Output
   if (has_midi_output())
   {
     LOG_INFO("Track: play - Opening MIDI output ", get_midi_output()->to_string());
-    // TODO - MIDI Output
+    open_midi_port(get_midi_output());
   }
 
   LOG_INFO("Track: Started playing.");
@@ -342,13 +342,13 @@ bool Track::is_playing()
   return false; // TODO - Implement Track running state
 }
 
-bool Track::open_audio_output()
+bool Track::open_audio_stream(framework::IInputOutputPtr stream)
 {
-  switch (get_audio_output()->get_type())
+  switch (stream->get_type())
   {
   case framework::eInputOutputType_Device:
   {
-    DevicePtr device = std::dynamic_pointer_cast<Device>(get_audio_output());
+    DevicePtr device = std::dynamic_pointer_cast<Device>(stream);
     if (p_audio_adapter->is_stream_open())
     {
       LOG_WARNING("Track: play - Audio stream is already open ", device->to_string());
@@ -367,20 +367,20 @@ bool Track::open_audio_output()
     break;
   }
   default:
-    LOG_WARNING("Track: play - Unsupported audio output type.");
+    LOG_WARNING("Track: play - Unsupported audio stream type.");
     return false;
   }
 
   return true;
 }
 
-bool Track::open_midi_input()
+bool Track::open_midi_port(framework::IInputOutputPtr port)
 {
-  switch (get_midi_input()->get_type())
+  switch (port->get_type())
   {
   case framework::eInputOutputType_Device:
   {
-    DevicePtr device = std::dynamic_pointer_cast<Device>(get_midi_input());
+    DevicePtr device = std::dynamic_pointer_cast<Device>(port);
     if (p_midi_adapter->is_port_open())
     {
       LOG_WARNING("Track: play - MIDI port is already open ", device->to_string());
@@ -401,7 +401,7 @@ bool Track::open_midi_input()
     break;
   }
   default:
-    LOG_WARNING("Track: play - Unsupported MIDI input type.");
+    LOG_WARNING("Track: play - Unsupported MIDI port type.");
     return false;
   }
 

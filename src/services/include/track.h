@@ -213,8 +213,8 @@ public:
   std::string to_string() const;
 
 private:
-  bool open_audio_output();
-  bool open_midi_input();
+  bool open_audio_stream(framework::IInputOutputPtr stream);
+  bool open_midi_port(framework::IInputOutputPtr port);
 
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
 
