@@ -366,6 +366,13 @@ bool Track::open_audio_stream(framework::IInputOutputPtr stream)
     }
     break;
   }
+  case framework::eInputOutputType_File:
+  {
+    FilePtr file = std::dynamic_pointer_cast<File>(stream);
+    // TODO - Implement file streaming in FileAdapter
+    // p_file_adapter->open_audio_stream()
+    break;
+  }
   default:
     LOG_WARNING("Track: play - Unsupported audio stream type.");
     return false;
@@ -398,6 +405,13 @@ bool Track::open_midi_port(framework::IInputOutputPtr port)
       return false;
     }
 
+    break;
+  }
+  case framework::eInputOutputType_File:
+  {
+    FilePtr file = std::dynamic_pointer_cast<File>(port);
+    // TODO - Implement file streaming in FileAdapter
+    // p_file_adapter->open_midi_port()
     break;
   }
   default:

@@ -23,3 +23,15 @@ void FileAdapter::close()
 {
   p_file.reset();
 }
+
+bool FileAdapter::open_audio_stream(FilePtr file)
+{
+  // TODO - Implement FileAdapter::open_audio_stream()
+  return false;
+}
+
+bool FileAdapter::open_midi_port(FilePtr file)
+{
+  // TODO - Implement FileAdapter::open_midi_port()
+  return false;
+}
