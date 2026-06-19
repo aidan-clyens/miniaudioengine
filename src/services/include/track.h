@@ -213,6 +213,7 @@ public:
   std::string to_string() const;
 
 private:
+  bool open_audio_output();
   bool open_midi_input();
 
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove

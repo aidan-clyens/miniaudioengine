@@ -259,7 +259,7 @@ bool Track::play()
   if (has_audio_output())
   {
     LOG_INFO("Track: play - Opening audio output ", get_audio_output()->to_string());
-    // TODO - Audio Output
+    open_audio_output();
   }
 
   // MIDI Input
@@ -342,6 +342,38 @@ bool Track::is_playing()
   return false; // TODO - Implement Track running state
 }
 
+bool Track::open_audio_output()
+{
+  switch (get_audio_output()->get_type())
+  {
+  case framework::eInputOutputType_Device:
+  {
+    DevicePtr device = std::dynamic_pointer_cast<Device>(get_audio_output());
+    if (p_audio_adapter->is_stream_open())
+    {
+      LOG_WARNING("Track: play - Audio stream is already open ", device->to_string());
+      if (!p_audio_adapter->close_stream())
+      {
+        LOG_ERROR("Track: play - Failed to close audio stream ", device->to_string());
+        return false;
+      }
+    }
+
+    if (!p_audio_adapter->open_stream(device, nullptr))
+    {
+      LOG_ERROR("Track: play - Failed to open audio stream ", device->to_string());
+      return false;
+    }
+    break;
+  }
+  default:
+    LOG_WARNING("Track: play - Unsupported audio output type.");
+    return false;
+  }
+
+  return true;
+}
+
 bool Track::open_midi_input()
 {
   switch (get_midi_input()->get_type())
@@ -370,6 +402,7 @@ bool Track::open_midi_input()
   }
   default:
     LOG_WARNING("Track: play - Unsupported MIDI input type.");
+    return false;
   }
 
   return true;
