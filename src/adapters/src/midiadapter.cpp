@@ -54,15 +54,23 @@ std::vector<DevicePtr> MidiAdapter::get_devices()
   return devices;
 }
 
-bool MidiAdapter::open_input_port(unsigned int port_number, void *callback_context)
+bool MidiAdapter::open_input_port(DevicePtr device, void *callback_context)
 {
+  if (device->get_device_type() != Device::eDeviceType::Midi)
+  {
+    LOG_ERROR("MidiAdapter: Cannot open MIDI port. Device is not a MIDI device!");
+    throw std::runtime_error("MidiAdapter: Cannot open MIDI port. Device is not a MIDI device!");
+  }
+
+  LOG_DEBUG("MidiAdapter: Opening MIDI port ", device->to_string());
+
   p_rtmidi_in->setCallback(&MidiCallbackHandler::midi_callback, callback_context);
   p_rtmidi_in->ignoreTypes(false, true, true);
 
   // Set up the MIDI input port
   try
   {
-    p_rtmidi_in->openPort(port_number);
+    p_rtmidi_in->openPort(device->get_port_number());
   }
   catch (const RtMidiError &error)
   {
@@ -70,7 +78,7 @@ bool MidiAdapter::open_input_port(unsigned int port_number, void *callback_conte
     return false;
   }
 
-  LOG_DEBUG("MidiAdapter: Opened MIDI input port (ID=", port_number, ", Name=", p_rtmidi_in->getPortName(port_number), ")");
+  LOG_DEBUG("MidiAdapter: Opened MIDI input port ", device->to_string());
   return true;
 }
 

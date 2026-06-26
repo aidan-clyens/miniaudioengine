@@ -19,7 +19,7 @@ AudioSession::AudioSession()
 
   p_file_service = std::make_unique<FileService>();
   p_device_service = std::make_unique<DeviceService>(p_audio_adapter, p_midi_adapter);
-  p_track_service = std::make_unique<TrackService>(p_audio_adapter, p_midi_adapter);
+  p_track_service = std::make_unique<TrackService>();
 
   LOG_INFO("AudioSession: Initialized!");
 }
@@ -78,7 +78,7 @@ FilePtr AudioSession::get_midi_file(const std::filesystem::path &file_path) cons
 
 TrackList AudioSession::get_tracks() const
 {
-  return p_track_service->get_all_tracks();
+  return p_track_service->get_tracks();
 }
 
 TrackPtr AudioSession::add_track() const
@@ -88,7 +88,8 @@ TrackPtr AudioSession::add_track() const
 
 bool AudioSession::play()
 {
-  bool ret = p_track_service->get_main_track()->play();
+  // bool ret = p_track_service->get_main_track()->play();
+  bool ret = p_track_service->play();
   m_state = ret ? eAudioSessionState::Playing : eAudioSessionState::Stopped;
   return ret;
 }
@@ -102,7 +103,8 @@ bool AudioSession::record()
 
 bool AudioSession::stop()
 {
-  bool ret = p_track_service->get_main_track()->stop();
+  // bool ret = p_track_service->get_main_track()->stop();
+  bool ret = p_track_service->stop();
   m_state = ret ? eAudioSessionState::Stopped : eAudioSessionState::Playing;
   return ret;
 }

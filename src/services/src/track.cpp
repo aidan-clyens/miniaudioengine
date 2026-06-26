@@ -19,110 +19,6 @@ using namespace miniaudioengine::framework;
 using namespace miniaudioengine;
 
 // ============================================================================
-// Hierarchy Management
-// ============================================================================
-
-/** @brief Add a child track to this track.
- *  @param child The child track to add.
- *  @throws std::runtime_error if the child already has a parent or if adding would create a cycle.
- */
-void Track::add_child_track(TrackPtr child)
-{
-  if (!m_is_main_track)
-  {
-    LOG_ERROR("Track: Cannot add child track to a non-MainTrack.");
-    throw std::runtime_error("Only MainTrack may have children.");
-  }
-
-  if (!child)
-  {
-    LOG_ERROR("Track: Cannot add null child track.");
-    throw std::runtime_error("Cannot add null child track.");
-  }
-
-  if (child->has_parent())
-  {
-    LOG_ERROR("Track: Cannot add child track - it already has a parent.");
-    throw std::runtime_error("Child track already has a parent. Remove from parent first.");
-  }
-
-  if (child->is_main_track())
-  {
-    LOG_ERROR("Track: Cannot add MainTrack as a child.");
-    throw std::runtime_error("Cannot add MainTrack as a child.");
-  }
-
-  // Prevent adding self as child
-  if (child.get() == this)
-  {
-    LOG_ERROR("Track: Cannot add track as its own child.");
-    throw std::runtime_error("Cannot add track as its own child.");
-  }
-
-  {
-    std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
-    m_children.push_back(child);
-    child->m_parent = shared_from_this();
-  }
-
-  LOG_INFO("Track: Added child track. Total children: ", m_children.size());
-}
-
-/** @brief Remove a child track from this track.
- *  @param child The child track to remove.
- */
-void Track::remove_child_track(TrackPtr child)
-{
-  if (!m_is_main_track)
-  {
-    LOG_ERROR("Track: Cannot remove child track from a non-MainTrack.");
-    throw std::runtime_error("Only MainTrack may remove children.");
-  }
-
-  if (!child)
-  {
-    LOG_ERROR("Track: Cannot remove null child track.");
-    throw std::runtime_error("Cannot remove null child track.");
-  }
-
-  std::lock_guard<std::mutex> lock(m_hierarchy_mutex);
-  auto it = std::find(m_children.begin(), m_children.end(), child);
-  if (it != m_children.end())
-  {
-    child->m_parent.reset();
-    m_children.erase(it);
-    LOG_INFO("Track: Removed child track. Total children: ", m_children.size());
-  }
-}
-
-/** @brief Remove this track from its parent.
- */
-void Track::remove_from_parent()
-{
-  TrackPtr parent = get_parent();
-  if (parent)
-  {
-    parent->remove_child_track(shared_from_this());
-  }
-}
-
-/** @brief Get the parent track.
- *  @return Shared pointer to parent track, or nullptr if no parent.
- */
-TrackPtr Track::get_parent() const
-{
-  return m_parent.lock();
-}
-
-/** @brief Check if this track has a parent.
- *  @return True if track has a parent.
- */
-bool Track::has_parent() const
-{
-  return !m_parent.expired();
-}
-
-// ============================================================================
 // Audio/MIDI Input/Output
 // ============================================================================
 
@@ -191,13 +87,6 @@ void Track::add_audio_output(IInputOutputPtr output)
     throw std::runtime_error("This track already has an Audio Output.");
   }
 
-  // If Track is no the MainTrack, add audio output there instead
-  if (!m_is_main_track)
-  {
-    get_main_track()->add_audio_output(output);
-    return;
-  }
-
   if (output->get_type() == framework::eInputOutputType_Device)
   {
     auto device = std::dynamic_pointer_cast<Device>(output);
@@ -229,13 +118,6 @@ void Track::add_midi_output(IInputOutputPtr output)
     throw std::runtime_error("This track already has a MIDI output.");
   }
 
-  // If Track is no the MainTrack, add MIDI output there instead
-  if (!m_is_main_track)
-  {
-    get_main_track()->add_midi_output(output);
-    return;
-  }
-
   if (output->get_type() == framework::eInputOutputType_Device)
   {
     auto device = std::dynamic_pointer_cast<Device>(output);
@@ -246,7 +128,7 @@ void Track::add_midi_output(IInputOutputPtr output)
     }
 
     LOG_INFO("Track: Added MIDI output device: ", device->to_string());
-    m_midi_output = output;
+    p_midi_output = output;
   }
 }
 
@@ -264,11 +146,18 @@ void Track::remove_midi_input()
   p_midi_input = nullptr;
 }
 
+/** @brief Removes the audio output from the track.
+ */
+void Track::remove_audio_output()
+{
+  p_audio_output = nullptr;
+}
+
 /** @brief Removes the MIDI output from the track.
  */
 void Track::remove_midi_output()
 {
-  m_midi_output = nullptr;
+  p_midi_output = nullptr;
 }
 
 /** @brief Checks if the track has an audio input configured.
@@ -284,11 +173,6 @@ bool Track::has_audio_input() const
  */
 bool Track::has_audio_output() const
 {
-  if (!m_is_main_track)
-  {
-    auto main_track = get_main_track();
-    return main_track->has_audio_output();
-  }
   return p_audio_output != nullptr;
 }
 
@@ -305,12 +189,7 @@ bool Track::has_midi_input() const
  */
 bool Track::has_midi_output() const
 {
-  if (!m_is_main_track)
-  {
-    auto main_track = get_main_track();
-    return main_track->has_midi_output();
-  }
-  return m_midi_output != nullptr;
+  return p_midi_output != nullptr;
 }
 
 /** @brief Gets the audio input of the track.
@@ -342,15 +221,15 @@ IInputOutputPtr Track::get_midi_input() const
  */
 IInputOutputPtr Track::get_midi_output() const
 {
-  return m_midi_output;
+  return p_midi_output;
 }
 
-void Track::add_effects_processor(const IEffectsProcessorPtr processor)
+void Track::add_effects_processor(const IProcessorPtr processor)
 {
   m_effects_processors.push_back(processor);
 }
 
-std::vector<framework::IEffectsProcessorPtr> Track::get_effects_processors() const
+std::vector<framework::IProcessorPtr> Track::get_effects_processors() const
 {
   return m_effects_processors;
 }
@@ -369,34 +248,41 @@ bool Track::play()
     return false;
   }
 
-  auto main_track = get_main_track();
-  if (!main_track)
+  m_state = eTrackState::Stopped;
+
+  // Audio Input
+  if (has_audio_input())
   {
-    LOG_ERROR("Track: Cannot play - no MainTrack found in hierarchy.");
-    return false;
+    LOG_INFO("Track: play - Opening audio input ", get_audio_input()->to_string());
+    if (!open_audio_stream(get_audio_input()))
+      return false;
   }
 
-  // TODO - Get audio input and configure dataplane
-  // If audio input is a WAV file, start producer thread BEFORE starting audio stream
-  if (p_audio_input && p_audio_input->get_type() == framework::eInputOutputType_File)
+  // Audio Output
+  if (has_audio_output())
   {
-    FilePtr wav_file = std::dynamic_pointer_cast<File>(p_audio_input);
-    LOG_INFO("Track: Preloading WAV file data into AudioDataPlane ", wav_file->to_string());
+    LOG_INFO("Track: play - Opening audio output ", get_audio_output()->to_string());
+    if (!open_audio_stream(get_audio_output()))
+      return false;
   }
 
-  // TODO - Get MIDI input and configure dataplane
-  // If MIDI input is a MIDI device, ensure the port is open
-  if (p_midi_input && p_midi_input->get_type() == framework::eInputOutputType_Device)
+  // MIDI Input
+  if (has_midi_input())
   {
-    DevicePtr midi_device = std::dynamic_pointer_cast<Device>(p_midi_input);
-    LOG_INFO("Track: Opening MIDI input port ", midi_device->to_string());
+    LOG_INFO("Track: play - Opening MIDI input ", get_midi_input()->to_string());
+    if (!open_midi_port(get_midi_input()))
+      return false;
   }
 
-  if (!main_track->play())
+  // MIDI Output
+  if (has_midi_output())
   {
-    LOG_ERROR("Track: Failed to start MainTrack.");
-    return false;
+    LOG_INFO("Track: play - Opening MIDI output ", get_midi_output()->to_string());
+    if (!open_midi_port(get_midi_output()))
+      return false;
   }
+
+  m_state = eTrackState::Playing;
 
   LOG_INFO("Track: Started playing.");
   return true;
@@ -412,19 +298,13 @@ bool Track::stop()
   if (!is_playing())
   {
     LOG_WARNING("Track: Not currently playing.");
-    return false;
   }
 
-  // Clear data buffers and stop any data processing threads
-  auto main_track = get_main_track();
-  if (main_track)
-  {
-    if (!main_track->stop())
-    {
-      LOG_ERROR("Track: Failed to stop audio stream.");
-      return false;
-    }
-  }
+  if (p_file_adapter->is_audio_stream_open())
+    p_file_adapter->close_audio_stream();
+
+  m_state = eTrackState::Stopped;
+
   return true;
 }
 
@@ -466,55 +346,121 @@ void Track::handle_midi_message(const midi::MidiMessage& message)
   }
 }
 
-/** @brief Get the root MainTrack (traverses up hierarchy).
- *  @return Shared pointer to MainTrack, or nullptr if no root found.
- */
-std::shared_ptr<MainTrack> Track::get_main_track() const
-{
-  // If this is the main track, return it (need to cast)
-  if (m_is_main_track)
-  {
-    // Safe cast: we know this is a MainTrack because m_is_main_track is true
-    return std::static_pointer_cast<MainTrack>(const_cast<Track*>(this)->shared_from_this());
-  }
-
-  // Traverse up to find MainTrack
-  TrackPtr current = const_cast<Track*>(this)->shared_from_this();
-  while (current)
-  {
-    if (current->is_main_track())
-    {
-      return std::static_pointer_cast<MainTrack>(current);
-    }
-    current = current->get_parent();
-  }
-
-  return nullptr; // No MainTrack found (shouldn't happen in normal usage)
-}
-
 /** @brief Check if the track is currently playing.
  *  @return True if the track is playing, false otherwise.
  */
 bool Track::is_playing()
 {
-  auto main_track = get_main_track();
-  if (!main_track)
+  return m_state == eTrackState::Playing;
+}
+
+bool Track::open_audio_stream(framework::IInputOutputPtr stream)
+{
+  switch (stream->get_type())
   {
+  case framework::eInputOutputType_Device:
+  {
+    DevicePtr device = std::dynamic_pointer_cast<Device>(stream);
+    if (p_audio_adapter->is_stream_open())
+    {
+      LOG_WARNING("Track: play - Audio stream is already open ", device->to_string());
+      if (!p_audio_adapter->close_stream())
+      {
+        LOG_ERROR("Track: play - Failed to close audio stream ", device->to_string());
+        return false;
+      }
+    }
+
+    if (!p_audio_adapter->open_stream(device, nullptr))
+    {
+      LOG_ERROR("Track: play - Failed to open audio stream ", device->to_string());
+      return false;
+    }
+    break;
+  }
+  case framework::eInputOutputType_File:
+  {
+    FilePtr file = std::dynamic_pointer_cast<File>(stream);
+    if (p_file_adapter->is_audio_stream_open())
+    {
+      LOG_WARNING("Track: play - Audio stream is already open ", file->to_string());
+      if (!p_file_adapter->close_audio_stream())
+      {
+        LOG_ERROR("Track: play - Failed to close audio stream ", file->to_string());
+        return false;
+      }
+    }
+
+    if (!p_file_adapter->open_audio_stream(file))
+    {
+      LOG_ERROR("Track: play - Failed to open audio stream ", file->to_string());
+      return false;
+    }
+    break;
+  }
+  default:
+    LOG_WARNING("Track: play - Unsupported audio stream type.");
     return false;
   }
 
-  return main_track->is_playing();
+  return true;
+}
+
+bool Track::open_midi_port(framework::IInputOutputPtr port)
+{
+  switch (port->get_type())
+  {
+  case framework::eInputOutputType_Device:
+  {
+    DevicePtr device = std::dynamic_pointer_cast<Device>(port);
+    if (p_midi_adapter->is_port_open())
+    {
+      LOG_WARNING("Track: play - MIDI port is already open ", device->to_string());
+      if (!p_midi_adapter->close_input_port())
+      {
+        LOG_ERROR("Track: play - Failed to close MIDI port ", device->to_string());
+        return false;
+      }
+    }
+
+    // TODO - Move MidiAdapter & AudioAdapter to Device class?
+    if (!p_midi_adapter->open_input_port(device, nullptr))
+    {
+      LOG_ERROR("Track: play - Failed to open MIDI port ", device->to_string());
+      return false;
+    }
+
+    break;
+  }
+  case framework::eInputOutputType_File:
+  {
+    FilePtr file = std::dynamic_pointer_cast<File>(port);
+    // TODO - Implement file streaming in FileAdapter
+    // p_file_adapter->open_midi_port()
+    break;
+  }
+  default:
+    LOG_WARNING("Track: play - Unsupported MIDI port type.");
+    return false;
+  }
+
+  return true;
 }
 
 std::string Track::to_string() const
 {
   IInputOutputPtr audio_input = get_audio_input();
+  IInputOutputPtr audio_output = get_audio_output();
   IInputOutputPtr midi_input = get_midi_input();
   IInputOutputPtr midi_output = get_midi_output();
 
   std::string audio_input_str = audio_input ?
     (audio_input->get_type() == framework::eInputOutputType_Device  ?
     std::dynamic_pointer_cast<Device>(audio_input)->to_string() : std::dynamic_pointer_cast<File>(audio_input)->to_string()) : "None";
+
+  std::string audio_output_str = audio_output ?
+    (audio_output->get_type() == framework::eInputOutputType_Device  ?
+    std::dynamic_pointer_cast<Device>(audio_output)->to_string() : std::dynamic_pointer_cast<File>(audio_output)->to_string()) : "None";
 
   std::string midi_input_str = midi_input ?
     (midi_input->get_type() == framework::eInputOutputType_Device  ?
@@ -525,6 +471,7 @@ std::string Track::to_string() const
     std::dynamic_pointer_cast<Device>(midi_output)->to_string() : std::dynamic_pointer_cast<File>(midi_output)->to_string()) : "None";
 
   return "Track(AudioInput=" + audio_input_str +
+         ", AudioOutput=" + audio_output_str +
          ", MidiInput=" + midi_input_str +
          ", MidiOutput=" + midi_output_str + ")";
 }

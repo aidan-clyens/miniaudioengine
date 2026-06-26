@@ -17,6 +17,12 @@ enum eInputOutputType
   eInputOutputType_None
 };
 
+enum eInputOutputDirection
+{
+  eInputOutputDirection_Input,
+  eInputOutputDirection_Output
+};
+
 /** @class IInputOutput
  *  @brief This is an abstract interface designated the derived object is an audio or MIDI I/O interface.
  */

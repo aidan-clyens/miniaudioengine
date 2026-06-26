@@ -12,16 +12,6 @@
 namespace miniaudioengine::adapters
 {
 
-/** @struct MidiPort
-  * @brief Represents a MIDI port with its number and name.
-  * @deprecated Replaced by DevicePtr
-  */
-struct MidiPort
-{
-  unsigned int port_number;
-  std::string port_name;
-};
-
 /** @class MidiCallbackHandler
  *  @brief Handles RtMidi callback functions.
  */
@@ -55,7 +45,7 @@ public:
   unsigned int get_device_count();
   std::vector<DevicePtr> get_devices();
 
-  bool open_input_port(unsigned int port_number, void *callback_context);
+  bool open_input_port(DevicePtr device, void *callback_context);
   bool close_input_port();
 
   bool is_port_open();

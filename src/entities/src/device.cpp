@@ -1,4 +1,5 @@
 #include "device.h"
+#include "logger.h"
 
 #include <string>
 #include <vector>
@@ -66,6 +67,11 @@ bool Device::is_output() const
   if (p_impl->device_type == eDeviceType::Audio)
     return p_impl->output_channels > 0 || p_impl->duplex_channels > 0;
   return p_impl->is_default_output;
+}
+
+unsigned int Device::get_port_number() const
+{
+  return p_impl->id;
 }
 
 std::string Device::to_string() const
