@@ -248,6 +248,8 @@ bool Track::play()
     return false;
   }
 
+  m_state = eTrackState::Stopped;
+
   // Audio Input
   if (has_audio_input())
   {
@@ -280,6 +282,8 @@ bool Track::play()
       return false;
   }
 
+  m_state = eTrackState::Playing;
+
   LOG_INFO("Track: Started playing.");
   return true;
 }
@@ -294,8 +298,12 @@ bool Track::stop()
   if (!is_playing())
   {
     LOG_WARNING("Track: Not currently playing.");
-    return false;
   }
+
+  if (p_file_adapter->is_audio_stream_open())
+    p_file_adapter->close_audio_stream();
+
+  m_state = eTrackState::Stopped;
 
   return true;
 }
@@ -343,7 +351,7 @@ void Track::handle_midi_message(const midi::MidiMessage& message)
  */
 bool Track::is_playing()
 {
-  return false; // TODO - Implement Track running state
+  return m_state == eTrackState::Playing;
 }
 
 bool Track::open_audio_stream(framework::IInputOutputPtr stream)

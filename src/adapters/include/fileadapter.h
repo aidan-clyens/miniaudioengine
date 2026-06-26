@@ -8,12 +8,29 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
+#include <thread>
 
 namespace miniaudioengine::adapters
 {
 
 typedef SNDFILE SndFile;
 typedef SF_INFO SndFileInfo;
+
+class FileAudioStreamThread
+{
+public:
+  FileAudioStreamThread() = default;
+  ~FileAudioStreamThread() = default;
+
+  bool start();
+  bool stop();
+  bool is_running() { return p_audio_stream_thread != nullptr; }
+
+  static void callback(std::stop_token stop_token);
+
+private:
+  std::unique_ptr<std::jthread> p_audio_stream_thread;
+};
 
 class FileAdapter
 {
@@ -31,16 +48,16 @@ public:
   // File contents should be tranferred between file and a lock-free buffer in the data thread 
 
   bool open_audio_stream(FilePtr file);
-  // TODO
-  bool close_audio_stream() { return false; }
-  // TODO
-  bool is_audio_stream_open() { return false; }
+  bool close_audio_stream();
+  bool is_audio_stream_open();
 
   bool open_midi_stream(FilePtr file);
 
 private:
   std::shared_ptr<SndFile> p_file = nullptr;
   SndFileInfo m_info = {};
+
+  FileAudioStreamThread m_audio_stream_thread;
 
   static FilePtr make_wav_file_handle(const std::filesystem::path &path)
   {

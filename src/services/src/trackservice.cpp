@@ -50,10 +50,13 @@ void TrackService::clear_tracks()
 bool TrackService::play()
 {
   LOG_INFO("TrackService: play - ", get_tracks().size(), " Track(s)");
-
   for (const auto &track : m_tracks)
   {
-    track->play();
+    if (!track->play())
+    {
+      track->stop();
+      return false;
+    }
   }
   return true;
 }
@@ -61,5 +64,12 @@ bool TrackService::play()
 bool TrackService::stop()
 {
   LOG_INFO("TrackService: stop");
+  for (const auto &track : m_tracks)
+  {
+    if (!track->stop())
+    {
+      return false;
+    }
+  }
   return true;
 }

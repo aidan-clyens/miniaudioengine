@@ -38,6 +38,12 @@ typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOnCa
 typedef std::function<void(const midi::MidiNoteMessage&, TrackPtr)> MidiNoteOffCallbackFunc;
 typedef std::function<void(const midi::MidiControlMessage&, TrackPtr)> MidiControlCallbackFunc;
 
+enum class eTrackState
+{
+  Stopped,
+  Playing
+};
+
 /** @enum eTrackEvent
  *  @brief Track events to handle in callbacks.
  */
@@ -220,6 +226,8 @@ private:
 
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
 
+  eTrackState m_state = eTrackState::Stopped;
+  
   TrackEventCallback m_event_callback;
 
   framework::IInputOutputPtr p_audio_input;
