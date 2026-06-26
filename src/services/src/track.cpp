@@ -252,28 +252,32 @@ bool Track::play()
   if (has_audio_input())
   {
     LOG_INFO("Track: play - Opening audio input ", get_audio_input()->to_string());
-    open_audio_stream(get_audio_input());
+    if (!open_audio_stream(get_audio_input()))
+      return false;
   }
 
   // Audio Output
   if (has_audio_output())
   {
     LOG_INFO("Track: play - Opening audio output ", get_audio_output()->to_string());
-    open_audio_stream(get_audio_output());
+    if (!open_audio_stream(get_audio_output()))
+      return false;
   }
 
   // MIDI Input
   if (has_midi_input())
   {
     LOG_INFO("Track: play - Opening MIDI input ", get_midi_input()->to_string());
-    open_midi_port(get_midi_input());
+    if (!open_midi_port(get_midi_input()))
+      return false;
   }
 
   // MIDI Output
   if (has_midi_output())
   {
     LOG_INFO("Track: play - Opening MIDI output ", get_midi_output()->to_string());
-    open_midi_port(get_midi_output());
+    if (!open_midi_port(get_midi_output()))
+      return false;
   }
 
   LOG_INFO("Track: Started playing.");
@@ -369,8 +373,21 @@ bool Track::open_audio_stream(framework::IInputOutputPtr stream)
   case framework::eInputOutputType_File:
   {
     FilePtr file = std::dynamic_pointer_cast<File>(stream);
-    // TODO - Implement file streaming in FileAdapter
-    // p_file_adapter->open_audio_stream()
+    if (p_file_adapter->is_audio_stream_open())
+    {
+      LOG_WARNING("Track: play - Audio stream is already open ", file->to_string());
+      if (!p_file_adapter->close_audio_stream())
+      {
+        LOG_ERROR("Track: play - Failed to close audio stream ", file->to_string());
+        return false;
+      }
+    }
+
+    if (!p_file_adapter->open_audio_stream(file))
+    {
+      LOG_ERROR("Track: play - Failed to open audio stream ", file->to_string());
+      return false;
+    }
     break;
   }
   default:

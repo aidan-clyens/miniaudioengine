@@ -17,6 +17,7 @@
 #include "miditypes.h"
 #include "audioadapter.h"
 #include "midiadapter.h"
+#include "fileadapter.h"
 
 namespace miniaudioengine
 {
@@ -69,7 +70,8 @@ public:
                      p_midi_input(nullptr),
                      p_midi_output(nullptr),
                      p_audio_adapter(std::make_shared<adapters::AudioAdapter>()),
-                     p_midi_adapter(std::make_shared<adapters::MidiAdapter>())
+                     p_midi_adapter(std::make_shared<adapters::MidiAdapter>()),
+                     p_file_adapter(std::make_shared<adapters::FileAdapter>())
   {}
 
   virtual ~Track() = default;
@@ -233,6 +235,7 @@ private:
 
   adapters::AudioAdapterPtr p_audio_adapter = nullptr;
   adapters::MidiAdapterPtr p_midi_adapter = nullptr;
+  adapters::FileAdapterPtr p_file_adapter = nullptr;
 };
 
 }  // namespace miniaudioengine
