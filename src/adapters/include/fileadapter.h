@@ -2,6 +2,7 @@
 #define __FILE_ADAPTER_H__
 
 #include "file.h"
+#include "lockfree_ringbuffer.h"
 
 #include <sndfile.h>
 #include <filesystem>
@@ -16,26 +17,50 @@ namespace miniaudioengine::adapters
 typedef SNDFILE SndFile;
 typedef SF_INFO SndFileInfo;
 
+constexpr size_t BUFFER_SIZE = 1024;
+
+// TODO - Should FileAudioStreamThread be moved to FileService instead?
 class FileAudioStreamThread
 {
 public:
+
+  using Buffer = framework::LockfreeRingBuffer<unsigned int, BUFFER_SIZE>;
+  using BufferPtr = std::shared_ptr<Buffer>;
+
+  enum class eDirection
+  {
+    Input,
+    Output,
+  };
+
+  struct Params
+  {
+    FilePtr file;
+    BufferPtr buffer;
+    eDirection direction;
+  };
+
   FileAudioStreamThread() = default;
   ~FileAudioStreamThread() = default;
+  // TODO - Cannot be copied
 
-  bool start();
+  bool start(FilePtr file, BufferPtr buffer, eDirection direction);
   bool stop();
   bool is_running() { return p_audio_stream_thread != nullptr; }
 
-  static void callback(std::stop_token stop_token);
+  static void callback(std::stop_token stop_token, const Params &params);
 
 private:
   std::unique_ptr<std::jthread> p_audio_stream_thread;
 };
 
+/** @class FileAdapter 
+  * @brief Interface to backend audio file library. e.g. sndfile. 
+  */
 class FileAdapter
 {
 public:
-  FileAdapter() = default;
+  FileAdapter();
   ~FileAdapter() = default;
 
   bool open(const char* filename);
@@ -58,6 +83,7 @@ private:
   SndFileInfo m_info = {};
 
   FileAudioStreamThread m_audio_stream_thread;
+  FileAudioStreamThread::BufferPtr p_buffer;
 
   static FilePtr make_wav_file_handle(const std::filesystem::path &path)
   {

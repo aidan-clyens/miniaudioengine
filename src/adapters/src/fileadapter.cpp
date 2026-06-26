@@ -5,7 +5,7 @@
 
 using namespace miniaudioengine::adapters;
 
-bool FileAudioStreamThread::start()
+bool FileAudioStreamThread::start(FilePtr file, BufferPtr buffer, eDirection direction)
 {
   if (is_running())
   {
@@ -13,8 +13,10 @@ bool FileAudioStreamThread::start()
     return false;
   }
 
+  Params params = { file, buffer, direction };
+
   // Create new thread
-  p_audio_stream_thread = std::make_unique<std::jthread>(FileAudioStreamThread::callback);
+  p_audio_stream_thread = std::make_unique<std::jthread>(FileAudioStreamThread::callback, params);
 
   LOG_DEBUG("FileAudioStreamThread: start - Started audio stream thread");
   return true;
@@ -34,7 +36,7 @@ bool FileAudioStreamThread::stop()
   return true;
 }
 
-void FileAudioStreamThread::callback(std::stop_token stop_token)
+void FileAudioStreamThread::callback(std::stop_token stop_token, const Params &params)
 {
   framework::set_thread_name("FileAudioStreamThread");
 
@@ -46,9 +48,23 @@ void FileAudioStreamThread::callback(std::stop_token stop_token)
       break;
     }
 
-    LOG_DEBUG("FileAudioStreamThread: callback - Running");
+    switch (params.direction)
+    {
+      case eDirection::Input:
+        LOG_DEBUG("FileAudioStreamThread: callback - File Input");
+        break;
+      case eDirection::Output:
+        LOG_DEBUG("FileAudioStreamThread: callback - File Output");
+        break;
+    }
+
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
+}
+
+FileAdapter::FileAdapter(): p_buffer(std::make_shared<FileAudioStreamThread::Buffer>())
+{
+
 }
 
 bool FileAdapter::open(const char *filename)
@@ -86,7 +102,8 @@ bool FileAdapter::open_audio_stream(FilePtr file)
     }
   }
 
-  if (!m_audio_stream_thread.start())
+  // TODO - Add I/O direction parameter instead of hard-coding
+  if (!m_audio_stream_thread.start(file, p_buffer, FileAudioStreamThread::eDirection::Input))
   {
     LOG_ERROR("FileAdapter: open_audio_stream - Failed to start audio stream thread");
     return false;
