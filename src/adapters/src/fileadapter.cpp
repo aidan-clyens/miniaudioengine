@@ -30,8 +30,8 @@ bool FileAdapter::open_audio_stream(FilePtr file)
   return false;
 }
 
-bool FileAdapter::open_midi_port(FilePtr file)
+bool FileAdapter::open_midi_stream(FilePtr file)
 {
-  // TODO - Implement FileAdapter::open_midi_port()
+  // TODO - Implement FileAdapter::open_midi_stream()
   return false;
 }

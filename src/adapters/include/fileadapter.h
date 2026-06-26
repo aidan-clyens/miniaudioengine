@@ -31,7 +31,12 @@ public:
   // File contents should be tranferred between file and a lock-free buffer in the data thread 
 
   bool open_audio_stream(FilePtr file);
-  bool open_midi_port(FilePtr file);
+  // TODO
+  bool close_audio_stream() { return false; }
+  // TODO
+  bool is_audio_stream_open() { return false; }
+
+  bool open_midi_stream(FilePtr file);
 
 private:
   std::shared_ptr<SndFile> p_file = nullptr;
@@ -47,6 +52,8 @@ private:
     return FileHandleFactory::make_midi(path);
   }
 };
+
+using FileAdapterPtr = std::shared_ptr<FileAdapter>;
 
 } // namespace miniaudioengine::adapters
 
