@@ -1,4 +1,4 @@
-name: Build Docker Image
+name: Build using Docker
 
 on:
   push:
@@ -54,6 +54,11 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
     steps:
+    - name: List Dir
+      run: |
+        pwd;
+        ls -la;
+
     - name: CMake Configure (ubuntu-release)
       run: |
         cmake --preset ubuntu-release
