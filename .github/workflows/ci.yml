@@ -49,10 +49,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-push-image
     container:
-    image: ${{ env.IMAGE_NAME }}
-    credentials:
-      username: ${{ github.actor }}
-      password: ${{ secrets.github_token }}
+      image: ${{ env.IMAGE_NAME }}
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.github_token }}
     steps:
     - name: Test
       run: |
