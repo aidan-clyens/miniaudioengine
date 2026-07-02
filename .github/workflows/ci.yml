@@ -44,3 +44,16 @@ jobs:
           tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
           labels: |
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
+
+  build:
+    runs-on: ubuntu-latest
+    needs: build-and-push-image
+    container:
+    image: ${{ env.IMAGE_NAME }}
+    credentials:
+      username: ${{ github.actor }}
+      password: ${{ secrets.github_token }}
+    steps:
+    - name: Test
+      run: |
+        echo "Hello World! Running inside Docker container ${{ env.IMAGE_NAME }}"
