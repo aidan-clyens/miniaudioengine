@@ -54,6 +54,9 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
     steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
     - name: List Dir
       run: |
         pwd;
