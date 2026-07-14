@@ -12,15 +12,15 @@ namespace miniaudioengine::framework
  */
 enum eInputOutputType
 {
-  eInputOutputType_Device,
-  eInputOutputType_File,
-  eInputOutputType_None
+  Device,
+  File,
+  None
 };
 
 enum eInputOutputDirection
 {
-  eInputOutputDirection_Input,
-  eInputOutputDirection_Output
+  Input,
+  Output
 };
 
 /** @class IInputOutput
@@ -39,8 +39,19 @@ public:
     return m_io_type;
   }
 
+  void set_direction(const eInputOutputDirection &direction)
+  {
+    m_direction = direction;
+  }
+
+  eInputOutputDirection get_direction() const
+  {
+    return m_direction;
+  }
+
 private:
-  eInputOutputType m_io_type = eInputOutputType_None;
+  eInputOutputType m_io_type = None;
+  eInputOutputDirection m_direction = Input;
 };
 
 using IInputOutputPtr = std::shared_ptr<IInputOutput>;

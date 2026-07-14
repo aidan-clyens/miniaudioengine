@@ -34,11 +34,11 @@ struct Device::Impl
 // Device — member implementations
 // =============================================================================
 
-Device::Device() : IInputOutput(framework::eInputOutputType_Device)
+Device::Device() : IInputOutput(framework::Device)
 {}
 
 Device::Device(std::unique_ptr<Impl> impl)
-    : IInputOutput(framework::eInputOutputType_Device),
+    : IInputOutput(framework::Device),
       p_impl(std::move(impl))
 {}
 

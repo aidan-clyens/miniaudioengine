@@ -28,9 +28,9 @@ struct File::Impl
 // File — member implementations
 // =============================================================================
 
-File::File() : framework::IInputOutput(framework::eInputOutputType_File) {}
+File::File() : framework::IInputOutput(framework::File) {}
 
-File::File(std::unique_ptr<Impl> impl) : framework::IInputOutput(framework::eInputOutputType_File),
+File::File(std::unique_ptr<Impl> impl) : framework::IInputOutput(framework::File),
                                          p_impl(std::move(impl)) {}
 
 File::~File() = default;

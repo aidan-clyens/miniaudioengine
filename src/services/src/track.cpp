@@ -32,7 +32,7 @@ void Track::add_audio_input(IInputOutputPtr input)
     throw std::runtime_error("This Track already has an Audio Input.");
   }
 
-  if (input->get_type() == framework::eInputOutputType_Device)
+  if (input->get_type() == framework::Device)
   {
     DevicePtr device = std::dynamic_pointer_cast<Device>(input);
     if (!device->is_input())
@@ -44,12 +44,14 @@ void Track::add_audio_input(IInputOutputPtr input)
     p_audio_input = input;
   }
 
-  if (input->get_type() == framework::eInputOutputType_File)
+  if (input->get_type() == framework::File)
   {
     FilePtr file = std::dynamic_pointer_cast<File>(input);
     LOG_INFO("Track: Added Audio Input - ", file->to_string());
     p_audio_input = input;
   }
+
+  input->set_direction(framework::eInputOutputDirection::Input);
 }
 
 /** @brief Adds a MIDI input to the track.
@@ -63,7 +65,7 @@ void Track::add_midi_input(IInputOutputPtr input)
     throw std::runtime_error("This track already has a MIDI Input.");
   }
 
-  if (input->get_type() == framework::eInputOutputType_Device)
+  if (input->get_type() == framework::Device)
   {
     auto device = std::dynamic_pointer_cast<Device>(input);
     if (!device->is_input())
@@ -74,6 +76,8 @@ void Track::add_midi_input(IInputOutputPtr input)
     LOG_INFO("Track: Added MIDI Input Device: ", device->to_string());
     p_midi_input = input;
   }
+
+  input->set_direction(framework::eInputOutputDirection::Input);
 }
 
 /** @brief Adds a MIDI output to the track.
@@ -87,7 +91,7 @@ void Track::add_audio_output(IInputOutputPtr output)
     throw std::runtime_error("This track already has an Audio Output.");
   }
 
-  if (output->get_type() == framework::eInputOutputType_Device)
+  if (output->get_type() == framework::Device)
   {
     auto device = std::dynamic_pointer_cast<Device>(output);
     if (!device->is_output())
@@ -99,12 +103,14 @@ void Track::add_audio_output(IInputOutputPtr output)
     p_audio_output = output;
   }
 
-  if (output->get_type() == framework::eInputOutputType_File)
+  if (output->get_type() == framework::File)
   {
     auto file = std::dynamic_pointer_cast<File>(output);
     LOG_INFO("Track: Added Audio Output - ", file->to_string());
     p_audio_output = output;
   }
+
+  output->set_direction(framework::eInputOutputDirection::Output);
 }
 
 /** @brief Adds a MIDI output to the track.
@@ -118,7 +124,7 @@ void Track::add_midi_output(IInputOutputPtr output)
     throw std::runtime_error("This track already has a MIDI output.");
   }
 
-  if (output->get_type() == framework::eInputOutputType_Device)
+  if (output->get_type() == framework::Device)
   {
     auto device = std::dynamic_pointer_cast<Device>(output);
     if (!device->is_output())
@@ -130,6 +136,8 @@ void Track::add_midi_output(IInputOutputPtr output)
     LOG_INFO("Track: Added MIDI output device: ", device->to_string());
     p_midi_output = output;
   }
+
+  output->set_direction(framework::eInputOutputDirection::Output);
 }
 
 /** @brief Removes the audio input from the track.
@@ -358,7 +366,7 @@ bool Track::open_audio_stream(framework::IInputOutputPtr stream)
 {
   switch (stream->get_type())
   {
-  case framework::eInputOutputType_Device:
+  case framework::Device:
   {
     DevicePtr device = std::dynamic_pointer_cast<Device>(stream);
     if (p_audio_adapter->is_stream_open())
@@ -378,7 +386,7 @@ bool Track::open_audio_stream(framework::IInputOutputPtr stream)
     }
     break;
   }
-  case framework::eInputOutputType_File:
+  case framework::File:
   {
     FilePtr file = std::dynamic_pointer_cast<File>(stream);
     if (p_file_adapter->is_audio_stream_open())
@@ -410,7 +418,7 @@ bool Track::open_midi_port(framework::IInputOutputPtr port)
 {
   switch (port->get_type())
   {
-  case framework::eInputOutputType_Device:
+  case framework::Device:
   {
     DevicePtr device = std::dynamic_pointer_cast<Device>(port);
     if (p_midi_adapter->is_port_open())
@@ -432,7 +440,7 @@ bool Track::open_midi_port(framework::IInputOutputPtr port)
 
     break;
   }
-  case framework::eInputOutputType_File:
+  case framework::File:
   {
     FilePtr file = std::dynamic_pointer_cast<File>(port);
     // TODO - Implement file streaming in FileAdapter
@@ -455,19 +463,19 @@ std::string Track::to_string() const
   IInputOutputPtr midi_output = get_midi_output();
 
   std::string audio_input_str = audio_input ?
-    (audio_input->get_type() == framework::eInputOutputType_Device  ?
+    (audio_input->get_type() == framework::Device  ?
     std::dynamic_pointer_cast<Device>(audio_input)->to_string() : std::dynamic_pointer_cast<File>(audio_input)->to_string()) : "None";
 
   std::string audio_output_str = audio_output ?
-    (audio_output->get_type() == framework::eInputOutputType_Device  ?
+    (audio_output->get_type() == framework::Device  ?
     std::dynamic_pointer_cast<Device>(audio_output)->to_string() : std::dynamic_pointer_cast<File>(audio_output)->to_string()) : "None";
 
   std::string midi_input_str = midi_input ?
-    (midi_input->get_type() == framework::eInputOutputType_Device  ?
+    (midi_input->get_type() == framework::Device  ?
     std::dynamic_pointer_cast<Device>(midi_input)->to_string() : std::dynamic_pointer_cast<File>(midi_input)->to_string()) : "None";
 
   std::string midi_output_str = midi_output ?
-    (midi_output->get_type() == framework::eInputOutputType_Device  ?
+    (midi_output->get_type() == framework::Device  ?
     std::dynamic_pointer_cast<Device>(midi_output)->to_string() : std::dynamic_pointer_cast<File>(midi_output)->to_string()) : "None";
 
   return "Track(AudioInput=" + audio_input_str +
