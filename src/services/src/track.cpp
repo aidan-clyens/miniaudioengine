@@ -262,7 +262,7 @@ bool Track::play()
   if (has_audio_input())
   {
     LOG_INFO("Track: play - Opening audio input ", get_audio_input()->to_string());
-    if (!open_audio_stream(get_audio_input()))
+    if (!open_stream(get_audio_input()))
       return false;
   }
 
@@ -270,7 +270,7 @@ bool Track::play()
   if (has_audio_output())
   {
     LOG_INFO("Track: play - Opening audio output ", get_audio_output()->to_string());
-    if (!open_audio_stream(get_audio_output()))
+    if (!open_stream(get_audio_output()))
       return false;
   }
 
@@ -278,7 +278,7 @@ bool Track::play()
   if (has_midi_input())
   {
     LOG_INFO("Track: play - Opening MIDI input ", get_midi_input()->to_string());
-    if (!open_midi_port(get_midi_input()))
+    if (!open_stream(get_midi_input()))
       return false;
   }
 
@@ -286,7 +286,7 @@ bool Track::play()
   if (has_midi_output())
   {
     LOG_INFO("Track: play - Opening MIDI output ", get_midi_output()->to_string());
-    if (!open_midi_port(get_midi_output()))
+    if (!open_stream(get_midi_output()))
       return false;
   }
 
@@ -307,9 +307,6 @@ bool Track::stop()
   {
     LOG_WARNING("Track: Not currently playing.");
   }
-
-  if (p_file_adapter->is_audio_stream_open())
-    p_file_adapter->close_audio_stream();
 
   m_state = eTrackState::Stopped;
 
@@ -362,93 +359,21 @@ bool Track::is_playing()
   return m_state == eTrackState::Playing;
 }
 
-bool Track::open_audio_stream(framework::IInputOutputPtr stream)
+bool Track::open_stream(framework::IInputOutputPtr stream)
 {
-  switch (stream->get_type())
+  if (stream->is_stream_open())
   {
-  case framework::Device:
-  {
-    DevicePtr device = std::dynamic_pointer_cast<Device>(stream);
-    if (p_audio_adapter->is_stream_open())
+    LOG_WARNING("Track: play - Stream is already open ", stream->to_string());
+    if (!stream->close_stream())
     {
-      LOG_WARNING("Track: play - Audio stream is already open ", device->to_string());
-      if (!p_audio_adapter->close_stream())
-      {
-        LOG_ERROR("Track: play - Failed to close audio stream ", device->to_string());
-        return false;
-      }
-    }
-
-    if (!p_audio_adapter->open_stream(device))
-    {
-      LOG_ERROR("Track: play - Failed to open audio stream ", device->to_string());
+      LOG_ERROR("Track: play - Failed to close stream ", stream->to_string());
       return false;
     }
-    break;
   }
-  case framework::File:
+
+  if (!stream->open_stream())
   {
-    FilePtr file = std::dynamic_pointer_cast<File>(stream);
-    if (p_file_adapter->is_audio_stream_open())
-    {
-      LOG_WARNING("Track: play - Audio stream is already open ", file->to_string());
-      if (!p_file_adapter->close_audio_stream())
-      {
-        LOG_ERROR("Track: play - Failed to close audio stream ", file->to_string());
-        return false;
-      }
-    }
-
-    if (!p_file_adapter->open_audio_stream(file))
-    {
-      LOG_ERROR("Track: play - Failed to open audio stream ", file->to_string());
-      return false;
-    }
-    break;
-  }
-  default:
-    LOG_WARNING("Track: play - Unsupported audio stream type.");
-    return false;
-  }
-
-  return true;
-}
-
-bool Track::open_midi_port(framework::IInputOutputPtr port)
-{
-  switch (port->get_type())
-  {
-  case framework::Device:
-  {
-    DevicePtr device = std::dynamic_pointer_cast<Device>(port);
-    if (p_midi_adapter->is_port_open())
-    {
-      LOG_WARNING("Track: play - MIDI port is already open ", device->to_string());
-      if (!p_midi_adapter->close_input_port())
-      {
-        LOG_ERROR("Track: play - Failed to close MIDI port ", device->to_string());
-        return false;
-      }
-    }
-
-    // TODO - Move MidiAdapter & AudioAdapter to Device class?
-    if (!p_midi_adapter->open_input_port(device, nullptr))
-    {
-      LOG_ERROR("Track: play - Failed to open MIDI port ", device->to_string());
-      return false;
-    }
-
-    break;
-  }
-  case framework::File:
-  {
-    FilePtr file = std::dynamic_pointer_cast<File>(port);
-    // TODO - Implement file streaming in FileAdapter
-    // p_file_adapter->open_midi_port()
-    break;
-  }
-  default:
-    LOG_WARNING("Track: play - Unsupported MIDI port type.");
+    LOG_ERROR("Track: play - Failed to open stream ", stream->to_string());
     return false;
   }
 

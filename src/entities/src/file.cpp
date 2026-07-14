@@ -19,8 +19,6 @@ struct File::Impl
 {
   File::eFileType file_type;
   std::filesystem::path filepath;
-
-  // WAV-only fields (zeroed/empty for MIDI)
   adapters::FileAdapter file_adapter;
 };
 
@@ -28,9 +26,9 @@ struct File::Impl
 // File — member implementations
 // =============================================================================
 
-File::File() : framework::IInputOutput(framework::File) {}
+File::File() : framework::IInputOutput(framework::eInputOutputType::File) {}
 
-File::File(std::unique_ptr<Impl> impl) : framework::IInputOutput(framework::File),
+File::File(std::unique_ptr<Impl> impl) : framework::IInputOutput(framework::eInputOutputType::File),
                                          p_impl(std::move(impl)) {}
 
 File::~File() = default;
@@ -105,6 +103,22 @@ void File::seek(long long frame_offset)
 {
   if (p_impl->file_type != eFileType::Wav || !p_impl->file_adapter.get_file()) return;
   sf_seek(p_impl->file_adapter.get_file(), static_cast<sf_count_t>(frame_offset), SEEK_SET);
+}
+
+bool File::is_stream_open()
+{
+  return p_impl->file_adapter.is_audio_stream_open();
+}
+
+bool File::close_stream()
+{
+  return p_impl->file_adapter.close_audio_stream();
+}
+
+bool File::open_stream()
+{
+  LOG_ERROR("File: open_stream not implemented!");
+  throw std::runtime_error("Device: open_stream not implemented!");
 }
 
 std::string File::to_string() const

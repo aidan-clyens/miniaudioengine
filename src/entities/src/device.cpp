@@ -55,6 +55,24 @@ unsigned int Device::get_duplex_channels() const { return p_impl->duplex_channel
 const std::vector<unsigned int>& Device::get_sample_rates() const { return p_impl->sample_rates; }
 unsigned int Device::get_preferred_sample_rate() const { return p_impl->preferred_sample_rate; }
 
+bool Device::is_stream_open()
+{
+  LOG_ERROR("Device: is_stream_open not implemented!");
+  throw std::runtime_error("Device: is_stream_open not implemented!");
+}
+
+bool Device::close_stream()
+{
+  LOG_ERROR("Device: close_stream not implemented!");
+  throw std::runtime_error("Device: close_stream not implemented!");
+}
+
+bool Device::open_stream()
+{
+  LOG_ERROR("Device: open_stream not implemented!");
+  throw std::runtime_error("Device: open_stream not implemented!");
+}
+
 bool Device::is_input() const
 {
   if (p_impl->device_type == eDeviceType::Audio)

@@ -15,9 +15,6 @@
 #include "device.h"
 #include "file.h"
 #include "miditypes.h"
-#include "audioadapter.h"
-#include "midiadapter.h"
-#include "fileadapter.h"
 
 namespace miniaudioengine
 {
@@ -74,10 +71,7 @@ public:
   explicit Track() : p_audio_input(nullptr),
                      p_audio_output(nullptr),
                      p_midi_input(nullptr),
-                     p_midi_output(nullptr),
-                     p_audio_adapter(std::make_shared<adapters::AudioAdapter>()),
-                     p_midi_adapter(std::make_shared<adapters::MidiAdapter>()),
-                     p_file_adapter(std::make_shared<adapters::FileAdapter>())
+                     p_midi_output(nullptr)
   {}
 
   virtual ~Track() = default;
@@ -221,8 +215,7 @@ public:
   std::string to_string() const;
 
 private:
-  bool open_audio_stream(framework::IInputOutputPtr stream);
-  bool open_midi_port(framework::IInputOutputPtr port);
+  bool open_stream(framework::IInputOutputPtr stream);
 
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
 
@@ -240,10 +233,6 @@ private:
   MidiNoteOnCallbackFunc m_note_on_callback;
   MidiNoteOffCallbackFunc m_note_off_callback;
   MidiControlCallbackFunc m_control_change_callback;
-
-  adapters::AudioAdapterPtr p_audio_adapter = nullptr;
-  adapters::MidiAdapterPtr p_midi_adapter = nullptr;
-  adapters::FileAdapterPtr p_file_adapter = nullptr;
 };
 
 }  // namespace miniaudioengine

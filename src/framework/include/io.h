@@ -49,6 +49,10 @@ public:
     return m_direction;
   }
 
+  virtual bool open_stream() = 0;
+  virtual bool close_stream() = 0;
+  virtual bool is_stream_open() = 0;
+
 private:
   eInputOutputType m_io_type = None;
   eInputOutputDirection m_direction = Input;

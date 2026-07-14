@@ -85,6 +85,15 @@ public:
    */
   void seek(long long frame_offset);
 
+  /** @brief Returns true if the File's audio stream is open */
+  bool open_stream();
+
+    /** @brief Close the File's audio stream. Returns true if successful, else false */
+  bool close_stream();
+
+    /** @brief Open the File's audio stream. Returns true if successful, else false */
+  bool is_stream_open();
+
 private:
   struct Impl;
   explicit File(std::unique_ptr<Impl> impl);

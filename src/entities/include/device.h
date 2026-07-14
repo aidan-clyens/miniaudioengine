@@ -81,6 +81,15 @@ public:
   /** @brief Returns the preferred sample rate. Returns 0 for MIDI devices. */
   unsigned int get_preferred_sample_rate() const;
 
+  /** @brief Returns true if the Device's audio stream is open */
+  bool is_stream_open();
+
+  /** @brief Close the Device's audio stream. Returns true if successful, else false */
+  bool close_stream();
+
+  /** @brief Open the Device's audio stream. Returns true if successful, else false */
+  bool open_stream();
+
   // MIDI-only accesors
 
   unsigned int get_port_number() const;
