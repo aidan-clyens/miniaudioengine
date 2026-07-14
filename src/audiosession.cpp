@@ -4,21 +4,13 @@
 #include "deviceservice.h"
 #include "fileservice.h"
 
-#include "audioadapter.h"
-#include "midiadapter.h"
-#include "fileadapter.h"
-
 using namespace miniaudioengine;
 using namespace miniaudioengine::adapters;
 
 AudioSession::AudioSession()
 {
-  p_audio_adapter = std::make_shared<AudioAdapter>();
-  p_midi_adapter = std::make_shared<MidiAdapter>();
-  p_file_adapter = std::make_shared<FileAdapter>();
-
   p_file_service = std::make_unique<FileService>();
-  p_device_service = std::make_unique<DeviceService>(p_audio_adapter, p_midi_adapter);
+  p_device_service = std::make_unique<DeviceService>();
   p_track_service = std::make_unique<TrackService>();
 
   LOG_INFO("AudioSession: Initialized!");

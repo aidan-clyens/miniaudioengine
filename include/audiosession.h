@@ -17,10 +17,6 @@ class TrackService;
 class DeviceService;
 class FileService;
 
-namespace adapters { class AudioAdapter; }
-namespace adapters { class MidiAdapter; }
-namespace adapters { class FileAdapter; }
-
 using DevicePtr = std::shared_ptr<Device>;
 using FilePtr = std::shared_ptr<File>;
 using TrackPtr = std::shared_ptr<Track>;
@@ -86,11 +82,6 @@ private:
   DeviceServicePtr p_device_service;
   FileServicePtr p_file_service;
   TrackServicePtr p_track_service;
-
-  // Adapters
-  std::shared_ptr<adapters::AudioAdapter> p_audio_adapter;
-  std::shared_ptr<adapters::MidiAdapter> p_midi_adapter;
-  std::shared_ptr<adapters::FileAdapter> p_file_adapter;
 
   // State
   eAudioSessionState m_state = eAudioSessionState::Stopped;

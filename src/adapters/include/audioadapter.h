@@ -36,7 +36,7 @@ public:
   unsigned int get_device_count();
   std::vector<DevicePtr> get_devices();
 
-  bool open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_graph);
+  bool open_stream(DevicePtr device);
 
   bool close_stream();
   bool stop_stream();

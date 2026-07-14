@@ -371,7 +371,7 @@ bool Track::open_audio_stream(framework::IInputOutputPtr stream)
       }
     }
 
-    if (!p_audio_adapter->open_stream(device, nullptr))
+    if (!p_audio_adapter->open_stream(device))
     {
       LOG_ERROR("Track: play - Failed to open audio stream ", device->to_string());
       return false;

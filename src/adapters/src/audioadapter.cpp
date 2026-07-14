@@ -89,14 +89,8 @@ std::vector<DevicePtr> AudioAdapter::get_devices()
   return devices;
 }
 
-bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_graph)
+bool AudioAdapter::open_stream(DevicePtr device)
 {
-  if (audio_graph == nullptr)
-  {
-    LOG_ERROR("AudioAdapter: open_stream - Required AudioGraph callback context is null");
-    return false;
-  }
-
   unsigned int device_id = device->get_id();
   unsigned int channels = device->get_output_channels();
   unsigned int sample_rate = device->get_preferred_sample_rate();
@@ -112,7 +106,6 @@ bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_
 
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
   LOG_DEBUG("AudioAdapter: open_stream - Opening RtAudio audio stream with Device ID=", device_id, ", Channels=", channels, ", Sample Rate=", sample_rate, ", Buffer Size=", BUFFER_SIZE);
-  LOG_DEBUG("AudioAdapter: open_stream - Using ", audio_graph->to_string());
 
   RtAudioErrorType rc;
   rc = p_rtaudio->openStream(&params,
@@ -121,7 +114,7 @@ bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_
                             sample_rate,
                             &buffer_size,
                             &AudioCallbackHandler::audio_callback,
-                            &audio_graph);
+                            nullptr);
 
   if (rc != RTAUDIO_NO_ERROR)
   {
@@ -144,7 +137,7 @@ bool AudioAdapter::open_stream(DevicePtr device, dataplane::AudioGraphPtr audio_
                           sample_rate,
                           &buffer_size,
                           &AudioCallbackHandler::audio_callback,
-                          audio_graph.get());
+                          nullptr);
     p_rtaudio->startStream();
   }
   catch (const RtAudioError &e)

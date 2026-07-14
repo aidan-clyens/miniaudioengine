@@ -43,8 +43,6 @@ public:
   bool stop();
 
 private:
-  mutable std::mutex m_manager_mutex;
-
   std::vector<TrackPtr> m_tracks;
 };
 

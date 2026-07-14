@@ -11,9 +11,11 @@
 using namespace miniaudioengine;
 using namespace miniaudioengine::adapters;
 
-
-DeviceService::DeviceService(adapters::AudioAdapterPtr audio_adapter, adapters::MidiAdapterPtr midi_adapter)
-    : p_audio_adapter(audio_adapter), p_midi_adapter(midi_adapter) {}
+DeviceService::DeviceService()
+{
+  p_audio_adapter = std::make_shared<AudioAdapter>();
+  p_midi_adapter = std::make_shared<MidiAdapter>();
+}
 
 DeviceService::~DeviceService() = default;
 

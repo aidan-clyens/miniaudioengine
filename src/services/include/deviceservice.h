@@ -29,7 +29,7 @@ using DeviceList = std::vector<DevicePtr>;
 class DeviceService
 {
 public:
-  DeviceService(adapters::AudioAdapterPtr audio_adapter, adapters::MidiAdapterPtr midi_adapter);
+  DeviceService();
   ~DeviceService();
 
   /** @brief Return a list of all available audio devices.
