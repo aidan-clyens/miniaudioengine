@@ -1,9 +1,7 @@
 #include "audioadapter.h"
-#include "audiograph.h"
 
 using namespace miniaudioengine;
 using namespace miniaudioengine::adapters;
-using namespace miniaudioengine::dataplane;
 
 
 unsigned int BUFFER_SIZE = 1024;
@@ -12,26 +10,30 @@ unsigned int BUFFER_SIZE = 1024;
 int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                                          double stream_time, AudioStreamStatus status, void *user_data) noexcept
 {
-  // Verify user data is a pointer to a AudioGraph object
-  if (!user_data || !(AudioGraph*)(user_data))
+  // Verify user data is a valid pointer
+  if (user_data == nullptr)
   {
-    LOG_ERROR("AudioCallbackHandler: Audio callback does not have pointer to AudioGraph.");
+    LOG_ERROR("AudioCallbackHandler: Audio callback does not have user data pointer");
     return 1;
   }
 
-  AudioGraph *graph = (AudioGraph*)(user_data);
-
-  // If input buffer is present, read audio input
-  if (input_buffer != nullptr)
+  AudioCallbackHandler::Params *params = (AudioCallbackHandler::Params *)user_data;
+  if (params == nullptr)
   {
-    LOG_DEBUG("AudioCallbackHandler: Reading input...");
+    LOG_ERROR("AudioCallbackHandler: Audio callback user data does not reference a AudioCallbackHandler::Params object.");
+    return 1;
   }
-  
-  // If output buffer is present, write to audio output
-  if (output_buffer != nullptr)
+
+  switch (params->direction)
   {
-    LOG_DEBUG("AudioCallbackHandler: Writing ", n_frames, " to output buffer. Status=", status, ". Stream Time=", stream_time);
-    LOG_DEBUG("AudioCallbackHandler: ", graph->to_string());
+    case framework::eInputOutputDirection::Input:
+      LOG_DEBUG("AudioCallbackHandler: Reading input...");
+      break;
+    case framework::eInputOutputDirection::Output:
+      LOG_DEBUG("AudioCallbackHandler: Writing ", n_frames, " to output buffer. Status=", status, ". Stream Time=", stream_time);
+      break;
+    default:
+      break;
   }
 
   return 1;
@@ -117,6 +119,11 @@ bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOu
 
   unsigned int buffer_size = BUFFER_SIZE;
 
+  p_callback_context =
+  {
+    direction
+  };
+
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
   LOG_DEBUG("AudioAdapter: open_stream - Opening RtAudio audio stream with Device ID=", device_id, ", Channels=", channels, ", Sample Rate=", sample_rate, ", Buffer Size=", BUFFER_SIZE);
 
@@ -127,7 +134,7 @@ bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOu
                             sample_rate,
                             &buffer_size,
                             &AudioCallbackHandler::audio_callback,
-                            nullptr);
+                            &p_callback_context);
 
   if (rc != RTAUDIO_NO_ERROR)
   {

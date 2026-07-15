@@ -18,6 +18,12 @@ typedef RtAudio::DeviceInfo AudioDeviceInfo;
 class AudioCallbackHandler
 {
 public:
+
+  struct Params
+  {
+    framework::eInputOutputDirection direction;
+  };
+
   static int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                             double stream_time, AudioStreamStatus status, void *user_data) noexcept;
 };
@@ -47,6 +53,9 @@ private:
   std::unique_ptr<RtAudio> p_rtaudio;
   // TODO - Device should own BufferPtr, not AudioAdapter
   framework::BufferPtr p_buffer;
+
+  // TODO - Save AudioCallbackHandler context
+  AudioCallbackHandler::Params p_callback_context;
 
   static DevicePtr make_device_handle(const AudioDeviceInfo &info, unsigned int id)
   {
