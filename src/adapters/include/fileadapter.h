@@ -17,6 +17,8 @@ namespace miniaudioengine::adapters
 typedef SNDFILE SndFile;
 typedef SF_INFO SndFileInfo;
 
+using SndFilePtr = std::shared_ptr<SndFile>;
+
 constexpr size_t BUFFER_SIZE = 1024;
 
 // TODO - Should FileAudioStreamThread be moved to FileService instead?
@@ -29,15 +31,17 @@ public:
 
   struct Params
   {
-    FilePtr file;
     BufferPtr buffer;
+    SndFilePtr snd_file;
+    SndFileInfo snd_file_info;
+    framework::eInputOutputDirection direction;
   };
 
   FileAudioStreamThread() = default;
   ~FileAudioStreamThread() = default;
   // TODO - Cannot be copied
 
-  bool start(FilePtr file, BufferPtr buffer);
+  bool start(const Params &params);
   bool stop();
   bool is_running() { return p_audio_stream_thread != nullptr; }
 
@@ -65,14 +69,14 @@ public:
   // TODO - Implement file streaming in FileAdapter
   // File contents should be tranferred between file and a lock-free buffer in the data thread 
 
-  bool open_stream(FilePtr file);
+  bool open_stream(const framework::eInputOutputDirection &direction);
   bool close_stream();
   bool is_stream_open();
 
   bool open_midi_stream(FilePtr file);
 
 private:
-  std::shared_ptr<SndFile> p_file = nullptr;
+  SndFilePtr p_file = nullptr;
   SndFileInfo m_info = {};
 
   FileAudioStreamThread m_audio_stream_thread;

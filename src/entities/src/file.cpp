@@ -117,7 +117,7 @@ bool File::close_stream()
 
 bool File::open_stream()
 {
-  return p_impl->file_adapter.open_stream(shared_from_this());
+  return p_impl->file_adapter.open_stream(get_direction());
 }
 
 std::string File::to_string() const

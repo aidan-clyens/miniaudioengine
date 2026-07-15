@@ -5,15 +5,13 @@
 
 using namespace miniaudioengine::adapters;
 
-bool FileAudioStreamThread::start(FilePtr file, BufferPtr buffer)
+bool FileAudioStreamThread::start(const Params &params)
 {
   if (is_running())
   {
     LOG_WARNING("FileAudioStreamThread: start - Audio stream thread is already running!");
     return false;
   }
-
-  Params params = { file, buffer };
 
   // Create new thread
   p_audio_stream_thread = std::make_unique<std::jthread>(FileAudioStreamThread::callback, params);
@@ -48,16 +46,19 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, const Params &p
       break;
     }
 
-    switch (params.file->get_direction())
+    switch (params.direction)
     {
       case framework::eInputOutputDirection::Input:
         LOG_DEBUG("FileAudioStreamThread: callback - File Input");
+        // TODO - Read from File to Buffer
         break;
       case framework::eInputOutputDirection::Output:
         LOG_DEBUG("FileAudioStreamThread: callback - File Output");
+        // TODO - Write from Buffer to File
         break;
     }
 
+    // TODO - Calculate cycle time from File bitrate
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 }
@@ -88,9 +89,15 @@ void FileAdapter::close()
   p_file.reset();
 }
 
-bool FileAdapter::open_stream(FilePtr file)
+bool FileAdapter::open_stream(const framework::eInputOutputDirection &direction)
 {
-  LOG_DEBUG("FileAdapter: open_stream - Opening audio stream for ", file->to_string());
+  if (p_file == nullptr)
+  {
+    LOG_WARNING("FileAdapter: open_stream - No file opened, cannot open stream.");
+    return false;
+  }
+
+  LOG_DEBUG("FileAdapter: open_stream - Opening audio stream");
 
   if (m_audio_stream_thread.is_running())
   {
@@ -102,7 +109,15 @@ bool FileAdapter::open_stream(FilePtr file)
     }
   }
 
-  if (!m_audio_stream_thread.start(file, p_buffer))
+  FileAudioStreamThread::Params params =
+  {
+    p_buffer,
+    p_file,
+    m_info,
+    direction
+  };
+
+  if (!m_audio_stream_thread.start(params))
   {
     LOG_ERROR("FileAdapter: open_stream - Failed to start audio stream thread");
     return false;
