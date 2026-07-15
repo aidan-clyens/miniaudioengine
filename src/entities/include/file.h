@@ -15,7 +15,7 @@ namespace miniaudioengine
  *  @brief Handle for audio and MIDI file sources.
  *  Hides libsndfile and other library dependencies from public headers.
  */
-class File : public framework::IInputOutput
+class File : public framework::IInputOutput, std::enable_shared_from_this<File>
 {
 public:
   /** @enum eFileType

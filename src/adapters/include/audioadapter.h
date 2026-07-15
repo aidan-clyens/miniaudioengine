@@ -2,8 +2,8 @@
 #define __AUDIO_ADAPTER_H__
 
 #include "device.h"
-#include "audiograph.h"
 #include "logger.h"
+#include "ringbuffer.h"
 
 #include <memory>
 #include <rtaudio/RtAudio.h>
@@ -46,6 +46,7 @@ public:
 
 private:
   std::unique_ptr<RtAudio> p_rtaudio;
+  framework::BufferPtr p_buffer;
 
   static DevicePtr make_device_handle(const AudioDeviceInfo &info, unsigned int id)
   {

@@ -5,7 +5,7 @@
 
 using namespace miniaudioengine::adapters;
 
-bool FileAudioStreamThread::start(FilePtr file, BufferPtr buffer, eDirection direction)
+bool FileAudioStreamThread::start(FilePtr file, BufferPtr buffer)
 {
   if (is_running())
   {
@@ -13,7 +13,7 @@ bool FileAudioStreamThread::start(FilePtr file, BufferPtr buffer, eDirection dir
     return false;
   }
 
-  Params params = { file, buffer, direction };
+  Params params = { file, buffer };
 
   // Create new thread
   p_audio_stream_thread = std::make_unique<std::jthread>(FileAudioStreamThread::callback, params);
@@ -48,12 +48,12 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, const Params &p
       break;
     }
 
-    switch (params.direction)
+    switch (params.file->get_direction())
     {
-      case eDirection::Input:
+      case framework::eInputOutputDirection::Input:
         LOG_DEBUG("FileAudioStreamThread: callback - File Input");
         break;
-      case eDirection::Output:
+      case framework::eInputOutputDirection::Output:
         LOG_DEBUG("FileAudioStreamThread: callback - File Output");
         break;
     }
@@ -88,41 +88,40 @@ void FileAdapter::close()
   p_file.reset();
 }
 
-bool FileAdapter::open_audio_stream(FilePtr file)
+bool FileAdapter::open_stream(FilePtr file)
 {
-  LOG_DEBUG("FileAdapter: open_audio_stream - Opening audio stream for ", file->to_string());
+  LOG_DEBUG("FileAdapter: open_stream - Opening audio stream for ", file->to_string());
 
   if (m_audio_stream_thread.is_running())
   {
-    LOG_WARNING("FileAdapter: open_audio_stream - Audio stream thread is already running!");
+    LOG_WARNING("FileAdapter: open_stream - Audio stream thread is already running!");
     if (!m_audio_stream_thread.stop())
     {
-      LOG_ERROR("FileAdapter: open_audio_stream - Failed to stop audio stream thread");
-      throw std::runtime_error("FileAdapter: open_audio_stream - Failed to stop audio stream thread");
+      LOG_ERROR("FileAdapter: open_stream - Failed to stop audio stream thread");
+      throw std::runtime_error("FileAdapter: open_stream - Failed to stop audio stream thread");
     }
   }
 
-  // TODO - Add I/O direction parameter instead of hard-coding
-  if (!m_audio_stream_thread.start(file, p_buffer, FileAudioStreamThread::eDirection::Input))
+  if (!m_audio_stream_thread.start(file, p_buffer))
   {
-    LOG_ERROR("FileAdapter: open_audio_stream - Failed to start audio stream thread");
+    LOG_ERROR("FileAdapter: open_stream - Failed to start audio stream thread");
     return false;
   }
 
   return m_audio_stream_thread.is_running();
 }
 
-bool FileAdapter::close_audio_stream()
+bool FileAdapter::close_stream()
 {
   if (!m_audio_stream_thread.stop())
   {
-    LOG_ERROR("FileAdapter: open_audio_stream - Failed to stop audio stream thread");
+    LOG_ERROR("FileAdapter: open_stream - Failed to stop audio stream thread");
     return false;
   }
   return true;
 }
 
-bool FileAdapter::is_audio_stream_open()
+bool FileAdapter::is_stream_open()
 {
   return m_audio_stream_thread.is_running();
 }

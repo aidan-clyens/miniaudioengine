@@ -81,22 +81,22 @@ public:
   /** @brief Add an audio input to the track. 
    *  @param device The audio input device or file retrieved from DeviceService or FileService.
    */
-  void add_audio_input(framework::IInputOutputPtr input);
+  void add_audio_input(const framework::IInputOutputPtr &input);
 
   /** @brief Add a MIDI input to the track.
    *  @param device The MIDI input device or file retrieved from DeviceService or FileService.
    */
-  void add_midi_input(framework::IInputOutputPtr input);
+  void add_midi_input(const framework::IInputOutputPtr &input);
 
   /** @brief Add an audio output to the track.
    *  @param device The audio output device or file retrieved from DeviceService or FileService.
    */
-  void add_audio_output(framework::IInputOutputPtr output);
+  void add_audio_output(const framework::IInputOutputPtr &output);
 
   /** @brief Add a MIDI output to the track.
    *  @param device The MIDI output device or file retrieved from DeviceService or FileService.
    */
-  void add_midi_output(framework::IInputOutputPtr output);
+  void add_midi_output(const framework::IInputOutputPtr &output);
 
   /** @brief Remove the audio input from the track. */
   void remove_audio_input();
@@ -150,7 +150,7 @@ public:
    */
   framework::IInputOutputPtr get_midi_output() const;
 
-  void add_effects_processor(const framework::IProcessorPtr processor);
+  void add_effects_processor(const framework::IProcessorPtr &processor);
 
   std::vector<framework::IProcessorPtr> get_effects_processors() const;
 
@@ -215,7 +215,7 @@ public:
   std::string to_string() const;
 
 private:
-  bool open_stream(framework::IInputOutputPtr stream);
+  bool open_stream(const framework::IInputOutputPtr &stream);
 
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
 

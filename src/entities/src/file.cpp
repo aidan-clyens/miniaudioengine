@@ -107,18 +107,17 @@ void File::seek(long long frame_offset)
 
 bool File::is_stream_open()
 {
-  return p_impl->file_adapter.is_audio_stream_open();
+  return p_impl->file_adapter.is_stream_open();
 }
 
 bool File::close_stream()
 {
-  return p_impl->file_adapter.close_audio_stream();
+  return p_impl->file_adapter.close_stream();
 }
 
 bool File::open_stream()
 {
-  LOG_ERROR("File: open_stream not implemented!");
-  throw std::runtime_error("Device: open_stream not implemented!");
+  return p_impl->file_adapter.open_stream(shared_from_this());
 }
 
 std::string File::to_string() const

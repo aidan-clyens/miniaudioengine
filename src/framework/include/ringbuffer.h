@@ -1,41 +1,53 @@
-#ifndef __LOCKFREE_RINGBUFFER_H__
-#define __LOCKFREE_RINGBUFFER_H__
+#ifndef __RINGBUFFER_H__
+#define __RINGBUFFER_H__
 
 #include <array>
-#include <atomic>
 #include <cstddef>
+#include <mutex>
 
 #include "logger.h"
 
 namespace miniaudioengine::framework
 {
 
-/** @class LockfreeRingBuffer
- *  @brief A lock-free ring buffer implementation.
+constexpr size_t BUFFER_SIZE = 8 * 1024;
+
+/** @enum eDirection
+ *  @brief Read Audio/MIDI stream as input or output
+ */
+enum class eDirection : unsigned int
+{
+  Input,
+  Output
+};
+
+/** @class RingBuffer
+ *  @brief A Ring Buffer implementation for audio streaming.
  *  The data structure is single producer, single-consumer (SPSC).
  *  @tparam T The type of elements stored in the ring buffer.
  *  @tparam Size The maximum number of elements the ring buffer can hold.
  */
 template <typename T, size_t Size>
-class LockfreeRingBuffer
+class RingBuffer
 {
 public:
-  LockfreeRingBuffer() = default;
-  ~LockfreeRingBuffer() = default;
+  RingBuffer() = default;
+  ~RingBuffer() = default;
 
-  /** @brief Attempts to push an item into the ring buffer. 
+  /** @brief Attempts to push an item into the ring buffer.
    *  @return true if the item was successfully pushed, false if the buffer is full.
    *  @param item The item to be pushed into the buffer.
-   *  @note This method is lock-free and safe for use in real-time contexts.
    *  @note If the buffer is full, the item will not be added and the method will return false.
    *  @return false if the buffer is full. True otherwise.
    */
   bool try_push(const T &item)
   {
+    std::lock_guard<std::mutex> guard(m_mutex);
+
     // Check if the buffer is full
-    size_t current_write = m_write_index.load(std::memory_order_relaxed);
+    size_t current_write = m_write_index;
     size_t next_write = (current_write + 1) % Size;
-    size_t current_read = m_read_index.load(std::memory_order_acquire);
+    size_t current_read = m_read_index;
 
     if (next_write == current_read)
     {
@@ -44,22 +56,23 @@ public:
     }
 
     m_buffer[current_write] = item;
-    m_write_index.store(next_write, std::memory_order_release);
+    m_write_index = next_write;
     return true;
   }
 
   /** @brief Attempts to pop an item from the ring buffer.
    *  @return true if an item was successfully popped, false if the buffer is empty.
    *  @param item Reference to store the popped item.
-   *  @note This method is lock-free and safe for use in real-time contexts.
    *  @note If the buffer is empty, no item will be retrieved and the method will return false.
    *  @return false if the buffer is empty. True otherwise.
    */
   bool try_pop(T &item)
   {
+    std::lock_guard<std::mutex> guard(m_mutex);
+
     // Check if the buffer is empty
-    size_t current_read = m_read_index.load(std::memory_order_relaxed);
-    size_t current_write = m_write_index.load(std::memory_order_acquire);
+    size_t current_read = m_read_index;
+    size_t current_write = m_write_index;
 
     if (current_read == current_write)
     {
@@ -69,7 +82,7 @@ public:
 
     item = m_buffer[current_read];
     size_t next_read = (current_read + 1) % Size;
-    m_read_index.store(next_read, std::memory_order_release);
+    m_read_index = next_read;
     return true;
   }
 
@@ -107,16 +120,22 @@ public:
    */
   void clear()
   {
-    m_write_index.store(0, std::memory_order_relaxed);
-    m_read_index.store(0, std::memory_order_relaxed);
+    m_write_index = 0;
+    m_read_index = 0;
   }
 
 private:
   std::array<T, Size> m_buffer;
-  alignas(64) std::atomic<size_t> m_write_index{0}; // Producer index
-  alignas(64) std::atomic<size_t> m_read_index{0}; // Consumer index
+  std::mutex m_mutex;
+  std::condition_variable m_empty_cv;
+
+  size_t m_write_index{0}; // Producer index
+  size_t m_read_index{0}; // Consumer index
 };
+
+using Buffer = framework::RingBuffer<float, framework::BUFFER_SIZE>;
+using BufferPtr = std::shared_ptr<Buffer>;
 
 } // namespace miniaudioengine::framework
 
-#endif // __LOCKFREE_RINGBUFFER_H__
+#endif // __RINGBUFFER_H__

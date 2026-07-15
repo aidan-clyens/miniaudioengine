@@ -2,7 +2,7 @@
 #define __FILE_ADAPTER_H__
 
 #include "file.h"
-#include "lockfree_ringbuffer.h"
+#include "ringbuffer.h"
 
 #include <sndfile.h>
 #include <filesystem>
@@ -24,27 +24,20 @@ class FileAudioStreamThread
 {
 public:
 
-  using Buffer = framework::LockfreeRingBuffer<unsigned int, BUFFER_SIZE>;
+  using Buffer = framework::RingBuffer<unsigned int, BUFFER_SIZE>;
   using BufferPtr = std::shared_ptr<Buffer>;
-
-  enum class eDirection
-  {
-    Input,
-    Output,
-  };
 
   struct Params
   {
     FilePtr file;
     BufferPtr buffer;
-    eDirection direction;
   };
 
   FileAudioStreamThread() = default;
   ~FileAudioStreamThread() = default;
   // TODO - Cannot be copied
 
-  bool start(FilePtr file, BufferPtr buffer, eDirection direction);
+  bool start(FilePtr file, BufferPtr buffer);
   bool stop();
   bool is_running() { return p_audio_stream_thread != nullptr; }
 
@@ -72,9 +65,9 @@ public:
   // TODO - Implement file streaming in FileAdapter
   // File contents should be tranferred between file and a lock-free buffer in the data thread 
 
-  bool open_audio_stream(FilePtr file);
-  bool close_audio_stream();
-  bool is_audio_stream_open();
+  bool open_stream(FilePtr file);
+  bool close_stream();
+  bool is_stream_open();
 
   bool open_midi_stream(FilePtr file);
 

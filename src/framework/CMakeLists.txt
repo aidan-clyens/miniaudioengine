@@ -7,7 +7,6 @@ target_sources(framework
       ${CMAKE_CURRENT_SOURCE_DIR}/include
     FILES
       include/messagequeue.h
-      include/lockfree_ringbuffer.h
       include/doublebuffer.h
       include/logger.h
       include/miditypes.h

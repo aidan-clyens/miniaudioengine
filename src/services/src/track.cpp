@@ -25,7 +25,7 @@ using namespace miniaudioengine;
 /** @brief Adds an audio input to the track.
  *  @param input The audio input device or file.
  */
-void Track::add_audio_input(IInputOutputPtr input)
+void Track::add_audio_input(const IInputOutputPtr &input)
 {
   if (has_audio_input())
   {
@@ -57,7 +57,7 @@ void Track::add_audio_input(IInputOutputPtr input)
 /** @brief Adds a MIDI input to the track.
  *  @param input The MIDI input device or file.
  */
-void Track::add_midi_input(IInputOutputPtr input)
+void Track::add_midi_input(const IInputOutputPtr &input)
 {
   if (has_midi_input())
   {
@@ -83,7 +83,7 @@ void Track::add_midi_input(IInputOutputPtr input)
 /** @brief Adds a MIDI output to the track.
  *  @param output The MIDI output device or file.
  */
-void Track::add_audio_output(IInputOutputPtr output)
+void Track::add_audio_output(const IInputOutputPtr &output)
 {
   if (has_audio_output())
   {
@@ -116,7 +116,7 @@ void Track::add_audio_output(IInputOutputPtr output)
 /** @brief Adds a MIDI output to the track.
  *  @param device The MIDI output device or file.
  */
-void Track::add_midi_output(IInputOutputPtr output)
+void Track::add_midi_output(const IInputOutputPtr &output)
 {
   if (has_midi_output())
   {
@@ -232,7 +232,7 @@ IInputOutputPtr Track::get_midi_output() const
   return p_midi_output;
 }
 
-void Track::add_effects_processor(const IProcessorPtr processor)
+void Track::add_effects_processor(const IProcessorPtr &processor)
 {
   m_effects_processors.push_back(processor);
 }
@@ -359,7 +359,7 @@ bool Track::is_playing()
   return m_state == eTrackState::Playing;
 }
 
-bool Track::open_stream(framework::IInputOutputPtr stream)
+bool Track::open_stream(const framework::IInputOutputPtr &stream)
 {
   if (stream->is_stream_open())
   {
