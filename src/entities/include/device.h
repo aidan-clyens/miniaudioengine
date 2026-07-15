@@ -10,6 +10,22 @@
 namespace miniaudioengine
 {
 
+struct DeviceInfo
+{
+  // Common fields
+  unsigned int id{0};
+  std::string name;
+  bool is_default_input{false};
+  bool is_default_output{false};
+
+  // Audio-only fields (zeroed/empty for MIDI)
+  unsigned int output_channels{0};
+  unsigned int input_channels{0};
+  unsigned int duplex_channels{0};
+  std::vector<unsigned int> sample_rates;
+  unsigned int preferred_sample_rate{0};
+};
+
 /** @class Device
  *  @brief Handle for audio and MIDI devices.
  *  Hides hardware backend (RtAudio/RtMidi) from public headers.

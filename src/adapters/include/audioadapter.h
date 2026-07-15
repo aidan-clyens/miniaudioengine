@@ -25,7 +25,7 @@ public:
 /** @class AudioAdapter
  *  @brief Adapter class that encapsulates RtAudio, separating the audio controller from direct dependency on RtAudio.
  */
-class AudioAdapter
+class AudioAdapter // TODO - Implement framework::IAdapter interface
 {
 public:
   AudioAdapter();
@@ -36,8 +36,7 @@ public:
   unsigned int get_device_count();
   std::vector<DevicePtr> get_devices();
 
-  bool open_stream(DevicePtr device);
-
+  bool open_stream(const DeviceInfo &info, const framework::eInputOutputDirection &direction);
   bool close_stream();
   bool stop_stream();
 
@@ -46,6 +45,7 @@ public:
 
 private:
   std::unique_ptr<RtAudio> p_rtaudio;
+  // TODO - Device should own BufferPtr, not AudioAdapter
   framework::BufferPtr p_buffer;
 
   static DevicePtr make_device_handle(const AudioDeviceInfo &info, unsigned int id)

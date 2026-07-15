@@ -89,11 +89,24 @@ std::vector<DevicePtr> AudioAdapter::get_devices()
   return devices;
 }
 
-bool AudioAdapter::open_stream(DevicePtr device)
+bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOutputDirection &direction)
 {
-  unsigned int device_id = device->get_id();
-  unsigned int channels = device->get_output_channels();
-  unsigned int sample_rate = device->get_preferred_sample_rate();
+  unsigned int device_id = info.id;
+  unsigned int sample_rate = info.preferred_sample_rate;
+  unsigned int channels;
+
+  switch (direction)
+  {
+    case framework::eInputOutputDirection::Input:
+      channels = info.input_channels;
+      break;
+    case framework::eInputOutputDirection::Output:
+      channels = info.output_channels;
+      break;
+    default:
+      LOG_ERROR("AudioAdapter: open_stream - Cannot open stream unless direction is Input or Output: ", direction);
+      return false;
+  }
 
   // Set audio output I/O parameters
   adapters::AudioStreamParameters params = {
@@ -146,7 +159,7 @@ bool AudioAdapter::open_stream(DevicePtr device)
     return false;
   }
 #endif
-  LOG_DEBUG("AudioAdapter: open_stream - Opened audio stream with ", device->to_string());
+  LOG_DEBUG("AudioAdapter: open_stream - Opened audio stream");
   return true;
 }
 
