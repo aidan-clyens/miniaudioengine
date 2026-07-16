@@ -83,7 +83,7 @@ After the diagram(s), add a brief Markdown table listing every **thread boundary
 | Transition | From thread | To thread | Mechanism |
 |-----------|-------------|-----------|-----------|
 | e.g. `AudioController → RtAudio callback` | Main / control thread | RtAudio callback thread | RtAudio `openStream` callback |
-| e.g. ring buffer enqueue | Control thread | Callback thread | `LockfreeRingBuffer<T, Size>` |
+| e.g. ring buffer enqueue | Control thread | Callback thread | `RingBuffer<T, Size>` |
 
 ## Layer reference
 
@@ -95,4 +95,4 @@ After the diagram(s), add a brief Markdown table listing every **thread boundary
 | 1 Adapters | `src/adapters/` | `miniaudioengine` | No |
 | 0 Core/framework | `src/framework/` | `miniaudioengine::framework` | No |
 
-**Real-time safety reminder**: any code path that touches `src/engine/` callbacks must obey the four rules — no mutexes, no heap allocation, no blocking I/O, and use `LockfreeRingBuffer` for cross-thread messaging.
+**Real-time safety reminder**: any code path that touches `src/engine/` callbacks must obey the four rules — no mutexes, no heap allocation, no blocking I/O, and use `RingBuffer` for cross-thread messaging.

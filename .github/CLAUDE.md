@@ -43,7 +43,7 @@ Layer 2: processing               (audio processors; per-processor threading onl
 Layer 1: data                     (real-time lock-free callbacks)
 ─────────────────────────────────────────────────────────────────────────────────────
 framework (shared — accessible by all layers):
-           LockfreeRingBuffer, DoubleBuffer, Logger, interfaces,
+           RingBuffer, DoubleBuffer, Logger, interfaces,
            Device, File (PImpl wrappers for RtAudio/RtMidi/libsndfile)
 ```
 
@@ -66,7 +66,7 @@ Executes inside RtAudio/RtMidi callback threads. Must be **completely lock-free*
 
 ### Framework — Shared Layer (`src/framework/include/`)
 Accessible by all layers (1–4). Not a numbered layer — a cross-cutting foundation.
-- `LockfreeRingBuffer<T, Size>` — SPSC lock-free queue; `try_push`/`try_pop`; `memory_order_release`/`acquire`
+- `RingBuffer<T, Size>` — SPSC lock-free queue; `try_push`/`try_pop`; `memory_order_release`/`acquire`
 - `DoubleBuffer<T>` — atomic double-buffer for producer/consumer swap
 - `Logger` — thread-safe singleton; use macros `LOG_INFO()`, `LOG_WARNING()`, `LOG_ERROR()`, `LOG_DEBUG()`
 - `MessageQueue<T>` — lock-based blocking queue (not used in real-time paths)
@@ -103,7 +103,7 @@ When writing or modifying any code that executes inside a callback (`AudioDataPl
 1. **No mutexes** — no `std::mutex`, `std::lock_guard`, or any blocking primitive
 2. **No heap allocation** — no `new`, `malloc`, `std::vector::push_back`, or any dynamic allocation
 3. **No blocking I/O** — no file reads, no sleeping
-4. Use `LockfreeRingBuffer` for inter-thread communication
+4. Use `RingBuffer` for inter-thread communication
 5. Use `std::atomic` with explicit memory orders for state flags
 
 ## Coding Conventions

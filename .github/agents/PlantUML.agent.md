@@ -48,7 +48,7 @@ This agent analyzes C++ code in the Minimal Audio Engine project and generates P
 - Trace method call flows from entry points (e.g., `Track::play()` → `AudioStreamController::start()`)
 - Show interactions between control and data planes
 - Illustrate callback patterns (RtAudio callback → `AudioDataPlane::process_audio()`)
-- Display message passing via `MessageQueue` or `LockfreeRingBuffer`
+- Display message passing via `MessageQueue` or `RingBuffer`
 - Annotate real-time safety boundaries
 
 ### 3. Component Diagram Generation
@@ -116,7 +116,7 @@ skinparam classAttributeIconSize 0
 skinparam monochrome false
 
 ' Framework (Layer 0) - blue
-class LockfreeRingBuffer <<framework>> #lightblue
+class RingBuffer <<framework>> #lightblue
 
 ' Data Plane (Layer 1) - green  
 class AudioDataPlane <<data>> #lightgreen
@@ -196,10 +196,10 @@ class Track <<synchronous>> #lightgray
 ## Project-Specific Focus
 Given this is the Minimal Audio Engine:
 - **Emphasize threading model**: Show which components are real-time vs. control plane
-- **Highlight lock-free primitives**: LockfreeRingBuffer, DoubleBuffer, std::atomic usage
+- **Highlight lock-free primitives**: RingBuffer, DoubleBuffer, std::atomic usage
 - **Show plane boundaries**: Make it clear which layer each component belongs to
 - **Illustrate callback patterns**: RtAudio/RtMidi callbacks and their handlers
-- **Template specialization**: Show LockfreeRingBuffer<MidiMessage, 1024> style details when relevant
+- **Template specialization**: Show RingBuffer<MidiMessage, 1024> style details when relevant
 
 ## Examples of Generated Diagrams
 

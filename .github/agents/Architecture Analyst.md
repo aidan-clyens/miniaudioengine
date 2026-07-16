@@ -217,7 +217,7 @@ Review these files for architectural understanding:
 - **[framework/include/device.h](../src/framework/include/device.h)** - `framework::IDevice` / `framework::IAudioDevice`
 - **[framework/include/input.h](../src/framework/include/input.h)** - Input abstraction
 - **[framework/include/messagequeue.h](../src/framework/include/messagequeue.h)** - Thread-safe message queue
-- **[framework/include/lockfree_ringbuffer.h](../src/framework/include/lockfree_ringbuffer.h)** - Lock-free SPSC queue
+- **[framework/include/ringbuffer.h](../src/framework/include/ringbuffer.h)** - Lock-free SPSC queue
 - **[framework/include/doublebuffer.h](../src/framework/include/doublebuffer.h)** - Atomic double-buffer
 - **[framework/include/logger.h](../src/framework/include/logger.h)** - Logging macros and logger
 - **[framework/include/realtime_assert.h](../src/framework/include/realtime_assert.h)** - RealtimeAssert stubs

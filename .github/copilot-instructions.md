@@ -76,7 +76,7 @@ See [docs/DESIGN_DOC.md](docs/DESIGN_DOC.md) for full rationale and sequence dia
 - Service layer is synchronous (main thread, locks allowed):
 	- `src/services/` — `TrackService`, `DeviceService`, `FileService`
 	- `src/audiosession` — `AudioSession` entry point
-- Engine layer executes in RtAudio/RtMidi callbacks in `src/engine/` — use `LockfreeRingBuffer<T, Size>` from `src/framework/` for cross-thread messaging.
+- Engine layer executes in RtAudio/RtMidi callbacks in `src/engine/` — use `RingBuffer<T, Size>` from `src/framework/` for cross-thread messaging.
 - Adapter layer in `src/adapters/` wraps all external library calls; never access RtAudio/RtMidi/libsndfile directly above this layer.
 - Processing plane is minimal: `IAudioProcessor`, `Sample`, `SamplePlayer` (per-processor threading via `framework::IProcessor`; no orchestration layer yet).
 
@@ -98,7 +98,7 @@ See [docs/DESIGN_DOC.md](docs/DESIGN_DOC.md) for full rationale and sequence dia
   1. No mutexes — no `std::mutex`, `std::lock_guard`, or any blocking primitive
   2. No heap allocation — no `new`, `malloc`, `std::vector::push_back`, or dynamic allocation
   3. No blocking I/O — no file reads, no sleep calls
-  4. Use `LockfreeRingBuffer` for all cross-thread communication
+  4. Use `RingBuffer` for all cross-thread communication
   5. Keep total callback work under 1 ms
 - `MessageQueue<T>` in `src/framework/` is lock-based — never use it in real-time paths.
 - Mocks live in `tests/mocks/include/` under namespace `miniaudioengine::test`; mirror interface names with `Mock` prefix (e.g., `MockAudioController`).

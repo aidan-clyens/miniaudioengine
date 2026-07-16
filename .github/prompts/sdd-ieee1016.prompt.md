@@ -77,7 +77,7 @@ Describe how the system decomposes into the 5 layers. Show the directory-to-laye
 
 ### 3.3 Logical Viewpoint (Class Design)
 For each layer describe its key abstractions:
-- **Framework (shared)**: `IController`, `IDataPlane`, `IManager`, `IDevice`, `LockfreeRingBuffer<T,N>`, `DoubleBuffer<T>`, `Logger`, `Device`, `File`
+- **Framework (shared)**: `IController`, `IDataPlane`, `IManager`, `IDevice`, `RingBuffer<T,N>`, `DoubleBuffer<T>`, `Logger`, `Device`, `File`
 - **Layer 1**: `AudioDataPlane`, `MidiDataPlane`, callback handlers
 - **Layer 2**: `IAudioProcessor`, `Sample`, `SamplePlayer`
 - **Layer 3**: `AudioStreamController`, `MidiPortController`
@@ -91,7 +91,7 @@ Reproduce the layer dependency matrix. Document allowed versus forbidden cross-l
 ### 3.5 Information Viewpoint (Data Design)
 Describe the major data structures and how data flows between layers:
 - Audio sample buffer lifecycle (RtAudio callback → `AudioDataPlane` → `IAudioProcessor`)
-- MIDI message lifecycle (RtMidi callback → `MidiDataPlane` → `LockfreeRingBuffer` → `MidiPortController`)
+- MIDI message lifecycle (RtMidi callback → `MidiDataPlane` → `RingBuffer` → `MidiPortController`)
 - File-backed audio (`WavFile` preload → span/buffer → `AudioDataPlane`)
 - Track state (`eStreamState` transitions)
 
@@ -114,7 +114,7 @@ Document recurring design patterns:
 Describe the key runtime scenarios as sequence descriptions or Mermaid sequence diagrams:
 
 1. **Start audio playback** — host calls `TrackManager` → `AudioStreamController::start()` → RtAudio opens stream → `AudioDataPlane` callback loop begins.
-2. **MIDI input event** — RtMidi fires callback → `MidiCallbackHandler` constructs `MidiMessage` → pushed to `LockfreeRingBuffer` → `MidiPortController` polls and dispatches.
+2. **MIDI input event** — RtMidi fires callback → `MidiCallbackHandler` constructs `MidiMessage` → pushed to `RingBuffer` → `MidiPortController` polls and dispatches.
 3. **File-backed playback** — `FileManager` loads `WavFile` → decoded PCM preloaded into `AudioDataPlane` buffer → playback mixed into output.
 
 ### 3.9 State Dynamics Viewpoint
@@ -128,7 +128,7 @@ Describe real-time resource constraints:
 - Callback budget: ≤ 1 ms total per callback
 - Memory: no heap allocation in RT path; pre-allocated ring buffers and double buffers
 - Thread model: RT audio thread (RtAudio callback), RT MIDI thread (RtMidi callback), main control thread
-- Lock-free synchronisation: `LockfreeRingBuffer`, `std::atomic`, `alignas(64)` to avoid false sharing
+- Lock-free synchronisation: `RingBuffer`, `std::atomic`, `alignas(64)` to avoid false sharing
 
 ---
 
@@ -138,7 +138,7 @@ For each significant design decision, state the decision, the alternatives consi
 
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| `LockfreeRingBuffer` for RT↔control messaging | `std::queue` + mutex; `boost::lockfree` | Avoids mutex in RT; stays header-only; no external dependency |
+| `RingBuffer` for RT↔control messaging | `std::queue` + mutex; `boost::lockfree` | Avoids mutex in RT; stays header-only; no external dependency |
 | `std::shared_ptr` as primary ownership type | raw pointers; `unique_ptr` | Simplifies shared ownership across manager/controller/plane boundaries |
 | Layered architecture with strict upward-only deps | Flat module graph | Enforces RT-safety by keeping RT callbacks free of control/public-layer code |
 | vcpkg for dependency management | Conan; submodules | Familiar to Windows devs; integrates cleanly with CMake toolchain |
