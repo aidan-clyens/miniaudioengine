@@ -35,6 +35,7 @@ public:
     SndFilePtr snd_file;
     SndFileInfo snd_file_info;
     framework::eInputOutputDirection direction;
+    size_t n_frames_to_read;
   };
 
   FileAudioStreamThread() = default;
@@ -45,9 +46,13 @@ public:
   bool stop();
   bool is_running() { return p_audio_stream_thread != nullptr; }
 
-  static void callback(std::stop_token stop_token, const Params &params);
+  static void callback(std::stop_token stop_token, void *output_buffer, void *input_buffer, const Params &params);
 
 private:
+
+  static void read_from_file(const SndFilePtr &file, const size_t frames_to_read);
+  static void write_to_file(const SndFilePtr &file, const size_t frames_to_read);
+
   std::unique_ptr<std::jthread> p_audio_stream_thread;
 };
 
@@ -74,6 +79,9 @@ public:
   bool is_stream_open();
 
   bool open_midi_stream(FilePtr file);
+
+  static long long read_frames(const SndFilePtr &file, std::vector<float> &buffer, long long frames_to_read);
+  static void seek(const SndFilePtr &file, long long frame_offset);
 
 private:
   SndFilePtr p_file = nullptr;

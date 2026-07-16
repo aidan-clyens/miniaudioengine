@@ -91,20 +91,6 @@ std::string File::get_format_string() const
   }
 }
 
-long long File::read_frames(std::vector<float>& buffer, long long frames_to_read)
-{
-  if (p_impl->file_type != eFileType::Wav || !p_impl->file_adapter.get_file()) return 0LL;
-  return sf_readf_float(p_impl->file_adapter.get_file(),
-                        buffer.data(),
-                        static_cast<sf_count_t>(frames_to_read));
-}
-
-void File::seek(long long frame_offset)
-{
-  if (p_impl->file_type != eFileType::Wav || !p_impl->file_adapter.get_file()) return;
-  sf_seek(p_impl->file_adapter.get_file(), static_cast<sf_count_t>(frame_offset), SEEK_SET);
-}
-
 bool File::is_stream_open()
 {
   return p_impl->file_adapter.is_stream_open();
