@@ -103,7 +103,7 @@ bool File::close_stream()
 
 bool File::open_stream()
 {
-  return p_impl->file_adapter.open_stream(get_direction());
+  return p_impl->file_adapter.open_stream(get_filepath(), get_direction());
 }
 
 std::string File::to_string() const
@@ -131,12 +131,6 @@ FilePtr FileHandleFactory::make_wav(const std::filesystem::path& path)
   auto impl = std::make_unique<File::Impl>();
   impl->file_type = File::eFileType::Wav;
   impl->filepath  = path;
-
-  if (!impl->file_adapter.open(path.string().c_str()))
-  {
-    throw std::runtime_error("Failed to open WAV file: " + path.string());
-  }
-
   return FilePtr(new File(std::move(impl)));
 }
 

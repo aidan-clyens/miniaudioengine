@@ -13,17 +13,23 @@ bool FileAudioStreamThread::start(const Params &params)
     return false;
   }
 
+  if (params.snd_file == nullptr)
+  {
+    LOG_WARNING("FileAudioStreamThread: start - SndFile is null.");
+    return false;
+  }
+
   // Define input or output buffer
-  SndFilePtr input_buffer = (params.direction == framework::eInputOutputDirection::Input)
+  SndFile *input_buffer = (params.direction == framework::eInputOutputDirection::Input)
     ? params.snd_file : nullptr;
-  SndFilePtr output_buffer = (params.direction == framework::eInputOutputDirection::Output)
+  SndFile *output_buffer = (params.direction == framework::eInputOutputDirection::Output)
     ? params.snd_file : nullptr;
 
   // Create new thread
   p_audio_stream_thread = std::make_unique<std::jthread>(
     FileAudioStreamThread::callback,
-    &input_buffer,
-    &output_buffer,
+    input_buffer,
+    output_buffer,
     params
   );
 
@@ -45,7 +51,7 @@ bool FileAudioStreamThread::stop()
   return true;
 }
 
-void FileAudioStreamThread::callback(std::stop_token stop_token, void *output_buffer, void *input_buffer, const Params &params)
+void FileAudioStreamThread::callback(std::stop_token stop_token, void *input_buffer, void *output_buffer, const Params &params)
 {
   framework::set_thread_name("FileAudioStreamThread");
 
@@ -61,14 +67,14 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, void *output_bu
     {
       case framework::eInputOutputDirection::Input:
       {
-        SndFilePtr *file = static_cast<SndFilePtr *>(input_buffer);
-        read_from_file(*file, params.n_frames_to_read);
+        SndFile *file = static_cast<SndFile *>(input_buffer);
+        read_from_file(file, params.n_frames_to_read);
         break;
       }
       case framework::eInputOutputDirection::Output:
       {
-        SndFilePtr *file = static_cast<SndFilePtr *>(output_buffer);
-        write_to_file(*file, params.n_frames_to_read);
+        SndFile *file = static_cast<SndFile *>(output_buffer);
+        write_to_file(file, params.n_frames_to_read);
         break;
       }
     }
@@ -78,7 +84,7 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, void *output_bu
   }
 }
 
-void FileAudioStreamThread::read_from_file(const SndFilePtr &file, const size_t frames_to_read)
+void FileAudioStreamThread::read_from_file(SndFile *file, const size_t frames_to_read)
 {
   LOG_DEBUG("FileAudioStreamThread: read_from_file: ", frames_to_read, " bytes");
   // TODO - Read from File to Buffer
@@ -86,7 +92,7 @@ void FileAudioStreamThread::read_from_file(const SndFilePtr &file, const size_t 
   FileAdapter::read_frames(file, buffer, frames_to_read);
 }
 
-void FileAudioStreamThread::write_to_file(const SndFilePtr &file, const size_t frames_to_read)
+void FileAudioStreamThread::write_to_file(SndFile *file, const size_t frames_to_read)
 {
   (void)file;
   LOG_DEBUG("FileAudioStreamThread: write_to_file: ", frames_to_read, " bytes");
@@ -98,35 +104,24 @@ FileAdapter::FileAdapter(): p_buffer(std::make_shared<FileAudioStreamThread::Buf
 
 }
 
-bool FileAdapter::open(const char *filename)
+SndFile* FileAdapter::open(const char *filename)
 {
   m_info = {};
-  p_file = std::shared_ptr<SndFile>(
-      sf_open(filename, SFM_READ, &m_info),
-      [](SndFile *f)
-      { if (f) sf_close(f); });
-
-  if (!p_file)
-  {
-    return false;
-  }
-
-  return true;
+  return sf_open(filename, SFM_READ, &m_info);
 }
 
-void FileAdapter::close()
+void FileAdapter::close(SndFile *file)
 {
-  p_file.reset();
+  if (file == nullptr)
+  {
+    LOG_WARNING("FileAdapter: close - Cannot close null SndFile");
+    return;
+  }
+  sf_close(file);
 }
 
-bool FileAdapter::open_stream(const framework::eInputOutputDirection &direction)
+bool FileAdapter::open_stream(const std::filesystem::path &filename, const framework::eInputOutputDirection &direction)
 {
-  if (p_file == nullptr)
-  {
-    LOG_WARNING("FileAdapter: open_stream - No file opened, cannot open stream.");
-    return false;
-  }
-
   LOG_DEBUG("FileAdapter: open_stream - Opening audio stream");
 
   if (m_audio_stream_thread.is_running())
@@ -139,10 +134,17 @@ bool FileAdapter::open_stream(const framework::eInputOutputDirection &direction)
     }
   }
 
+  SndFile *file = open(filename.string().c_str());
+  if (file == nullptr)
+  {
+    LOG_WARNING("FileAdapter: open_stream - Failed to open SndFile: ", filename);
+    return false;
+  }
+
   FileAudioStreamThread::Params params =
   {
     p_buffer,
-    p_file,
+    file,
     m_info,
     direction,
     2048 // TODO - Use BUFFER_SIZE constant for n_frames_to_read
@@ -179,18 +181,24 @@ bool FileAdapter::open_midi_stream(FilePtr file)
   throw std::runtime_error("FileAdapter: open_midi_stream not implemented!");
 }
 
-long long FileAdapter::read_frames(const SndFilePtr &file, std::vector<float> &buffer, long long frames_to_read)
+long long FileAdapter::read_frames(SndFile *file, std::vector<float> &buffer, long long frames_to_read)
 {
   if (file == nullptr)
+  {
+    LOG_WARNING("FileAdapter: read_frames - Cannot read from null SndFile.");
     return 0LL;
-  return sf_readf_float(file.get(),
+  }
+  return sf_readf_float(file,
                         buffer.data(),
                         static_cast<sf_count_t>(frames_to_read));
 }
 
-void FileAdapter::seek(const SndFilePtr &file, long long frame_offset)
+void FileAdapter::seek(SndFile *file, long long frame_offset)
 {
   if (file == nullptr)
+  {
+    LOG_WARNING("FileAdapter: seek - Cannot read from null SndFile.");
     return;
-  sf_seek(file.get(), static_cast<sf_count_t>(frame_offset), SEEK_SET);
+  }
+  sf_seek(file, static_cast<sf_count_t>(frame_offset), SEEK_SET);
 }

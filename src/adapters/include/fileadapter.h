@@ -17,8 +17,6 @@ namespace miniaudioengine::adapters
 typedef SNDFILE SndFile;
 typedef SF_INFO SndFileInfo;
 
-using SndFilePtr = std::shared_ptr<SndFile>;
-
 constexpr size_t BUFFER_SIZE = 1024;
 
 // TODO - Should FileAudioStreamThread be moved to FileService instead?
@@ -32,7 +30,7 @@ public:
   struct Params
   {
     BufferPtr buffer;
-    SndFilePtr snd_file;
+    SndFile* snd_file;
     SndFileInfo snd_file_info;
     framework::eInputOutputDirection direction;
     size_t n_frames_to_read;
@@ -46,12 +44,12 @@ public:
   bool stop();
   bool is_running() { return p_audio_stream_thread != nullptr; }
 
-  static void callback(std::stop_token stop_token, void *output_buffer, void *input_buffer, const Params &params);
+  static void callback(std::stop_token stop_token, void *input_buffer, void *output_buffer, const Params &params);
 
 private:
 
-  static void read_from_file(const SndFilePtr &file, const size_t frames_to_read);
-  static void write_to_file(const SndFilePtr &file, const size_t frames_to_read);
+  static void read_from_file(SndFile *file, const size_t frames_to_read);
+  static void write_to_file(SndFile *file, const size_t frames_to_read);
 
   std::unique_ptr<std::jthread> p_audio_stream_thread;
 };
@@ -65,26 +63,24 @@ public:
   FileAdapter();
   ~FileAdapter() = default;
 
-  bool open(const char* filename);
-  void close();
+  SndFile* open(const char* filename);
+  void close(SndFile *file);
 
-  SndFile *get_file() const { return p_file.get(); }
   SndFileInfo get_info() const { return m_info; }
 
   // TODO - Implement file streaming in FileAdapter
-  // File contents should be tranferred between file and a lock-free buffer in the data thread 
+  // File contents should be tranferred between file and a lock-free buffer in the data thread
 
-  bool open_stream(const framework::eInputOutputDirection &direction);
+  bool open_stream(const std::filesystem::path &filename, const framework::eInputOutputDirection &direction);
   bool close_stream();
   bool is_stream_open();
 
-  bool open_midi_stream(FilePtr file);
+  bool open_midi_stream(FilePtr file);  // TOOD - Remove FilePtr reference
 
-  static long long read_frames(const SndFilePtr &file, std::vector<float> &buffer, long long frames_to_read);
-  static void seek(const SndFilePtr &file, long long frame_offset);
+  static long long read_frames(SndFile *file, std::vector<float> &buffer, long long frames_to_read);
+  static void seek(SndFile *file, long long frame_offset);
 
 private:
-  SndFilePtr p_file = nullptr;
   SndFileInfo m_info = {};
 
   FileAudioStreamThread m_audio_stream_thread;
