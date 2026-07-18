@@ -3,6 +3,7 @@
 
 #include "file.h"
 #include "ringbuffer.h"
+#include "adapter.h"
 
 #include <sndfile.h>
 #include <filesystem>
@@ -20,7 +21,7 @@ typedef SF_INFO SndFileInfo;
 constexpr size_t BUFFER_SIZE = 1024;
 
 // TODO - Should FileAudioStreamThread be moved to FileService instead?
-class FileAudioStreamThread
+class FileAudioStreamThread : public framework::IAdapterCallback
 {
 public:
 
@@ -57,10 +58,12 @@ private:
 /** @class FileAdapter 
   * @brief Interface to backend audio file library. e.g. sndfile. 
   */
-class FileAdapter
+class FileAdapter : public framework::IAdapter<std::filesystem::path>
 {
 public:
   FileAdapter();
+  FileAdapter(const FileAdapter &) = default;
+  FileAdapter &operator=(const FileAdapter &) = default;
   ~FileAdapter() = default;
 
   SndFile* open(const char* filename);
@@ -73,7 +76,10 @@ public:
 
   bool open_stream(const std::filesystem::path &filename, const framework::eInputOutputDirection &direction);
   bool close_stream();
+  bool stop_stream() { return false; }  // TODO
+  
   bool is_stream_open();
+  bool is_stream_running() { return false; }  // TODO
 
   bool open_midi_stream(FilePtr file);  // TOOD - Remove FilePtr reference
 

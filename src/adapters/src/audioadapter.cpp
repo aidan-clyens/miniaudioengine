@@ -122,22 +122,19 @@ bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOu
 
   unsigned int buffer_size = BUFFER_SIZE;
 
-  p_callback_context =
-  {
-    direction
-  };
+  AudioCallbackHandler::Params context = {};
 
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
   LOG_DEBUG("AudioAdapter: open_stream - Opening RtAudio audio stream with Device ID=", device_id, ", Channels=", channels, ", Sample Rate=", sample_rate, ", Buffer Size=", BUFFER_SIZE);
 
   RtAudioErrorType rc;
   rc = p_rtaudio->openStream(&params,
-                            nullptr,
-                            RTAUDIO_FLOAT32,
-                            sample_rate,
-                            &buffer_size,
-                            &AudioCallbackHandler::audio_callback,
-                            &p_callback_context);
+                             nullptr,
+                             RTAUDIO_FLOAT32,
+                             sample_rate,
+                             &buffer_size,
+                             &AudioCallbackHandler::audio_callback,
+                             &context);
 
   if (rc != RTAUDIO_NO_ERROR)
   {
@@ -160,7 +157,7 @@ bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOu
                           sample_rate,
                           &buffer_size,
                           &AudioCallbackHandler::audio_callback,
-                          nullptr);
+                          &context);
     p_rtaudio->startStream();
   }
   catch (const RtAudioError &e)

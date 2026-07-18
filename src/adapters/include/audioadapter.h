@@ -4,6 +4,7 @@
 #include "device.h"
 #include "logger.h"
 #include "ringbuffer.h"
+#include "adapter.h"
 
 #include <memory>
 #include <rtaudio/RtAudio.h>
@@ -15,7 +16,7 @@ typedef RtAudioStreamStatus AudioStreamStatus;
 typedef RtAudio::StreamParameters AudioStreamParameters;
 typedef RtAudio::DeviceInfo AudioDeviceInfo;
 
-class AudioCallbackHandler
+class AudioCallbackHandler : public framework::IAdapterCallback
 {
 public:
 
@@ -31,7 +32,7 @@ public:
 /** @class AudioAdapter
  *  @brief Adapter class that encapsulates RtAudio, separating the audio controller from direct dependency on RtAudio.
  */
-class AudioAdapter // TODO - Implement framework::IAdapter interface
+class AudioAdapter : public framework::IAdapter<DeviceInfo>
 {
 public:
   AudioAdapter();
@@ -53,9 +54,6 @@ private:
   std::unique_ptr<RtAudio> p_rtaudio;
   // TODO - Device should own BufferPtr, not AudioAdapter
   framework::BufferPtr p_buffer;
-
-  // TODO - Save AudioCallbackHandler context
-  AudioCallbackHandler::Params p_callback_context;
 
   static DevicePtr make_device_handle(const AudioDeviceInfo &info, unsigned int id)
   {

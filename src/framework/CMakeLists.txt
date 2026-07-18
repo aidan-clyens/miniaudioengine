@@ -14,6 +14,7 @@ target_sources(framework
       include/io.h
       include/graph.h
       include/processor.h
+      include/adapter.h
 )
 
 target_sources(framework PRIVATE
