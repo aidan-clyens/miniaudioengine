@@ -48,8 +48,8 @@ public:
 
 private:
 
-  static void read_from_file(SndFile *file, const size_t frames_to_read);
-  static void write_to_file(SndFile *file, const size_t frames_to_read);
+  static void read_from_file(SndFile *file, Buffer *buffer, const size_t frames_to_read);
+  static void write_to_file(Buffer * buffer, SndFile * file, const size_t frames_to_read);
 
   std::unique_ptr<std::jthread> p_audio_stream_thread;
 };

@@ -20,10 +20,20 @@ bool FileAudioStreamThread::start(const Params &params)
   }
 
   // Define input or output buffer
-  SndFile *input_buffer = (params.direction == framework::eInputOutputDirection::Input)
-    ? params.snd_file : nullptr;
-  SndFile *output_buffer = (params.direction == framework::eInputOutputDirection::Output)
-    ? params.snd_file : nullptr;
+  void *input_buffer = nullptr;
+  void *output_buffer = nullptr;
+
+  switch (params.direction)
+  {
+    case framework::eInputOutputDirection::Input:
+      input_buffer = params.snd_file;
+      output_buffer = params.buffer.get();
+      break;
+    case framework::eInputOutputDirection::Output:
+      input_buffer = params.buffer.get();
+      output_buffer = params.snd_file;
+      break;
+  }
 
   // Create new thread
   p_audio_stream_thread = std::make_unique<std::jthread>(
@@ -55,6 +65,12 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, void *input_buf
 {
   framework::set_thread_name("FileAudioStreamThread");
 
+  const size_t total_frames_to_read = params.n_frames_to_read * params.snd_file_info.channels;
+  const float cycle_time_s = 1.0 / (params.snd_file_info.samplerate / total_frames_to_read);
+  const unsigned int cycle_time_ms = (unsigned int)(cycle_time_s * 1000);
+
+  LOG_DEBUG("FileAudioStreamThread: callback - Sample Rate = ", params.snd_file_info.samplerate, " Cycle Time = ", cycle_time_ms, " ms");
+
   while (true)
   {
     if (stop_token.stop_requested())
@@ -68,31 +84,38 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, void *input_buf
       case framework::eInputOutputDirection::Input:
       {
         SndFile *file = static_cast<SndFile *>(input_buffer);
-        read_from_file(file, params.n_frames_to_read);
+        Buffer *buffer = static_cast<Buffer *>(output_buffer);
+        read_from_file(file, buffer, params.n_frames_to_read);
         break;
       }
       case framework::eInputOutputDirection::Output:
       {
+        Buffer *buffer = static_cast<Buffer *>(input_buffer);
         SndFile *file = static_cast<SndFile *>(output_buffer);
-        write_to_file(file, params.n_frames_to_read);
+        write_to_file(buffer, file, params.n_frames_to_read);
         break;
       }
     }
 
-    // TODO - Calculate cycle time from File bitrate
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(cycle_time_ms));
   }
 }
 
-void FileAudioStreamThread::read_from_file(SndFile *file, const size_t frames_to_read)
+void FileAudioStreamThread::read_from_file(SndFile *file, Buffer *buffer, const size_t frames_to_read)
 {
   LOG_DEBUG("FileAudioStreamThread: read_from_file: ", frames_to_read, " bytes");
   // TODO - Read from File to Buffer
-  std::vector<float> buffer(frames_to_read);
-  FileAdapter::read_frames(file, buffer, frames_to_read);
+  std::vector<float> buffer_data(frames_to_read);
+  FileAdapter::read_frames(file, buffer_data, frames_to_read);
+
+  // TODO - Transfer to Buffer
+  for (const float val : buffer_data)
+  {
+    buffer->try_push(val);
+  }
 }
 
-void FileAudioStreamThread::write_to_file(SndFile *file, const size_t frames_to_read)
+void FileAudioStreamThread::write_to_file(Buffer *buffer, SndFile *file, const size_t frames_to_read)
 {
   (void)file;
   LOG_DEBUG("FileAudioStreamThread: write_to_file: ", frames_to_read, " bytes");
@@ -147,7 +170,7 @@ bool FileAdapter::open_stream(const std::filesystem::path &filename, const frame
     file,
     m_info,
     direction,
-    2048 // TODO - Use BUFFER_SIZE constant for n_frames_to_read
+    BUFFER_SIZE // TODO - Use BUFFER_SIZE constant for n_frames_to_read
   };
 
   if (!m_audio_stream_thread.start(params))
