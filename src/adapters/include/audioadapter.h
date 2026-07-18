@@ -22,10 +22,7 @@ using RtAudioPtr = std::unique_ptr<RtAudio>;
 class AudioCallbackHandler : public framework::IAdapterCallback
 {
 public:
-  struct Params
-  {
-    framework::eInputOutputDirection direction;
-  };
+  struct Params : public framework::IAdapterCallback::IParams {};
 
   static int audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                             double stream_time, AudioStreamStatus status, void *user_data) noexcept;

@@ -22,12 +22,10 @@ typedef SF_INFO SndFileInfo;
 class FileAudioStreamThread : public framework::IAdapterCallback
 {
 public:
-  struct Params
+  struct Params : public framework::IAdapterCallback::IParams
   {
-    BufferPtr buffer;
     SndFile* snd_file;
     SndFileInfo snd_file_info;
-    framework::eInputOutputDirection direction;
     size_t n_frames_to_read;
   };
 

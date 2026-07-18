@@ -161,10 +161,10 @@ bool FileAdapter::open_stream(const std::filesystem::path &filename, const frame
 
   FileAudioStreamThread::Params params =
   {
+    direction,
     p_buffer,
     file,
     m_info,
-    direction,
     1024
   };
 

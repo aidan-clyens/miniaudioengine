@@ -10,6 +10,8 @@ unsigned int BUFFER_SIZE = 1024;
 int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                                          double stream_time, AudioStreamStatus status, void *user_data) noexcept
 {
+  framework::set_thread_name("AudioCallbackHandler");
+
   (void)output_buffer;
   (void)input_buffer;
 
@@ -39,7 +41,7 @@ int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer
       break;
   }
 
-  return 1;
+  return 0;
 }
 
 AudioAdapter::AudioAdapter()
@@ -142,7 +144,10 @@ bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOu
 
   unsigned int buffer_size = BUFFER_SIZE;
 
-  AudioCallbackHandler::Params context = {};
+  m_params = {
+    direction,
+    p_buffer
+  };
 
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6
   LOG_DEBUG("AudioAdapter: open_stream - Opening RtAudio audio stream with Device ID=", device_id, ", Channels=", channels, ", Sample Rate=", sample_rate, ", Buffer Size=", BUFFER_SIZE);
@@ -154,7 +159,7 @@ bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOu
                              sample_rate,
                              &buffer_size,
                              &AudioCallbackHandler::audio_callback,
-                             &context);
+                             &m_params);
 
   if (rc != RTAUDIO_NO_ERROR)
   {
@@ -177,7 +182,7 @@ bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOu
                           sample_rate,
                           &buffer_size,
                           &AudioCallbackHandler::audio_callback,
-                          &context);
+                          &m_params);
     p_rtaudio->startStream();
   }
   catch (const RtAudioError &e)
