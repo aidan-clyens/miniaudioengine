@@ -171,7 +171,7 @@ Any method that runs inside a callback **must** follow these rules — flag viol
 1. No `std::mutex`, `lock_guard`, or blocking primitive
 2. No `new`, `malloc`, `push_back`, or dynamic allocation
 3. No file reads, no `sleep` calls
-4. Cross-thread communication via `LockfreeRingBuffer<T, Size>` only
+4. Cross-thread communication via `RingBuffer<T, Size>` only
 5. Total callback work must be under 1 ms
 
 ## Output

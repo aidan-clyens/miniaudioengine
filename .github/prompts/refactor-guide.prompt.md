@@ -57,7 +57,7 @@ If the target is in `src/data/` or is called from an RtAudio/RtMidi callback:
 - No `std::mutex`, `std::lock_guard`, or any blocking primitive
 - No heap allocation (`new`, `malloc`, `std::vector::push_back`, `std::make_shared`)
 - No blocking I/O
-- Cross-thread messaging must still use `LockfreeRingBuffer`
+- Cross-thread messaging must still use `RingBuffer`
 
 ---
 

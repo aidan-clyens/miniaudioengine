@@ -30,7 +30,7 @@ Layer 1: src/data/
 namespace: miniaudioengine::framework
 
 framework (shared — accessible by all layers): src/framework/
-- LockfreeRingBuffer, DoubleBuffer, Logger, IXxx, Device, File
+- RingBuffer, DoubleBuffer, Logger, IXxx, Device, File
 namespace: miniaudioengine::framework / miniaudioengine
 ```
 
@@ -113,7 +113,7 @@ package "Layer 1 — Data (Real-time)" {
 }
 
 package "Framework (shared)" {
-  [LockfreeRingBuffer]
+  [RingBuffer]
   [DoubleBuffer]
   [Logger]
   [IController]
@@ -126,8 +126,8 @@ package "Framework (shared)" {
 [TrackManager] --> [MidiPortController]
 [AudioStreamController] --> [AudioDataPlane]
 [MidiPortController] --> [MidiDataPlane]
-[AudioDataPlane] --> [LockfreeRingBuffer]
-[MidiDataPlane] --> [LockfreeRingBuffer]
+[AudioDataPlane] --> [RingBuffer]
+[MidiDataPlane] --> [RingBuffer]
 [AudioStreamController] --> [IController]
 [IAudioProcessor] --> [IDataPlane]
 

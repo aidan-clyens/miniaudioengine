@@ -71,20 +71,6 @@ public:
   /** @brief Format string, e.g. "WAV", "AIFF", "FLAC". Returns empty string for MIDI files. */
   std::string get_format_string() const;
 
-  /** @brief Read up to @p frames_to_read interleaved float frames into @p buffer.
-   *  @param buffer Destination buffer; must be pre-sized to at least frames_to_read * channels.
-   *  @param frames_to_read Number of frames to read.
-   *  @return Actual number of frames read, or 0 for MIDI files.
-   *  @note Real-time safe: no allocation, no locks.
-   */
-  long long read_frames(std::vector<float>& buffer, long long frames_to_read);
-
-  /** @brief Seek to a specific frame offset from the start of the file.
-   *  @param frame_offset Frame index to seek to.
-   *  @note Real-time safe: no allocation, no locks.
-   */
-  void seek(long long frame_offset);
-
   /** @brief Returns true if the File's audio stream is open */
   bool open_stream();
 

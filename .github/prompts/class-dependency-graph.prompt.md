@@ -19,7 +19,7 @@ Read headers under `src/` and `include/` to identify all classes and interfaces.
 Focus on project-defined types; ignore standard library and third-party types (RtAudio, RtMidi, libsndfile, etc.) unless they appear as a named base class.
 
 Key directories to scan:
-- `src/framework/include/` — framework primitives and interfaces (`IController`, `IDataPlane`, `LockfreeRingBuffer`, `Logger`)
+- `src/framework/include/` — framework primitives and interfaces (`IController`, `IDataPlane`, `RingBuffer`, `Logger`)
 - `src/adapters/include/` — adapter wrappers (`AudioAdapter`, `FileAdapter`, `MidiAdapter`)
 - `src/engine/include/` — engine types (`AudioController`, `AudioDataPlane`, `MidiController`, `MidiDataPlane`)
 - `src/processing/include/` — processing types (`IAudioProcessor`, `Sample`, `SamplePlayer`)
