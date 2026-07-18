@@ -67,7 +67,7 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, void *input_buf
 
   const size_t total_frames_to_read = params.n_frames_to_read * params.snd_file_info.channels;
   const float cycle_time_s = 1.0 / (params.snd_file_info.samplerate / total_frames_to_read);
-  const unsigned int cycle_time_ms = (unsigned int)(cycle_time_s * 1000);
+  const unsigned int cycle_time_ms = (unsigned int)(cycle_time_s * 1000 * 0.9); // Read 10% faster than the expected bitrate
 
   LOG_DEBUG("FileAudioStreamThread: callback - Sample Rate = ", params.snd_file_info.samplerate, " Cycle Time = ", cycle_time_ms, " ms");
 

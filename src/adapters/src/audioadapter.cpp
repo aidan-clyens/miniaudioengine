@@ -12,7 +12,6 @@ int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer
 {
   framework::set_thread_name("AudioCallbackHandler");
 
-  (void)output_buffer;
   (void)input_buffer;
 
   // Verify user data is a valid pointer
@@ -35,8 +34,21 @@ int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer
       LOG_DEBUG("AudioCallbackHandler: Reading input...");
       break;
     case framework::eInputOutputDirection::Output:
+    {
       LOG_DEBUG("AudioCallbackHandler: Writing ", n_frames, " to output buffer. Status=", status, ". Stream Time=", stream_time);
+      std::vector<float> data(n_frames);
+      float val = 0;
+      for (size_t i = 0; i < n_frames; i++)
+      {
+        // Poll until buffer has data
+        // TODO - Use a condition variable instead
+        // TODO - Look up producer / consumer pattern
+        while (!params->buffer->try_pop(val)) {}
+      }
+      // Copy to output_buffer
+      std::memcpy(output_buffer, data.data(), n_frames);
       break;
+    }
     default:
       break;
   }
