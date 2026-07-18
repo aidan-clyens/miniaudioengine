@@ -59,6 +59,8 @@ void list_midi_devices(const AudioSession &session)
  */
 int parse_cli_arguments(int argc, char *argv[], AudioSession &session)
 {
+  (void)session;
+
   // Parse command line arguments
   CLI::App app{std::string(APP_NAME) + " - " + APP_DESCRIPTION};
   argv = app.ensure_utf8(argv);

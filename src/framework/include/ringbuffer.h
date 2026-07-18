@@ -92,8 +92,10 @@ public:
    */
   size_t size() const
   {
-    size_t current_write = m_write_index.load(std::memory_order_acquire);
-    size_t current_read = m_read_index.load(std::memory_order_acquire);
+    std::lock_guard<std::mutex> guard(m_mutex);
+
+    size_t current_write = m_write_index;
+    size_t current_read = m_read_index;
 
     if (current_write >= current_read)
     {
@@ -127,7 +129,6 @@ public:
 private:
   std::array<T, Size> m_buffer;
   std::mutex m_mutex;
-  std::condition_variable m_empty_cv;
 
   size_t m_write_index{0}; // Producer index
   size_t m_read_index{0}; // Consumer index

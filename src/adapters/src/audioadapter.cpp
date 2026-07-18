@@ -10,6 +10,9 @@ unsigned int BUFFER_SIZE = 1024;
 int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer, unsigned int n_frames,
                                          double stream_time, AudioStreamStatus status, void *user_data) noexcept
 {
+  (void)output_buffer;
+  (void)input_buffer;
+
   // Verify user data is a valid pointer
   if (user_data == nullptr)
   {

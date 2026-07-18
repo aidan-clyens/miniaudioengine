@@ -88,6 +88,7 @@ void FileAudioStreamThread::read_from_file(const SndFilePtr &file, const size_t 
 
 void FileAudioStreamThread::write_to_file(const SndFilePtr &file, const size_t frames_to_read)
 {
+  (void)file;
   LOG_DEBUG("FileAudioStreamThread: write_to_file: ", frames_to_read, " bytes");
   // TODO - Write from Buffer to File
 }
@@ -173,6 +174,7 @@ bool FileAdapter::is_stream_open()
 
 bool FileAdapter::open_midi_stream(FilePtr file)
 {
+  (void)file;
   // TODO - Implement FileAdapter open_midi_stream
   throw std::runtime_error("FileAdapter: open_midi_stream not implemented!");
 }
