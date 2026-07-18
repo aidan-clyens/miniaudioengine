@@ -41,8 +41,8 @@ public:
 
 private:
 
-  static void read_from_file(SndFile *file, Buffer *buffer, const size_t frames_to_read);
-  static void write_to_file(Buffer * buffer, SndFile * file, const size_t frames_to_read);
+  static void read_from_file(SndFile *file, framework::Buffer *buffer, const size_t frames_to_read);
+  static void write_to_file(framework::Buffer * buffer, SndFile * file, const size_t frames_to_read);
 
   std::unique_ptr<std::jthread> p_audio_stream_thread;
 };
@@ -60,7 +60,7 @@ public:
 
   SndFileInfo get_info() const { return m_info; }
 
-  bool open_stream(const std::filesystem::path &filename, const framework::eInputOutputDirection &direction);
+  bool open_stream(const std::filesystem::path &filename, const framework::BufferPtr &buffer, const framework::eInputOutputDirection &direction);
   bool close_stream();
   bool stop_stream() { return false; }  // TODO
   

@@ -15,6 +15,7 @@
 #include "device.h"
 #include "file.h"
 #include "miditypes.h"
+#include "ringbuffer.h"
 
 namespace miniaudioengine
 {
@@ -215,7 +216,7 @@ public:
   std::string to_string() const;
 
 private:
-  bool open_stream(const framework::IInputOutputPtr &stream);
+  bool open_stream(const framework::IInputOutputPtr &stream, const framework::BufferPtr &buffer);
 
   void handle_midi_message(const midi::MidiMessage& message); // TODO - Remove
 

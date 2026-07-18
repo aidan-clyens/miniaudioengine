@@ -101,9 +101,9 @@ bool File::close_stream()
   return p_impl->file_adapter.close_stream();
 }
 
-bool File::open_stream()
+bool File::open_stream(const framework::BufferPtr &buffer)
 {
-  return p_impl->file_adapter.open_stream(get_filepath(), get_direction());
+  return p_impl->file_adapter.open_stream(get_filepath(), buffer, get_direction());
 }
 
 std::string File::to_string() const

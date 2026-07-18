@@ -257,12 +257,13 @@ bool Track::play()
   }
 
   m_state = eTrackState::Stopped;
+  framework::BufferPtr buffer = std::make_shared<Buffer>();
 
   // Audio Input
   if (has_audio_input())
   {
     LOG_INFO("Track: play - Opening audio input ", get_audio_input()->to_string());
-    if (!open_stream(get_audio_input()))
+    if (!open_stream(get_audio_input(), buffer))
       return false;
   }
 
@@ -270,7 +271,8 @@ bool Track::play()
   if (has_audio_output())
   {
     LOG_INFO("Track: play - Opening audio output ", get_audio_output()->to_string());
-    if (!open_stream(get_audio_output()))
+    // TODO - Pass input buffer for audio output
+    if (!open_stream(get_audio_output(), buffer))
       return false;
   }
 
@@ -278,7 +280,7 @@ bool Track::play()
   if (has_midi_input())
   {
     LOG_INFO("Track: play - Opening MIDI input ", get_midi_input()->to_string());
-    if (!open_stream(get_midi_input()))
+    if (!open_stream(get_midi_input(), nullptr))
       return false;
   }
 
@@ -286,7 +288,7 @@ bool Track::play()
   if (has_midi_output())
   {
     LOG_INFO("Track: play - Opening MIDI output ", get_midi_output()->to_string());
-    if (!open_stream(get_midi_output()))
+    if (!open_stream(get_midi_output(), nullptr))
       return false;
   }
 
@@ -359,7 +361,7 @@ bool Track::is_playing()
   return m_state == eTrackState::Playing;
 }
 
-bool Track::open_stream(const framework::IInputOutputPtr &stream)
+bool Track::open_stream(const framework::IInputOutputPtr &stream, const framework::BufferPtr &buffer)
 {
   if (stream->is_stream_open())
   {
@@ -371,7 +373,7 @@ bool Track::open_stream(const framework::IInputOutputPtr &stream)
     }
   }
 
-  if (!stream->open_stream())
+  if (!stream->open_stream(buffer))
   {
     LOG_ERROR("Track: play - Failed to open stream ", stream->to_string());
     return false;

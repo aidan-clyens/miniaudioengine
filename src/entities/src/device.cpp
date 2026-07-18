@@ -60,10 +60,10 @@ bool Device::close_stream()
   return p_impl->audio_adapter.close_stream();
 }
 
-bool Device::open_stream()
+bool Device::open_stream(const framework::BufferPtr &buffer)
 {
   // TODO - Needs to support MIDI as well
-  return p_impl->audio_adapter.open_stream(p_impl->device_info, get_direction());
+  return p_impl->audio_adapter.open_stream(p_impl->device_info, buffer, get_direction());
 }
 
 bool Device::is_input() const

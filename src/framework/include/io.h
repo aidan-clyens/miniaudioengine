@@ -1,11 +1,16 @@
 #ifndef __INPUT_OUTPUT_H__
 #define __INPUT_OUTPUT_H__
 
+#include "ringbuffer.h"
+
 #include <string>
 #include <memory>
 
 namespace miniaudioengine::framework
 {
+
+using Buffer = framework::RingBuffer<float, framework::BUFFER_SIZE>;
+using BufferPtr = std::shared_ptr<Buffer>;
 
 /** @enum eInputOutputType
  *  @brief Defines the "type" of input. e.g. Device or File
@@ -49,13 +54,14 @@ public:
     return m_direction;
   }
 
-  virtual bool open_stream() = 0;
+  virtual bool open_stream(const BufferPtr &buffer) = 0;
   virtual bool close_stream() = 0;
   virtual bool is_stream_open() = 0;
 
 private:
   eInputOutputType m_io_type = None;
   eInputOutputDirection m_direction = Input;
+  BufferPtr p_buffer = nullptr;
 };
 
 using IInputOutputPtr = std::shared_ptr<IInputOutput>;

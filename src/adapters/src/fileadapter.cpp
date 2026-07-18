@@ -84,13 +84,13 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, void *input_buf
       case framework::eInputOutputDirection::Input:
       {
         SndFile *file = static_cast<SndFile *>(input_buffer);
-        Buffer *buffer = static_cast<Buffer *>(output_buffer);
+        framework::Buffer *buffer = static_cast<framework::Buffer *>(output_buffer);
         read_from_file(file, buffer, params.n_frames_to_read);
         break;
       }
       case framework::eInputOutputDirection::Output:
       {
-        Buffer *buffer = static_cast<Buffer *>(input_buffer);
+        framework::Buffer *buffer = static_cast<framework::Buffer *>(input_buffer);
         SndFile *file = static_cast<SndFile *>(output_buffer);
         write_to_file(buffer, file, params.n_frames_to_read);
         break;
@@ -101,7 +101,7 @@ void FileAudioStreamThread::callback(std::stop_token stop_token, void *input_buf
   }
 }
 
-void FileAudioStreamThread::read_from_file(SndFile *file, Buffer *buffer, const size_t frames_to_read)
+void FileAudioStreamThread::read_from_file(SndFile *file, framework::Buffer *buffer, const size_t frames_to_read)
 {
   LOG_DEBUG("FileAudioStreamThread: read_from_file: ", frames_to_read, " bytes");
   // TODO - Read from File to Buffer
@@ -115,7 +115,7 @@ void FileAudioStreamThread::read_from_file(SndFile *file, Buffer *buffer, const 
   }
 }
 
-void FileAudioStreamThread::write_to_file(Buffer *buffer, SndFile *file, const size_t frames_to_read)
+void FileAudioStreamThread::write_to_file(framework::Buffer *buffer, SndFile *file, const size_t frames_to_read)
 {
   (void)file;
   LOG_DEBUG("FileAudioStreamThread: write_to_file: ", frames_to_read, " bytes");
@@ -138,7 +138,7 @@ void FileAdapter::close(SndFile *file)
   sf_close(file);
 }
 
-bool FileAdapter::open_stream(const std::filesystem::path &filename, const framework::eInputOutputDirection &direction)
+bool FileAdapter::open_stream(const std::filesystem::path &filename, const framework::BufferPtr &buffer, const framework::eInputOutputDirection &direction)
 {
   LOG_DEBUG("FileAdapter: open_stream - Opening audio stream");
 
@@ -162,7 +162,7 @@ bool FileAdapter::open_stream(const std::filesystem::path &filename, const frame
   FileAudioStreamThread::Params params =
   {
     direction,
-    p_buffer,
+    buffer,
     file,
     m_info,
     1024

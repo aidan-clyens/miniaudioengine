@@ -72,9 +72,9 @@ public:
   std::string get_format_string() const;
 
   /** @brief Returns true if the File's audio stream is open */
-  bool open_stream();
+  bool open_stream(const framework::BufferPtr &buffer);
 
-    /** @brief Close the File's audio stream. Returns true if successful, else false */
+  /** @brief Close the File's audio stream. Returns true if successful, else false */
   bool close_stream();
 
     /** @brief Open the File's audio stream. Returns true if successful, else false */

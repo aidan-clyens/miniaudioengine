@@ -116,7 +116,7 @@ std::vector<DevicePtr> AudioAdapter::get_devices()
   return devices;
 }
 
-bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOutputDirection &direction)
+bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::BufferPtr &buffer, const framework::eInputOutputDirection &direction)
 {
   unsigned int device_id = info.id;
   unsigned int sample_rate = info.preferred_sample_rate;
@@ -146,7 +146,7 @@ bool AudioAdapter::open_stream(const DeviceInfo &info, const framework::eInputOu
 
   m_params = {
     direction,
-    p_buffer
+    buffer
   };
 
 #if defined(RTAUDIO_VERSION_MAJOR) && RTAUDIO_VERSION_MAJOR >= 6

@@ -42,7 +42,7 @@ public:
   unsigned int get_device_count();
   std::vector<DevicePtr> get_devices();
 
-  bool open_stream(const DeviceInfo &info, const framework::eInputOutputDirection &direction);
+  bool open_stream(const DeviceInfo &info, const framework::BufferPtr &buffer, const framework::eInputOutputDirection &direction);
   bool close_stream();
   bool stop_stream();
 
