@@ -122,11 +122,6 @@ void FileAudioStreamThread::write_to_file(Buffer *buffer, SndFile *file, const s
   // TODO - Write from Buffer to File
 }
 
-FileAdapter::FileAdapter(): p_buffer(std::make_shared<FileAudioStreamThread::Buffer>())
-{
-
-}
-
 SndFile* FileAdapter::open(const char *filename)
 {
   m_info = {};
@@ -170,7 +165,7 @@ bool FileAdapter::open_stream(const std::filesystem::path &filename, const frame
     file,
     m_info,
     direction,
-    BUFFER_SIZE // TODO - Use BUFFER_SIZE constant for n_frames_to_read
+    1024
   };
 
   if (!m_audio_stream_thread.start(params))
@@ -195,13 +190,6 @@ bool FileAdapter::close_stream()
 bool FileAdapter::is_stream_open()
 {
   return m_audio_stream_thread.is_running();
-}
-
-bool FileAdapter::open_midi_stream(FilePtr file)
-{
-  (void)file;
-  // TODO - Implement FileAdapter open_midi_stream
-  throw std::runtime_error("FileAdapter: open_midi_stream not implemented!");
 }
 
 long long FileAdapter::read_frames(SndFile *file, std::vector<float> &buffer, long long frames_to_read)

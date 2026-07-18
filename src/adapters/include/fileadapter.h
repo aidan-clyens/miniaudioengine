@@ -18,16 +18,10 @@ namespace miniaudioengine::adapters
 typedef SNDFILE SndFile;
 typedef SF_INFO SndFileInfo;
 
-constexpr size_t BUFFER_SIZE = 1024;
-
 // TODO - Should FileAudioStreamThread be moved to FileService instead?
 class FileAudioStreamThread : public framework::IAdapterCallback
 {
 public:
-
-  using Buffer = framework::RingBuffer<unsigned int, BUFFER_SIZE>;
-  using BufferPtr = std::shared_ptr<Buffer>;
-
   struct Params
   {
     BufferPtr buffer;
@@ -61,18 +55,12 @@ private:
 class FileAdapter : public framework::IAdapter<std::filesystem::path>
 {
 public:
-  FileAdapter();
+  FileAdapter() = default;
   FileAdapter(const FileAdapter &) = default;
   FileAdapter &operator=(const FileAdapter &) = default;
   ~FileAdapter() = default;
 
-  SndFile* open(const char* filename);
-  void close(SndFile *file);
-
   SndFileInfo get_info() const { return m_info; }
-
-  // TODO - Implement file streaming in FileAdapter
-  // File contents should be tranferred between file and a lock-free buffer in the data thread
 
   bool open_stream(const std::filesystem::path &filename, const framework::eInputOutputDirection &direction);
   bool close_stream();
@@ -81,8 +69,6 @@ public:
   bool is_stream_open();
   bool is_stream_running() { return false; }  // TODO
 
-  bool open_midi_stream(FilePtr file);  // TOOD - Remove FilePtr reference
-
   static long long read_frames(SndFile *file, std::vector<float> &buffer, long long frames_to_read);
   static void seek(SndFile *file, long long frame_offset);
 
@@ -90,7 +76,9 @@ private:
   SndFileInfo m_info = {};
 
   FileAudioStreamThread m_audio_stream_thread;
-  FileAudioStreamThread::BufferPtr p_buffer;
+
+  SndFile *open(const char *filename);
+  void close(SndFile *file);
 
   static FilePtr make_wav_file_handle(const std::filesystem::path &path)
   {

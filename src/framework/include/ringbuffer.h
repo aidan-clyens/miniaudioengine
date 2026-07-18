@@ -134,9 +134,6 @@ private:
   size_t m_read_index{0}; // Consumer index
 };
 
-using Buffer = framework::RingBuffer<float, framework::BUFFER_SIZE>;
-using BufferPtr = std::shared_ptr<Buffer>;
-
 } // namespace miniaudioengine::framework
 
 #endif // __RINGBUFFER_H__

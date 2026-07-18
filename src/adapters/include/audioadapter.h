@@ -16,10 +16,12 @@ typedef RtAudioStreamStatus AudioStreamStatus;
 typedef RtAudio::StreamParameters AudioStreamParameters;
 typedef RtAudio::DeviceInfo AudioDeviceInfo;
 
+using RtAudioPtr = std::unique_ptr<RtAudio>;
+
+
 class AudioCallbackHandler : public framework::IAdapterCallback
 {
 public:
-
   struct Params
   {
     framework::eInputOutputDirection direction;
@@ -51,22 +53,20 @@ public:
   bool is_stream_running();
 
 private:
-  std::unique_ptr<RtAudio> p_rtaudio;
-  // TODO - Device should own BufferPtr, not AudioAdapter
-  framework::BufferPtr p_buffer;
+  RtAudioPtr p_rtaudio;
 
-  static DevicePtr make_device_handle(const AudioDeviceInfo &info, unsigned int id)
+  static DevicePtr make_device_handle(const DeviceInfo &info)
   {
     return DeviceHandleFactory::make_audio(
-        id,
+        info.id,
         info.name,
-        info.isDefaultInput,
-        info.isDefaultOutput,
-        info.outputChannels,
-        info.inputChannels,
-        info.duplexChannels,
-        info.preferredSampleRate,
-        info.sampleRates);
+        info.is_default_input,
+        info.is_default_output,
+        info.output_channels,
+        info.input_channels,
+        info.duplex_channels,
+        info.preferred_sample_rate,
+        info.sample_rates);
   }
 };
 

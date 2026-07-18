@@ -80,14 +80,34 @@ std::vector<DevicePtr> AudioAdapter::get_devices()
   std::vector<unsigned int> device_ids = p_rtaudio->getDeviceIds();
   for (const unsigned int id : device_ids)
   {
-    RtAudio::DeviceInfo info = p_rtaudio->getDeviceInfo(id);
-    devices.push_back(make_device_handle(info, id));
+    RtAudio::DeviceInfo i = p_rtaudio->getDeviceInfo(id);
+    DeviceInfo info = {
+        i.ID,
+        i.name,
+        i.isDefaultInput,
+        i.isDefaultOutput,
+        i.outputChannels,
+        i.inputChannels,
+        i.duplexChannels,
+        i.sampleRates,
+        i.preferredSampleRate};
+    devices.push_back(make_device_handle(info));
   }
 #else
   for (unsigned int i = 0; i < device_count; ++i)
   {
     RtAudio::DeviceInfo info = p_rtaudio->getDeviceInfo(i);
-    devices.push_back(make_device_handle(info, i));
+    DeviceInfo info = {
+        i.ID,
+        i.name,
+        i.isDefaultInput,
+        i.isDefaultOutput,
+        i.outputChannels,
+        i.inputChannels,
+        i.duplexChannels,
+        i.sampleRates,
+        i.preferredSampleRate};
+    devices.push_back(make_device_handle(info));
   }
 #endif
 
