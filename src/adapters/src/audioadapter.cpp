@@ -1,5 +1,7 @@
 #include "audioadapter.h"
 
+#include <cstring>
+
 using namespace miniaudioengine;
 using namespace miniaudioengine::adapters;
 
@@ -46,7 +48,7 @@ int AudioCallbackHandler::audio_callback(void *output_buffer, void *input_buffer
         while (!params->buffer->try_pop(val)) {}
       }
       // Copy to output_buffer
-      std::memcpy(output_buffer, data.data(), n_frames);
+      memcpy(output_buffer, data.data(), n_frames);
       break;
     }
     default:
@@ -110,17 +112,17 @@ std::vector<DevicePtr> AudioAdapter::get_devices()
 #else
   for (unsigned int i = 0; i < device_count; ++i)
   {
-    RtAudio::DeviceInfo info = p_rtaudio->getDeviceInfo(i);
+    RtAudio::DeviceInfo device_info = p_rtaudio->getDeviceInfo(i);
     DeviceInfo info = {
-        i.ID,
-        i.name,
-        i.isDefaultInput,
-        i.isDefaultOutput,
-        i.outputChannels,
-        i.inputChannels,
-        i.duplexChannels,
-        i.sampleRates,
-        i.preferredSampleRate};
+        i,
+        device_info.name,
+        device_info.isDefaultInput,
+        device_info.isDefaultOutput,
+        device_info.outputChannels,
+        device_info.inputChannels,
+        device_info.duplexChannels,
+        device_info.sampleRates,
+        device_info.preferredSampleRate};
     devices.push_back(make_device_handle(info));
   }
 #endif
