@@ -77,5 +77,20 @@
             "environment": [],
             "console": "integratedTerminal"
         },
+        {
+            "name": "drum-sampler (Windows)",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}\\build\\examples\\drum-sampler\\src\\Debug\\drum-sampler.exe",
+            "args": [
+                "--samples",
+                "C:\\Projects\\C++\\miniaudioengine\\examples\\drum-sampler\\samples\\drums\\",
+                "--verbose"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
     ]
 }

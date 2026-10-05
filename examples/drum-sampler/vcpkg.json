@@ -1,0 +1,10 @@
+{
+    "name": "drum-sampler",
+    "version": "0.1.0",
+    "description": "Drum Sampler - Electronic drum kit sampler",
+    "dependencies": [
+        "rtaudio",
+        "rtmidi",
+        "libsndfile"
+    ]
+}
